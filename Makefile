@@ -25,7 +25,7 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli golden-generate golden-test hooks
+.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test hooks
 
 hooks: ## Enable the repo's secret-scanning git hooks (see .githooks/README.md)
 	git config core.hooksPath .githooks
@@ -75,6 +75,20 @@ golden-generate: build-cli
 	@echo ""
 	@echo "Next: verify the JVM-free replay reproduces it byte-for-byte:"
 	@echo "   make golden-test   (or: cargo test -p blazegraph-io-core --test golden_freeze_tests)"
+
+## golden-generate-docs: regenerate the JVM-free channel goldens (docx + md)
+## from their committed source docs. The docx and markdown channels are
+## pure-Rust (no Tika/JVM). These goldens are the single blessed fixtures the
+## downstream (urd-adapters / urd-cli) reads directly. Verification tests for
+## them are tracked in CR-91 (DRAFT).
+GOLDEN_1_0_0 := blazegraph-core/test_fixtures/golden/1.0.0
+golden-generate-docs: build-cli
+	@echo "📄 Regenerating the docx + md channel goldens (JVM-free)..."
+	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-docx/source.docx -f bgraph-md -o $(GOLDEN_1_0_0)/demo-docx/document.bgraph.md
+	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-md/source.md -f bgraph-md -o $(GOLDEN_1_0_0)/demo-md/document.bgraph.md
+	@echo "✅ docx + md goldens regenerated under $(GOLDEN_1_0_0)/{demo-docx,demo-md}/"
+
+golden-generate-all: golden-generate golden-generate-docs ## Re-bless the entire 1.0.0 golden family (PDF + docx + md)
 
 golden-test: ## Run the JVM-free golden freeze + roundtrip tests
 	cargo test -p blazegraph-io-core --test golden_freeze_tests
