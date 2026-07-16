@@ -36,6 +36,7 @@
 
 use blazegraph_io_core::config::ParsingConfig;
 use blazegraph_io_core::graphs::serialization::markdown::emit_markdown;
+use blazegraph_io_core::preprocessors::docx::parse_docx;
 use blazegraph_io_core::preprocessors::md::{parse_markdown, ParseIdentity, ParseOptions};
 use blazegraph_io_core::preprocessors::Preprocessor;
 use blazegraph_io_core::processor::DocumentProcessor;
@@ -321,4 +322,172 @@ fn golden_freeze_attention_roundtrips_verified() {
         "golden bgraph.md must self-verify (doc-level graph_sha256); got {:?}",
         result.identity
     );
+}
+
+// =========================================================================
+// Light channels (DOCX + MD) — CR-91.
+//
+// The docx/md channels are pure-Rust (no Tika/JVM), so the freeze IS the full
+// product path: parse `source.{docx,md}` through the same core lib the CLI/API
+// call, emit, and assert byte-identity against the frozen `document.bgraph.md`.
+// No C2 replay, no `NoJvmPreprocessor` stub, and no `PRODUCED_BY` anchor —
+// there is nothing nondeterministic to pin (CR-91 §3).
+//
+// Filename note: `regenerate_light_bgraph_md` reproduces the CLI's current
+// stamping — docx stamps the source basename, md leaves it empty. That
+// asymmetry is what CR-92 deletes; until then it is frozen here as the current
+// shape, and THIS guard is what makes that future re-bless safe.
+// =========================================================================
+
+#[derive(Clone, Copy, Debug)]
+enum LightChannel {
+    Md,
+    Docx,
+}
+
+impl LightChannel {
+    fn dir_name(self) -> &'static str {
+        match self {
+            LightChannel::Md => "demo-md",
+            LightChannel::Docx => "demo-docx",
+        }
+    }
+
+    fn source_name(self) -> &'static str {
+        match self {
+            LightChannel::Md => "source.md",
+            LightChannel::Docx => "source.docx",
+        }
+    }
+}
+
+fn light_dir(ch: LightChannel) -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("test_fixtures/golden/1.0.0")
+        .join(ch.dir_name())
+}
+
+fn light_golden_md_path(ch: LightChannel) -> PathBuf {
+    light_dir(ch).join("document.bgraph.md")
+}
+
+/// Parse the committed source through the core lib (JVM-free) and emit
+/// bgraph.md — the same parse + emit the CLI/API run, reproducing the CLI's
+/// filename convention (docx: basename; md: empty).
+fn regenerate_light_bgraph_md(ch: LightChannel) -> String {
+    let source = light_dir(ch).join(ch.source_name());
+    match ch {
+        LightChannel::Md => {
+            let content = std::fs::read_to_string(&source)
+                .unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
+            let result =
+                parse_markdown(&content, ParseOptions::default()).expect("demo-md source parses");
+            // The md channel leaves source_filename empty — the CLI does not stamp it.
+            emit_markdown(&result.graph, &result.provenance)
+        }
+        LightChannel::Docx => {
+            let bytes =
+                std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
+            let mut result =
+                parse_docx(&bytes, ParseOptions::default()).expect("demo-docx source parses");
+            // The lib leaves source_filename empty; the CLI stamps the basename.
+            result.provenance.source_filename = ch.source_name().to_string();
+            emit_markdown(&result.graph, &result.provenance)
+        }
+    }
+}
+
+/// Test A analog — reproduction (freeze): byte-identity against the frozen md,
+/// or re-freeze under `BLESS_GOLDEN`.
+fn check_light_reproduces(ch: LightChannel) {
+    let regenerated = regenerate_light_bgraph_md(ch);
+    let path = light_golden_md_path(ch);
+
+    if bless_enabled() {
+        std::fs::write(&path, &regenerated).expect("write frozen light golden bgraph.md");
+        eprintln!(
+            "✅ BLESS_GOLDEN: re-froze {} ({} bytes)",
+            path.display(),
+            regenerated.len()
+        );
+        return;
+    }
+
+    let frozen = std::fs::read_to_string(&path).unwrap_or_else(|e| {
+        panic!(
+            "Missing frozen golden bgraph.md at {}: {e}.\n\
+             Generate it JVM-free with:\n  \
+             BLESS_GOLDEN=1 cargo test -p blazegraph-io-core --test golden_freeze_tests",
+            path.display()
+        )
+    });
+
+    if regenerated != frozen {
+        let max = regenerated.len().min(frozen.len());
+        let first_diff = (0..max)
+            .find(|&i| regenerated.as_bytes()[i] != frozen.as_bytes()[i])
+            .unwrap_or(max);
+        let start = first_diff.saturating_sub(80);
+        let end_r = (first_diff + 120).min(regenerated.len());
+        let end_f = (first_diff + 120).min(frozen.len());
+        panic!(
+            "Golden freeze mismatch ({}): HEAD no longer reproduces the frozen \
+             document.bgraph.md.\n\
+             First divergence at byte {first_diff} (regenerated={} bytes, frozen={} bytes).\n\
+             --- frozen window ---\n{}\n--- regenerated window ---\n{}\n\
+             \nIf this legitimately moves the output (a crate-version bump or intended \
+             change), re-freeze:\n  \
+             BLESS_GOLDEN=1 cargo test -p blazegraph-io-core --test golden_freeze_tests\n\
+             and commit the updated document.bgraph.md.",
+            ch.dir_name(),
+            regenerated.len(),
+            frozen.len(),
+            &frozen[start..end_f],
+            &regenerated[start..end_r],
+        );
+    }
+}
+
+/// Test B analog — the frozen md self-verifies (doc-level graph_sha256).
+fn check_light_roundtrips(ch: LightChannel) {
+    let path = light_golden_md_path(ch);
+    // Same race-avoidance as attention's Test B: under bless, Test A is
+    // concurrently rewriting the file, so roundtrip the freshly-regenerated
+    // content in-memory rather than reading the file mid-write.
+    let md = if bless_enabled() {
+        regenerate_light_bgraph_md(ch)
+    } else {
+        std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("Missing frozen golden bgraph.md at {}: {e}.", path.display()))
+    };
+
+    let result =
+        parse_markdown(&md, ParseOptions::default()).expect("frozen light golden parses cleanly");
+
+    assert!(
+        matches!(result.identity, ParseIdentity::Verified),
+        "frozen {} golden must self-verify (doc-level graph_sha256); got {:?}",
+        ch.dir_name(),
+        result.identity
+    );
+}
+
+#[test]
+fn golden_freeze_demo_md_reproduces_bgraph_md() {
+    check_light_reproduces(LightChannel::Md);
+}
+
+#[test]
+fn golden_freeze_demo_md_roundtrips_verified() {
+    check_light_roundtrips(LightChannel::Md);
+}
+
+#[test]
+fn golden_freeze_demo_docx_reproduces_bgraph_md() {
+    check_light_reproduces(LightChannel::Docx);
+}
+
+#[test]
+fn golden_freeze_demo_docx_roundtrips_verified() {
+    check_light_roundtrips(LightChannel::Docx);
 }
