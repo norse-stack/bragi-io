@@ -77,7 +77,15 @@ __all__ = [
     "BlazeGraphNotFoundError",
 ]
 
-__version__ = "0.1.1"
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
+
+try:
+    # Single source of truth: the installed package metadata (pyproject
+    # [project] version, bundle-bumped via `make bump-version`). Reading it
+    # here means __version__ can never drift from the manifest.
+    __version__ = _pkg_version("blazegraph-io")
+except PackageNotFoundError:  # source checkout without a pip install
+    __version__ = "0.0.0+unknown"
 
 
 def parse_pdf(

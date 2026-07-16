@@ -25,7 +25,21 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test hooks
+.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test hooks bump-version version-check
+
+# ---------------------------------------------------------------------------
+# Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
+# number), kept in lockstep across core + CLI + Python SDK. DELIBERATELY
+# separate from the schema/format axis (BGRAPH_FORMAT_VERSION): code evolves on
+# 0.x, the customer-facing schema stays 1.x. See
+# P2/core/architecture/15-version-model.md.
+# ---------------------------------------------------------------------------
+bump-version: ## Bundle-bump the code/release version everywhere: make bump-version V=0.5.0
+	@test -n "$(V)" || { echo "usage: make bump-version V=X.Y.Z"; exit 2; }
+	@scripts/bump-version.sh $(V)
+
+version-check: ## Assert the code/release version is coherent across all crates + SDK
+	@scripts/version-check.sh
 
 hooks: ## Enable the repo's secret-scanning git hooks (see .githooks/README.md)
 	git config core.hooksPath .githooks
