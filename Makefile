@@ -25,7 +25,7 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test hooks bump-version version-check
+.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test sync-python-fixture test-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -106,3 +106,26 @@ golden-generate-all: golden-generate golden-generate-docs ## Re-bless the entire
 
 golden-test: ## Run the JVM-free golden freeze + roundtrip tests
 	cargo test -p blazegraph-io-core --test golden_freeze_tests
+
+# --- Python SDK ----------------------------------------------------------
+PY_DIR      := blazegraph-python
+PY_FIXTURES := $(PY_DIR)/tests/fixtures
+
+## sync-python-fixture: regenerate the Python SDK's 1.0.0 graph.json fixtures
+## from the golden sources (the repo ignores generated *.json, so these are
+## rebuilt on demand rather than committed — same policy as the golden family,
+## which commits bgraph.md, not graph.json). The PDF fixture replays the
+## committed C2 cache (JVM-free, byte-consistent with the golden); the md
+## fixture is a pure-Rust Free-flow parse. Ground truth for the SDK type tests.
+sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fixtures
+	@echo "🐍 Regenerating Python SDK fixtures (1.0.0 graph.json)..."
+	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
+	./$(CLI_BIN) parse -i $(GOLDEN_PDF) -f graph --include-style-info \
+		-c $(GOLDEN_CONFIG) -o $(PY_FIXTURES)/attention_graph.json \
+		--cache-dir $(GOLDEN_CACHE) --fresh-from c2
+	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-md/source.md -f graph \
+		-o $(PY_FIXTURES)/demo_md_graph.json
+	@echo "✅ Python fixtures regenerated under $(PY_FIXTURES)/"
+
+test-python: sync-python-fixture ## Regenerate fixtures + run the Python SDK test suite
+	cd $(PY_DIR) && .venv/bin/python -m pytest -q

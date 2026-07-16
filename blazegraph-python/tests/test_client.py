@@ -32,13 +32,13 @@ def _make_response(status_code: int, body: dict) -> MagicMock:
 
 def _success_body() -> dict:
     """Load a success response body from the fixture."""
-    raw = json.loads((_FIXTURES_DIR / "shannon_graph.json").read_text())
+    raw = json.loads((_FIXTURES_DIR / "attention_graph.json").read_text())
     return {
         "success": True,
         "graph": raw,
         "pipeline_diagnostics": {
             "processing_time_ms": 964,
-            "node_count": 95,
+            "node_count": 179,
         },
         "billing": {
             "credits_consumed": 55,
@@ -56,8 +56,8 @@ class TestHandleResponse:
         resp = _make_response(200, body)
         graph = _handle_response(resp)
         assert isinstance(graph, BlazeGraph)
-        assert graph.schema_version == "0.2.0"
-        assert len(graph.nodes) == 95
+        assert graph.schema_version == "1.0.0"
+        assert len(graph.nodes) == 179
 
     def test_401_raises_auth_error(self) -> None:
         body = {

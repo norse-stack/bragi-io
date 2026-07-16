@@ -89,7 +89,10 @@ class TestFindOrDownloadCli:
 class TestGetJreDir:
     """Test JRE directory creation."""
 
+    @patch.dict(os.environ, {}, clear=True)
     def test_creates_directory(self, tmp_path: Path) -> None:
+        # Clear the environment so JAVA_HOME (set on dev machines with a JDK,
+        # e.g. via sdkman) doesn't short-circuit the fallback we're testing.
         jre_dir = tmp_path / "runtime" / "jre"
         with patch("blazegraphio._download._JRE_DIR", jre_dir):
             result = get_jre_dir()

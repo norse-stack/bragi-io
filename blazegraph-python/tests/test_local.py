@@ -42,7 +42,7 @@ class TestLocalParsePdf:
 
         # Load the real fixture as the CLI output
         fixture = json.loads(
-            (_FIXTURES_DIR / "shannon_graph.json").read_text(encoding="utf-8")
+            (_FIXTURES_DIR / "attention_graph.json").read_text(encoding="utf-8")
         )
 
         def fake_run(cmd, **kwargs):
@@ -64,9 +64,13 @@ class TestLocalParsePdf:
         graph = _local_parse_pdf(str(pdf))
 
         assert isinstance(graph, BlazeGraph)
-        assert graph.schema_version == "0.2.0"
-        assert len(graph.nodes) == 95
+        assert graph.schema_version == "1.0.0"
+        assert len(graph.nodes) == 179
         mock_run.assert_called_once()
+        # B5: the CLI grew an explicit `parse` subcommand — it must be the first
+        # arg after the binary (regression guard for the missing-subcommand bug).
+        cmd = mock_run.call_args[0][0]
+        assert cmd[1] == "parse"
 
     @patch("blazegraphio.local.find_or_download_cli")
     @patch("blazegraphio.local.get_jre_dir")
@@ -134,7 +138,7 @@ class TestLocalParsePdf:
         pdf.write_bytes(b"%PDF-1.4 dummy")
 
         fixture = json.loads(
-            (_FIXTURES_DIR / "shannon_graph.json").read_text(encoding="utf-8")
+            (_FIXTURES_DIR / "attention_graph.json").read_text(encoding="utf-8")
         )
 
         def fake_run(cmd, **kwargs):

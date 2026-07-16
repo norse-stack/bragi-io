@@ -43,6 +43,7 @@ def _local_parse_pdf(
 
         cmd = [
             str(cli_path),
+            "parse",
             "-i", str(pdf_path),
             "--jre-path", str(jre_dir),
             "-f", "graph",

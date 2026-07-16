@@ -1,7 +1,7 @@
 """Test render output readability and formatting.
 
 Uses both a small hand-built fixture (for precise output verification)
-and the real Shannon graph (for full-document render checks).
+and the real attention graph (for full-document render checks).
 """
 
 from __future__ import annotations
@@ -9,18 +9,14 @@ from __future__ import annotations
 from blazegraphio.types import (
     BlazeGraph,
     BoundingBox,
-    DocumentAnalysis,
     DocumentInfo,
     DocumentMetadata,
     DocumentNode,
-    DepthDistribution,
     NodeContent,
     NodeLocation,
-    NodeTypeDistribution,
     PhysicalLocation,
     SemanticLocation,
     StructuralProfile,
-    TokenDistribution,
 )
 
 
@@ -123,15 +119,14 @@ def _make_mini_graph() -> BlazeGraph:
     )
 
     nodes = [doc_node, section_node, para1, para2]
-    raw = {"schema_version": "0.2.0", "nodes": [], "document_info": {}, "structural_profile": {}}
+    raw = {"schema_version": "1.0.0", "nodes": [], "document_info": {}, "structural_profile": {}}
 
     return BlazeGraph(
-        schema_version="0.2.0",
+        schema_version="1.0.0",
         nodes=nodes,
         document_info=DocumentInfo(
             root_id="doc-001",
-            document_metadata=DocumentMetadata(page_count=55),
-            document_analysis=DocumentAnalysis(),
+            document_metadata=DocumentMetadata(),
         ),
         structural_profile=StructuralProfile(total_nodes=4, total_tokens=60),
         _raw=raw,
@@ -260,33 +255,36 @@ class TestRenderBoth:
 
 
 class TestFullDocumentRender:
-    """Test graph.render() on the full Shannon fixture."""
+    """Test graph.render() on the full attention fixture."""
 
-    def test_full_render_produces_text(self, shannon_graph: BlazeGraph) -> None:
-        output = shannon_graph.render()
+    def test_full_render_produces_text(self, attention_graph: BlazeGraph) -> None:
+        output = attention_graph.render()
         assert len(output) > 1000  # Should be substantial
-        assert "Communication" in output
+        assert "Attention" in output
 
         # Print first 500 chars to visually verify readability
         print("\n--- Full document render (first 500 chars) ---")
         print(output[:500])
         print("--- end ---\n")
 
-    def test_full_render_no_triple_newlines(self, shannon_graph: BlazeGraph) -> None:
-        output = shannon_graph.render()
+    def test_full_render_no_triple_newlines(self, attention_graph: BlazeGraph) -> None:
+        output = attention_graph.render()
         assert "\n\n\n" not in output
 
-    def test_full_render_with_breadcrumbs(self, shannon_graph: BlazeGraph) -> None:
-        output = shannon_graph.render(breadcrumbs=True)
-        assert "[shannon1948.dvi" in output
+    def test_full_render_with_breadcrumbs(self, attention_graph: BlazeGraph) -> None:
+        plain = attention_graph.render()
+        output = attention_graph.render(breadcrumbs=True)
+        # Breadcrumbs wrap structural headers in [trail] brackets.
+        assert "[" in output
+        assert output != plain
 
-    def test_full_render_with_node_types(self, shannon_graph: BlazeGraph) -> None:
-        output = shannon_graph.render(node_types=True)
+    def test_full_render_with_node_types(self, attention_graph: BlazeGraph) -> None:
+        output = attention_graph.render(node_types=True)
         assert "[Section]" in output
         assert "[Paragraph]" in output
 
-    def test_document_node_render(self, shannon_graph: BlazeGraph) -> None:
+    def test_document_node_render(self, attention_graph: BlazeGraph) -> None:
         """Document root render should produce the same as graph.render()."""
-        root_output = shannon_graph.root.render(shannon_graph)
-        graph_output = shannon_graph.render()
+        root_output = attention_graph.root.render(attention_graph)
+        graph_output = attention_graph.render()
         assert root_output == graph_output

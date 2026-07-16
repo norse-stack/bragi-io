@@ -1,7 +1,7 @@
 """Typed data model for Blazegraph document graphs.
 
 All dataclasses mirror the Rust types in ``blazegraph-core/src/types.rs``
-(schema version 0.2.0). Designed for full IDE autocomplete.
+(schema version 1.0.0). Designed for full IDE autocomplete.
 """
 
 from __future__ import annotations
@@ -84,6 +84,125 @@ class NodeContent:
         return cls(text=d["text"])
 
 
+@dataclass
+class StyleMetadata:
+    """Verbatim style projection for a node (CR-45 / DT-03).
+
+    Mirrors Rust ``StyleMetadata``. Present on every node key (``None`` when
+    style was not requested/available — the dominant case for the Document
+    root). ``font_class`` is always present; the rest are best-effort.
+    """
+
+    font_class: str
+    font_size: Optional[float] = None
+    is_bold: bool = False
+    is_italic: bool = False
+    font_family: Optional[str] = None
+    foreground_color: Optional[str] = None
+    background_color: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "StyleMetadata":
+        return cls(
+            font_class=d["font_class"],
+            font_size=d.get("font_size"),
+            is_bold=d.get("is_bold", False),
+            is_italic=d.get("is_italic", False),
+            font_family=d.get("font_family"),
+            foreground_color=d.get("foreground_color"),
+            background_color=d.get("background_color"),
+        )
+
+
+@dataclass
+class TargetPoint:
+    """Resolved destination point on a target page (top-origin coords, CR-62)."""
+
+    x: Optional[float] = None
+    y: Optional[float] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "TargetPoint":
+        return cls(x=d.get("x"), y=d.get("y"))
+
+
+@dataclass
+class InternalRefTarget:
+    """Target of an intra-document reference (CR-62).
+
+    Flattens the Rust ``InternalRefTarget`` tagged union: ``kind`` is
+    ``"named"`` (``name`` populated) or ``"page"``. ``page`` / ``point`` are
+    the resolved destination when Tika's name-tree walk produced one.
+    """
+
+    kind: str
+    name: Optional[str] = None
+    page: Optional[int] = None
+    point: Optional[TargetPoint] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "InternalRefTarget":
+        pt = d.get("point")
+        return cls(
+            kind=d["kind"],
+            name=d.get("name"),
+            page=d.get("page"),
+            point=TargetPoint.from_dict(pt) if pt else None,
+        )
+
+
+@dataclass
+class ExternalRefTarget:
+    """Target of an out-of-document reference (CR-62). ``kind`` is ``"uri"``."""
+
+    kind: str
+    url: Optional[str] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "ExternalRefTarget":
+        return cls(kind=d["kind"], url=d.get("url"))
+
+
+@dataclass
+class InternalRef:
+    """A reference from a node to a location within the same document (CR-62)."""
+
+    text: str
+    target: InternalRefTarget
+    source_page: Optional[int] = None
+    source_bbox: Optional[BoundingBox] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "InternalRef":
+        bbox = d.get("source_bbox")
+        return cls(
+            text=d["text"],
+            target=InternalRefTarget.from_dict(d["target"]),
+            source_page=d.get("source_page"),
+            source_bbox=BoundingBox.from_dict(bbox) if bbox else None,
+        )
+
+
+@dataclass
+class ExternalRef:
+    """A reference from a node to a location outside the document (CR-62)."""
+
+    text: str
+    target: ExternalRefTarget
+    source_page: Optional[int] = None
+    source_bbox: Optional[BoundingBox] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "ExternalRef":
+        bbox = d.get("source_bbox")
+        return cls(
+            text=d["text"],
+            target=ExternalRefTarget.from_dict(d["target"]),
+            source_page=d.get("source_page"),
+            source_bbox=BoundingBox.from_dict(bbox) if bbox else None,
+        )
+
+
 # ---------------------------------------------------------------------------
 # DocumentNode
 # ---------------------------------------------------------------------------
@@ -101,9 +220,13 @@ class DocumentNode:
     token_count: int
     parent: Optional[str]
     children: List[str]
+    style_info: Optional[StyleMetadata] = None
+    internal_refs: List[InternalRef] = field(default_factory=list)
+    external_refs: List[ExternalRef] = field(default_factory=list)
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "DocumentNode":
+        style = d.get("style_info")
         return cls(
             id=d["id"],
             node_type=d["node_type"],
@@ -113,6 +236,13 @@ class DocumentNode:
             token_count=d["token_count"],
             parent=d.get("parent"),
             children=list(d.get("children", [])),
+            style_info=StyleMetadata.from_dict(style) if style else None,
+            internal_refs=[
+                InternalRef.from_dict(r) for r in (d.get("internal_refs") or [])
+            ],
+            external_refs=[
+                ExternalRef.from_dict(r) for r in (d.get("external_refs") or [])
+            ],
         )
 
     # -- Tree navigation helpers --
@@ -190,81 +320,181 @@ class DocumentNode:
 
 
 @dataclass
-class DocumentMetadata:
-    """Metadata extracted from the PDF."""
+class PdfMetadata:
+    """PDF-channel metadata namespace (CR-57). Populated for PDF sources."""
 
-    title: Optional[str] = None
-    author: Optional[str] = None
-    language: Optional[str] = None
-    page_count: int = 0
-    publisher: Optional[str] = None
-    creator_tool: Optional[str] = None
+    version: Optional[str] = None
     producer: Optional[str] = None
-    pdf_version: Optional[str] = None
-    created: Optional[str] = None
-    modified: Optional[str] = None
-    description: Optional[str] = None
+    creator_tool: Optional[str] = None
+    publisher: Optional[str] = None
+    page_count: Optional[int] = None
     encrypted: Optional[bool] = None
     has_marked_content: Optional[bool] = None
+    modified: Optional[str] = None
+    extras: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "DocumentMetadata":
+    def from_dict(cls, d: Dict[str, Any]) -> "PdfMetadata":
         return cls(
-            title=d.get("title"),
-            author=d.get("author"),
-            language=d.get("language"),
-            page_count=d.get("page_count", 0),
-            publisher=d.get("publisher"),
-            creator_tool=d.get("creator_tool"),
+            version=d.get("version"),
             producer=d.get("producer"),
-            pdf_version=d.get("pdf_version"),
-            created=d.get("created"),
-            modified=d.get("modified"),
-            description=d.get("description"),
+            creator_tool=d.get("creator_tool"),
+            publisher=d.get("publisher"),
+            page_count=d.get("page_count"),
             encrypted=d.get("encrypted"),
             has_marked_content=d.get("has_marked_content"),
+            modified=d.get("modified"),
+            extras=dict(d.get("extras", {})),
         )
 
 
 @dataclass
-class DocumentAnalysis:
-    """Statistical analysis of the document's typographic structure."""
+class MdMetadata:
+    """Markdown-channel metadata namespace (CR-57): frontmatter slots."""
 
-    font_size_counts: Dict[str, int] = field(default_factory=dict)
-    font_family_counts: Dict[str, int] = field(default_factory=dict)
-    bold_counts: List[int] = field(default_factory=list)
-    italic_counts: List[int] = field(default_factory=list)
-    most_common_font_size: float = 0.0
-    most_common_font_family: str = ""
-    all_font_sizes: List[float] = field(default_factory=list)
+    draft: Optional[bool] = None
+    tags: List[str] = field(default_factory=list)
+    categories: List[str] = field(default_factory=list)
+    extras: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "DocumentAnalysis":
+    def from_dict(cls, d: Dict[str, Any]) -> "MdMetadata":
         return cls(
-            font_size_counts=dict(d.get("font_size_counts", {})),
-            font_family_counts=dict(d.get("font_family_counts", {})),
-            bold_counts=list(d.get("bold_counts", [])),
-            italic_counts=list(d.get("italic_counts", [])),
-            most_common_font_size=d.get("most_common_font_size", 0.0),
-            most_common_font_family=d.get("most_common_font_family", ""),
-            all_font_sizes=list(d.get("all_font_sizes", [])),
+            draft=d.get("draft"),
+            tags=list(d.get("tags", [])),
+            categories=list(d.get("categories", [])),
+            extras=dict(d.get("extras", {})),
+        )
+
+
+@dataclass
+class DocxMetadata:
+    """DOCX-channel metadata namespace (CR-57): core.xml + app.xml properties."""
+
+    application: Optional[str] = None
+    app_version: Optional[str] = None
+    pages: Optional[int] = None
+    words: Optional[int] = None
+    characters: Optional[int] = None
+    lines: Optional[int] = None
+    paragraphs: Optional[int] = None
+    company: Optional[str] = None
+    manager: Optional[str] = None
+    template: Optional[str] = None
+    total_time: Optional[int] = None
+    doc_security: Optional[int] = None
+    last_modified_by: Optional[str] = None
+    revision: Optional[str] = None
+    modified: Optional[str] = None
+    extras: Dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "DocxMetadata":
+        return cls(
+            application=d.get("application"),
+            app_version=d.get("app_version"),
+            pages=d.get("pages"),
+            words=d.get("words"),
+            characters=d.get("characters"),
+            lines=d.get("lines"),
+            paragraphs=d.get("paragraphs"),
+            company=d.get("company"),
+            manager=d.get("manager"),
+            template=d.get("template"),
+            total_time=d.get("total_time"),
+            doc_security=d.get("doc_security"),
+            last_modified_by=d.get("last_modified_by"),
+            revision=d.get("revision"),
+            modified=d.get("modified"),
+            extras=dict(d.get("extras", {})),
+        )
+
+
+@dataclass
+class DocumentMetadata:
+    """Document metadata: universal extracted fields + channel namespaces (CR-57).
+
+    Only one of ``pdf`` / ``md`` / ``docx`` is populated per document — the one
+    matching the source channel.
+    """
+
+    title: Optional[str] = None
+    author: Optional[str] = None
+    description: Optional[str] = None
+    language: Optional[str] = None
+    created: Optional[str] = None
+    pdf: Optional[PdfMetadata] = None
+    md: Optional[MdMetadata] = None
+    docx: Optional[DocxMetadata] = None
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "DocumentMetadata":
+        pdf = d.get("pdf")
+        md = d.get("md")
+        docx = d.get("docx")
+        return cls(
+            title=d.get("title"),
+            author=d.get("author"),
+            description=d.get("description"),
+            language=d.get("language"),
+            created=d.get("created"),
+            pdf=PdfMetadata.from_dict(pdf) if pdf else None,
+            md=MdMetadata.from_dict(md) if md else None,
+            docx=DocxMetadata.from_dict(docx) if docx else None,
+        )
+
+
+@dataclass
+class BookmarkSection:
+    """A single entry in the PDF outline / bookmark tree (flattened, ordered)."""
+
+    title: str
+    order: int
+    level: int = 1
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "BookmarkSection":
+        return cls(title=d["title"], order=d["order"], level=d.get("level", 1))
+
+
+@dataclass
+class BookmarkData:
+    """Document outline (PDF bookmarks) — an ordered, level-tagged section list."""
+
+    sections: List[BookmarkSection] = field(default_factory=list)
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "BookmarkData":
+        return cls(
+            sections=[BookmarkSection.from_dict(s) for s in d.get("sections", [])]
         )
 
 
 @dataclass
 class DocumentInfo:
-    """Document-level metadata — information *about* the document."""
+    """Document-level metadata — information *about* the document.
+
+    ``flow_type`` lives here (schema 0.8.0+): ``"Fixed"`` for physical/reflow
+    documents (PDF), ``"Free"`` for reflowable sources (markdown, docx).
+    """
 
     root_id: str
     document_metadata: DocumentMetadata
-    document_analysis: DocumentAnalysis
+    kind: str = "document"
+    flow_type: str = "Fixed"
+    outline_data: Optional[BookmarkData] = None
+    topology: Optional[str] = None
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "DocumentInfo":
+        outline = d.get("outline_data")
         return cls(
             root_id=d["root_id"],
             document_metadata=DocumentMetadata.from_dict(d.get("document_metadata", {})),
-            document_analysis=DocumentAnalysis.from_dict(d.get("document_analysis", {})),
+            kind=d.get("kind", "document"),
+            flow_type=d.get("flow_type", "Fixed"),
+            outline_data=BookmarkData.from_dict(outline) if outline else None,
+            topology=d.get("topology"),
         )
 
 
@@ -370,11 +600,13 @@ class DepthDistribution:
 
 @dataclass
 class StructuralProfile:
-    """Statistical properties of the document graph."""
+    """Statistical properties of the document graph.
 
-    created_at: str = ""
+    ``flow_type`` moved to :class:`DocumentInfo` (schema 0.8.0); read it from
+    ``graph.document_info.flow_type``, not here.
+    """
+
     document_type: str = "Generic"
-    flow_type: str = "Fixed"
     total_nodes: int = 0
     total_tokens: int = 0
     token_distribution: Optional[TokenDistribution] = None
@@ -387,14 +619,40 @@ class StructuralProfile:
         ntd = d.get("node_type_distribution")
         dd = d.get("depth_distribution")
         return cls(
-            created_at=d.get("created_at", ""),
             document_type=d.get("document_type", "Generic"),
-            flow_type=d.get("flow_type", "Fixed"),
             total_nodes=d.get("total_nodes", 0),
             total_tokens=d.get("total_tokens", 0),
             token_distribution=TokenDistribution.from_dict(td) if td else None,
             node_type_distribution=NodeTypeDistribution.from_dict(ntd) if ntd else None,
             depth_distribution=DepthDistribution.from_dict(dd) if dd else None,
+        )
+
+
+# ---------------------------------------------------------------------------
+# ParseProvenance
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ParseProvenance:
+    """Provenance for the parse that produced this graph.
+
+    Rides *beside* the graph on the wrapper (Block A), not on ``document_info``.
+    CR-92: content-only — no ``source_filename`` (a transport/session detail).
+    """
+
+    blazegraph_version: str
+    source_format: str
+    source_sha256: str
+    config_hash: str
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "ParseProvenance":
+        return cls(
+            blazegraph_version=d["blazegraph_version"],
+            source_format=d["source_format"],
+            source_sha256=d["source_sha256"],
+            config_hash=d["config_hash"],
         )
 
 
@@ -408,13 +666,17 @@ class BlazeGraph:
     """Top-level wrapper for a parsed document graph.
 
     This is the return type for :func:`blazegraphio.parse_pdf` and
-    :func:`blazegraphio.parse_pdf_async`.
+    :func:`blazegraphio.parse_pdf_async`. Mirrors the Rust
+    ``SortedDocumentGraph`` wrapper (schema 1.0.0).
     """
 
     schema_version: str
     nodes: List[DocumentNode]
     document_info: DocumentInfo
     structural_profile: StructuralProfile
+    graph_sha256: str = ""
+    created_at: str = ""
+    parse_provenance: Optional[ParseProvenance] = None
     _raw: Dict[str, Any] = field(default_factory=dict, repr=False)
     _index: Dict[str, DocumentNode] = field(default_factory=dict, repr=False)
 
@@ -442,6 +704,11 @@ class BlazeGraph:
     def root(self) -> DocumentNode:
         """The Document root node."""
         return self._index[self.document_info.root_id]
+
+    @property
+    def flow_type(self) -> str:
+        """Convenience: the document's flow type (``"Fixed"`` / ``"Free"``)."""
+        return self.document_info.flow_type
 
     # -- Lookup helpers --
 
@@ -491,13 +758,19 @@ class BlazeGraph:
         """Construct a ``BlazeGraph`` from a raw dictionary (parsed JSON).
 
         The dictionary should have the ``SortedDocumentGraph`` shape:
-        ``schema_version``, ``nodes``, ``document_info``, ``structural_profile``.
+        ``schema_version``, ``nodes``, ``document_info``, ``structural_profile``,
+        plus the optional wrapper fields ``graph_sha256`` / ``created_at`` /
+        ``parse_provenance``.
         """
         nodes = [DocumentNode.from_dict(n) for n in d["nodes"]]
+        prov = d.get("parse_provenance")
         return cls(
             schema_version=d["schema_version"],
             nodes=nodes,
             document_info=DocumentInfo.from_dict(d["document_info"]),
             structural_profile=StructuralProfile.from_dict(d["structural_profile"]),
+            graph_sha256=d.get("graph_sha256", ""),
+            created_at=d.get("created_at", ""),
+            parse_provenance=ParseProvenance.from_dict(prov) if prov else None,
             _raw=d,
         )
