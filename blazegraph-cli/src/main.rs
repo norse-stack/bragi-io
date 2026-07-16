@@ -529,19 +529,11 @@ fn run_parse_docx(args: ParseArgs) -> Result<()> {
     let result = parse_docx(&bytes, opts).map_err(|e| anyhow!("\n❌ DOCX parse failed: {e}\n"))?;
 
     let graph = result.graph;
-    let mut provenance = result.provenance;
+    let provenance = result.provenance;
 
-    // The lib leaves `source_filename` empty — same convention as the
-    // markdown channel; the CLI owns the filename. Overwrite the
-    // provenance's `source_filename` with the input basename. Block A
-    // bonus: provenance is envelope-only now, so this CLI-side override
-    // can no longer perturb `graph_sha256`.
-    provenance.source_filename = Path::new(&args.input)
-        .file_name()
-        .and_then(|s| s.to_str())
-        .unwrap_or(&args.input)
-        .to_string();
-
+    // CR-92: `source_filename` is gone from the content graph — a transport
+    // detail, not content. The CLI no longer stamps the input basename; the
+    // filename, if a caller needs it, lives at the session/catalog edge.
     emit_parsed_graph(&args, graph, provenance)
 }
 

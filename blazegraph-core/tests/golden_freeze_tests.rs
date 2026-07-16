@@ -382,16 +382,15 @@ fn regenerate_light_bgraph_md(ch: LightChannel) -> String {
                 .unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
             let result =
                 parse_markdown(&content, ParseOptions::default()).expect("demo-md source parses");
-            // The md channel leaves source_filename empty — the CLI does not stamp it.
             emit_markdown(&result.graph, &result.provenance)
         }
         LightChannel::Docx => {
             let bytes =
                 std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
-            let mut result =
+            let result =
                 parse_docx(&bytes, ParseOptions::default()).expect("demo-docx source parses");
-            // The lib leaves source_filename empty; the CLI stamps the basename.
-            result.provenance.source_filename = ch.source_name().to_string();
+            // CR-92: no filename stamp — the source block is content-only now,
+            // identical shape across the md and docx channels.
             emit_markdown(&result.graph, &result.provenance)
         }
     }

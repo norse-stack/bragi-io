@@ -16,7 +16,6 @@ use crate::storage::{
 };
 use crate::types::*;
 use anyhow::Result;
-use std::path::Path;
 use std::time::{Duration, Instant};
 
 /// Simple profiler that collects timings for pipeline steps
@@ -159,10 +158,6 @@ impl DocumentProcessor {
         let provenance = ParseProvenance {
             blazegraph_version: crate::VERSION.to_string(),
             source_format: "pdf".to_string(),
-            source_filename: Path::new(input_path)
-                .file_name()
-                .map(|s| s.to_string_lossy().into_owned())
-                .unwrap_or_else(|| input_path.to_string()),
             source_sha256: pdf_hash.clone(),
             config_hash: config_hash.clone(),
         };

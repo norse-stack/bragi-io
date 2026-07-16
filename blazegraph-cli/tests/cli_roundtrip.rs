@@ -47,7 +47,6 @@ fn synthetic_provenance() -> ParseProvenance {
     ParseProvenance {
         blazegraph_version: "0.6.0-cli-test".to_string(),
         source_format: "markdown".to_string(),
-        source_filename: "cli-roundtrip.md".to_string(),
         source_sha256: "cli-test-source-sha".to_string(),
         config_hash: "cli-test-config-hash".to_string(),
     }
@@ -744,19 +743,15 @@ fn parse_docx_fixture_produces_graph() {
             .collect::<Vec<_>>()
     );
 
-    // The DOCX channel stamps `source_format = "docx"`, and the CLI
-    // overwrites the lib-empty `source_filename` with the input
-    // basename.
+    // The DOCX channel stamps `source_format = "docx"`. CR-92 removed
+    // `source_filename` — a transport detail, not content — so the CLI no
+    // longer stamps a basename; the source block is content-only.
     // Block A: provenance lives on the SortedDocumentGraph wrapper.
     let prov = sorted
         .parse_provenance
         .as_ref()
         .expect("docx graph.json carries parse provenance on the wrapper");
     assert_eq!(prov.source_format, "docx", "source_format must be docx");
-    assert_eq!(
-        prov.source_filename, "structured.docx",
-        "CLI must overwrite source_filename with the input basename"
-    );
 }
 
 #[test]

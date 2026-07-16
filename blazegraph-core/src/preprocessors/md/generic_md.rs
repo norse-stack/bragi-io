@@ -488,7 +488,6 @@ pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError
     let provenance = ParseProvenance {
         blazegraph_version: crate::VERSION.to_string(),
         source_format: "markdown".to_string(),
-        source_filename: String::new(), // CLI may overwrite; the lib doesn't know
         source_sha256: source_sha256.clone(),
         config_hash: config_hash.clone(),
     };

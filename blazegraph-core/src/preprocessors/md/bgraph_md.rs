@@ -259,7 +259,6 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
     let provenance = ParseProvenance {
         blazegraph_version: doc_level.blazegraph_version.clone(),
         source_format: doc_level.source.format.clone(),
-        source_filename: doc_level.source.filename.clone(),
         source_sha256: doc_level.source.sha256.clone(),
         config_hash: doc_level.config_hash.clone(),
     };
@@ -537,7 +536,6 @@ struct DocLevelBlock {
 #[derive(Debug, Clone, Deserialize)]
 struct DocLevelSource {
     format: String,
-    filename: String,
     sha256: String,
 }
 
@@ -689,7 +687,6 @@ mod tests {
         ParseProvenance {
             blazegraph_version: "0.6.0".to_string(),
             source_format: "markdown".to_string(),
-            source_filename: "synthetic.md".to_string(),
             source_sha256: "synthetic-source-sha".to_string(),
             config_hash: "synthetic-config-hash".to_string(),
         }
@@ -771,7 +768,6 @@ mod tests {
         let prov = &result.provenance;
         assert_eq!(prov.blazegraph_version, "0.6.0");
         assert_eq!(prov.source_format, "markdown");
-        assert_eq!(prov.source_filename, "synthetic.md");
         assert_eq!(prov.source_sha256, "synthetic-source-sha");
         assert_eq!(prov.config_hash, "synthetic-config-hash");
         assert!(matches!(result.graph.document_info.flow_type, FlowType::Free));

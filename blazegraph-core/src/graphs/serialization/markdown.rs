@@ -128,7 +128,6 @@ fn emit_document_level_block(graph: &DocumentGraph, provenance: &ParseProvenance
     #[derive(Serialize)]
     struct DocLevelSource<'a> {
         format: &'a str,
-        filename: &'a str,
         sha256: &'a str,
     }
 
@@ -165,7 +164,6 @@ fn emit_document_level_block(graph: &DocumentGraph, provenance: &ParseProvenance
         blazegraph_version: &provenance.blazegraph_version,
         source: DocLevelSource {
             format: &provenance.source_format,
-            filename: &provenance.source_filename,
             sha256: &provenance.source_sha256,
         },
         flow_type: &graph.document_info.flow_type,
@@ -323,7 +321,6 @@ mod tests {
         ParseProvenance {
             blazegraph_version: "0.6.0".to_string(),
             source_format: "markdown".to_string(),
-            source_filename: "synthetic.md".to_string(),
             source_sha256: "deadbeef".to_string(),
             config_hash: "cafef00d".to_string(),
         }
@@ -554,12 +551,18 @@ mod tests {
             "doc-level block must not carry `title` under v2.1.0; got {json_line}"
         );
         let source = parsed.get("source").unwrap();
-        for key in ["format", "filename", "sha256"] {
+        for key in ["format", "sha256"] {
             assert!(
                 source.get(key).is_some(),
                 "doc-level source block missing required key {key:?}; got {json_line}",
             );
         }
+        // CR-92: `filename` is a transport/session detail, not content —
+        // it MUST NOT appear in the content-addressed source block.
+        assert!(
+            source.get("filename").is_none(),
+            "doc-level source block must not carry `filename` (CR-92); got {json_line}"
+        );
         let h = parsed["graph_sha256"]
             .as_str()
             .expect("graph_sha256 is a string");

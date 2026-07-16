@@ -300,7 +300,6 @@ mod tests {
         let provenance = ParseProvenance {
             blazegraph_version: "0.6.0".to_string(),
             source_format: "markdown".to_string(),
-            source_filename: "x.md".to_string(),
             source_sha256: "abc".to_string(),
             config_hash: "def".to_string(),
         };

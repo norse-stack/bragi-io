@@ -40,7 +40,6 @@ fn synthetic_provenance() -> ParseProvenance {
     ParseProvenance {
         blazegraph_version: "0.6.0-roundtrip".to_string(),
         source_format: "markdown".to_string(),
-        source_filename: "roundtrip.md".to_string(),
         source_sha256: "roundtrip-source-sha".to_string(),
         config_hash: "roundtrip-config-hash".to_string(),
     }
@@ -106,7 +105,6 @@ fn fixture_provenance(name: &str) -> ParseProvenance {
     ParseProvenance {
         blazegraph_version: "0.6.0-test".to_string(),
         source_format: "pdf".to_string(),
-        source_filename: format!("{name}.pdf"),
         source_sha256: format!("test-source-sha-{name}"),
         config_hash: "test-config-hash".to_string(),
     }

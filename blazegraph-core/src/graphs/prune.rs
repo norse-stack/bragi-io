@@ -131,11 +131,12 @@ struct EvidenceArtifact {
 /// the CR forbids a `processor.rs` change to thread them in). So: the cache root
 /// is taken from `BLAZEGRAPH_CACHE_DIR` (the same env var the CLI / sb_eval.sh
 /// use), defaulting to `cache`, and the filename stem from the threaded-in
-/// `ParseProvenance.source_filename` (Block A moved provenance off the graph;
-/// it now arrives as an explicit argument). Result: `{cache}/evidence/<source-stem>.evidence.json`,
-/// a separate file landing next to the `cache/` tree the Python prototype reads.
-/// When no provenance is present (legacy/MD graphs), the source hash or a fixed
-/// `unknown` stem is used. Never part of bgraph.
+/// `ParseProvenance` (Block A moved provenance off the graph; it now arrives as
+/// an explicit argument). CR-92 cut `source_filename` — a transport detail, not
+/// content — so the stem is a short prefix of the content hash. Result:
+/// `{cache}/evidence/<sha-prefix>.evidence.json`, a separate file landing next to
+/// the `cache/` tree the Python prototype reads. When no provenance is present
+/// (legacy/MD graphs), a fixed `unknown` stem is used. Never part of bgraph.
 fn emit_evidence_artifact(
     graph: &DocumentGraph,
     evidence: &SectionEvidence,
@@ -195,25 +196,16 @@ fn emit_evidence_artifact(
 }
 
 /// File stem for the evidence artifact, derived from provenance (threaded
-/// in by the caller — Block A moved provenance off the graph). Prefers the
-/// source filename (basename without extension), then the source hash, then a
-/// fixed `unknown`. Sanitized to a filesystem-safe token.
+/// in by the caller — Block A moved provenance off the graph). CR-92 removed
+/// `source_filename` (a transport detail, not content), so the stem is a short,
+/// stable prefix of the content hash — enough to disambiguate artifacts without
+/// carrying the full 64-char digest into the filename. Falls back to a fixed
+/// `unknown` when provenance (or the hash) is absent. Sanitized to a
+/// filesystem-safe token.
 fn doc_stem(prov: Option<&ParseProvenance>) -> String {
     let raw = prov
-        .map(|p| {
-            // Strip directory + a single trailing extension from the filename.
-            let base = p
-                .source_filename
-                .rsplit(['/', '\\'])
-                .next()
-                .unwrap_or(&p.source_filename);
-            let stem = base.rsplit_once('.').map(|(s, _)| s).unwrap_or(base);
-            if stem.is_empty() {
-                p.source_sha256.clone()
-            } else {
-                stem.to_string()
-            }
-        })
+        .map(|p| p.source_sha256.chars().take(16).collect::<String>())
+        .filter(|stem| !stem.is_empty())
         .unwrap_or_else(|| "unknown".to_string());
     sanitize_stem(&raw)
 }

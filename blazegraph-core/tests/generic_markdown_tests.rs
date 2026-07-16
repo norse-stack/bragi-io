@@ -52,7 +52,6 @@ fn synthetic_provenance() -> ParseProvenance {
     ParseProvenance {
         blazegraph_version: "0.7.0-b6-test".to_string(),
         source_format: "markdown".to_string(),
-        source_filename: "amendment-f.md".to_string(),
         source_sha256: "amendment-f-source-sha".to_string(),
         config_hash: "amendment-f-config-hash".to_string(),
     }

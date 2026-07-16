@@ -155,9 +155,6 @@ pub struct ParseProvenance {
     /// Source format identifier (`"pdf"`, `"markdown"`, `"docx"`, …).
     pub source_format: String,
 
-    /// Original source filename (basename, e.g. `"rfc-quic.pdf"`).
-    pub source_filename: String,
-
     /// SHA-256 of the source bytes (hex-encoded).
     pub source_sha256: String,
 
