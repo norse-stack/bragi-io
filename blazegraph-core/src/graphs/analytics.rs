@@ -1,5 +1,5 @@
 use crate::types::*;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 impl DocumentGraph {
     /// Compute the structural-profile aggregate for the entire graph.
@@ -56,7 +56,7 @@ impl GraphAnalytics {
         }
 
         let overall_histogram = Self::create_histogram(&overall_tokens);
-        let mut type_histograms = HashMap::new();
+        let mut type_histograms = BTreeMap::new();
 
         for (node_type, tokens) in by_type {
             type_histograms.insert(node_type, Self::create_histogram(&tokens));
@@ -169,14 +169,14 @@ impl GraphAnalytics {
 
     /// Compute node type distribution with counts and percentages
     fn compute_node_type_distribution(nodes: &[&DocumentNode]) -> NodeTypeDistribution {
-        let mut counts = HashMap::new();
+        let mut counts = BTreeMap::new();
         let total_nodes = nodes.len();
 
         for node in nodes {
             *counts.entry(node.node_type.clone()).or_insert(0) += 1;
         }
 
-        let mut percentages = HashMap::new();
+        let mut percentages = BTreeMap::new();
         for (node_type, count) in &counts {
             let percentage = if total_nodes > 0 {
                 (*count as f32 / total_nodes as f32) * 100.0
@@ -194,7 +194,7 @@ impl GraphAnalytics {
 
     /// Compute depth distribution and statistics
     fn compute_depth_distribution(nodes: &[&DocumentNode]) -> DepthDistribution {
-        let mut depth_counts = HashMap::new();
+        let mut depth_counts = BTreeMap::new();
         let mut total_depth = 0u32;
         let mut max_depth = 0u32;
 

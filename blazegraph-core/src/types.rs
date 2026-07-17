@@ -503,7 +503,11 @@ pub enum DocumentType {
 /// Histogram-based token distribution for comprehensive statistical analysis
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct TokenDistribution {
-    pub by_node_type: HashMap<String, TokenHistogram>,
+    /// `BTreeMap` (not `HashMap`) so json serialization is deterministic —
+    /// `structural_profile` is a wrapper-only derived aggregate that the golden
+    /// json freeze pins byte-for-byte; same reason `DocumentMetadata.extras` is
+    /// a `BTreeMap`. Not part of `graph_sha256` (content-body only).
+    pub by_node_type: BTreeMap<String, TokenHistogram>,
     pub overall: TokenHistogram,
 }
 
@@ -544,14 +548,16 @@ pub struct HistogramBin {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct NodeTypeDistribution {
-    pub counts: HashMap<String, usize>,
-    pub percentages: HashMap<String, f32>,
+    // BTreeMap: deterministic json key order (see TokenDistribution.by_node_type).
+    pub counts: BTreeMap<String, usize>,
+    pub percentages: BTreeMap<String, f32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DepthDistribution {
     pub max_depth: u32,
-    pub depth_counts: HashMap<u32, usize>,
+    // BTreeMap: deterministic json key order (see TokenDistribution.by_node_type).
+    pub depth_counts: BTreeMap<u32, usize>,
     pub avg_depth: f32,
 }
 
@@ -559,7 +565,7 @@ impl Default for DepthDistribution {
     fn default() -> Self {
         Self {
             max_depth: 0,
-            depth_counts: HashMap::new(),
+            depth_counts: BTreeMap::new(),
             avg_depth: 0.0,
         }
     }

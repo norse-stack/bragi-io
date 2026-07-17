@@ -1,0 +1,2156 @@
+{
+  "schema_version": "1.0.0",
+  "graph_sha256": "19fc78b3944641bdccab819127e47ae70a5f06ee3eca96f4b58a66e16be22d57",
+  "created_at": "1970-01-01T00:00:00Z",
+  "parse_provenance": {
+    "blazegraph_version": "0.5.0",
+    "source_format": "markdown",
+    "source_sha256": "6dd3058665c1709db0c87617a8d0610662e3344fce5844d2e19d7a9ab0f34234",
+    "config_hash": "none"
+  },
+  "nodes": [
+    {
+      "id": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "node_type": "Document",
+      "location": {
+        "semantic": {
+          "path": "",
+          "depth": 0,
+          "breadcrumbs": []
+        },
+        "physical": null
+      },
+      "text_order": null,
+      "content": {
+        "text": "Document"
+      },
+      "style_info": null,
+      "token_count": 0,
+      "parent": null,
+      "children": [
+        "a1953fb0-063f-52b8-90a6-115dd0b59a23",
+        "f3c88d61-ba88-508b-8e62-1bffd9d42791",
+        "d0a0f871-9c5f-5390-8984-9f6354f0f905",
+        "0f5f653f-7775-5928-b20e-05c3f5ee15e7",
+        "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+        "afa86083-24a9-55ed-9bf6-909bc29ac44d",
+        "2c06f8b0-ca62-597a-b870-cd1932bf6904",
+        "a0dce2f1-f627-5d13-a251-66228e08c7bc"
+      ]
+    },
+    {
+      "id": "a1953fb0-063f-52b8-90a6-115dd0b59a23",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "1",
+          "depth": 1,
+          "breadcrumbs": []
+        },
+        "physical": null
+      },
+      "text_order": 0,
+      "content": {
+        "text": "This document demonstrates the ability of the calibre DOCX Input plugin\nto convert the various typographic features in a Microsoft Word (2007\nand newer) document. Convert this document to a modern ebook format,\nsuch as AZW3 for Kindles or EPUB for other ebook readers, to see it in\naction."
+      },
+      "style_info": null,
+      "token_count": 72,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": []
+    },
+    {
+      "id": "f3c88d61-ba88-508b-8e62-1bffd9d42791",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "2",
+          "depth": 1,
+          "breadcrumbs": []
+        },
+        "physical": null
+      },
+      "text_order": 1,
+      "content": {
+        "text": "There is support for images, tables, lists, footnotes, endnotes, links,\ndropcaps and various types of text and paragraph level formatting."
+      },
+      "style_info": null,
+      "token_count": 34,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": []
+    },
+    {
+      "id": "d0a0f871-9c5f-5390-8984-9f6354f0f905",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "3",
+          "depth": 1,
+          "breadcrumbs": []
+        },
+        "physical": null
+      },
+      "text_order": 2,
+      "content": {
+        "text": "To see the DOCX conversion in action, simply add this file to calibre\nusing the **“Add Books”** button and then click “**Convert”.** Set the\noutput format in the top right corner of the conversion dialog to EPUB\nor AZW3 and click **“OK”**."
+      },
+      "style_info": null,
+      "token_count": 62,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": []
+    },
+    {
+      "id": "0f5f653f-7775-5928-b20e-05c3f5ee15e7",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "4",
+          "depth": 1,
+          "breadcrumbs": [
+            "Text Formatting"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 3,
+      "content": {
+        "text": "Text Formatting"
+      },
+      "style_info": null,
+      "token_count": 3,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": [
+        "085c40a0-472d-5715-9c88-b9f2b38e61f3",
+        "b87bdc0d-0ca6-53b4-bb95-63afcf60d588",
+        "5e5fa8f9-e8b3-5618-985d-fae1c39af013"
+      ]
+    },
+    {
+      "id": "085c40a0-472d-5715-9c88-b9f2b38e61f3",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "4.1",
+          "depth": 2,
+          "breadcrumbs": [
+            "Text Formatting",
+            "Inline formatting"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 4,
+      "content": {
+        "text": "Inline formatting"
+      },
+      "style_info": null,
+      "token_count": 4,
+      "parent": "0f5f653f-7775-5928-b20e-05c3f5ee15e7",
+      "children": [
+        "ea0b82e6-f529-5fd7-8482-9558e08f8897",
+        "bd171d87-8ed3-5e9f-90c2-c48f60802572",
+        "55654ee4-885a-56de-bd78-5d89197b4e14"
+      ]
+    },
+    {
+      "id": "ea0b82e6-f529-5fd7-8482-9558e08f8897",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "4.1.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Text Formatting",
+            "Inline formatting"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 5,
+      "content": {
+        "text": "Here, we demonstrate various types of inline text formatting and the use\nof embedded fonts."
+      },
+      "style_info": null,
+      "token_count": 22,
+      "parent": "085c40a0-472d-5715-9c88-b9f2b38e61f3",
+      "children": []
+    },
+    {
+      "id": "bd171d87-8ed3-5e9f-90c2-c48f60802572",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "4.1.2",
+          "depth": 3,
+          "breadcrumbs": [
+            "Text Formatting",
+            "Inline formatting"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 6,
+      "content": {
+        "text": "Here is some **bold,** *italic,* ***bold-italic,*** underlined and\n~~struck out~~ text. Then, we have a superscript and a\nsubscript. Now we see some red, green and blue text. Some\ntext with a yellow highlight. Some text in a\nbox. Some text in inverse video."
+      },
+      "style_info": null,
+      "token_count": 64,
+      "parent": "085c40a0-472d-5715-9c88-b9f2b38e61f3",
+      "children": []
+    },
+    {
+      "id": "55654ee4-885a-56de-bd78-5d89197b4e14",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "4.1.3",
+          "depth": 3,
+          "breadcrumbs": [
+            "Text Formatting",
+            "Inline formatting"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 7,
+      "content": {
+        "text": "A paragraph with styled text: *subtle emphasis* followed by **strong\ntext** and ***intense emphasis***. This paragraph uses document wide\nstyles for styling rather than inline text properties as demonstrated in\nthe previous paragraph — calibre can handle both with equal ease."
+      },
+      "style_info": null,
+      "token_count": 69,
+      "parent": "085c40a0-472d-5715-9c88-b9f2b38e61f3",
+      "children": []
+    },
+    {
+      "id": "b87bdc0d-0ca6-53b4-bb95-63afcf60d588",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "4.2",
+          "depth": 2,
+          "breadcrumbs": [
+            "Text Formatting",
+            "Fun with fonts"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 8,
+      "content": {
+        "text": "Fun with fonts"
+      },
+      "style_info": null,
+      "token_count": 3,
+      "parent": "0f5f653f-7775-5928-b20e-05c3f5ee15e7",
+      "children": [
+        "06a280fc-1165-56cd-8912-74207d504340"
+      ]
+    },
+    {
+      "id": "06a280fc-1165-56cd-8912-74207d504340",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "4.2.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Text Formatting",
+            "Fun with fonts"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 9,
+      "content": {
+        "text": "This document has embedded the Ubuntu font family. The body text is in\nthe Ubuntu typeface, here is some text in the Ubuntu Mono typeface,\nnotice how every letter has the same width, even i and m. Every embedded\nfont will automatically be embedded in the output ebook during\nconversion."
+      },
+      "style_info": null,
+      "token_count": 71,
+      "parent": "b87bdc0d-0ca6-53b4-bb95-63afcf60d588",
+      "children": []
+    },
+    {
+      "id": "5e5fa8f9-e8b3-5618-985d-fae1c39af013",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "4.3",
+          "depth": 2,
+          "breadcrumbs": [
+            "Text Formatting",
+            "**Paragraph level formatting**"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 10,
+      "content": {
+        "text": "**Paragraph level formatting**"
+      },
+      "style_info": null,
+      "token_count": 7,
+      "parent": "0f5f653f-7775-5928-b20e-05c3f5ee15e7",
+      "children": [
+        "b3219a7d-018e-55ca-88d6-e0fa30dba2cc",
+        "7e822a83-3b13-51e8-814a-c4e4692ceeca"
+      ]
+    },
+    {
+      "id": "b3219a7d-018e-55ca-88d6-e0fa30dba2cc",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "4.3.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Text Formatting",
+            "**Paragraph level formatting**"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 11,
+      "content": {
+        "text": "You can do crazy things with paragraphs, if the urge strikes you. For\ninstance this paragraph is right aligned and has a right border. It has\nalso been given a light gray background."
+      },
+      "style_info": null,
+      "token_count": 45,
+      "parent": "5e5fa8f9-e8b3-5618-985d-fae1c39af013",
+      "children": []
+    },
+    {
+      "id": "7e822a83-3b13-51e8-814a-c4e4692ceeca",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "4.3.2",
+          "depth": 3,
+          "breadcrumbs": [
+            "Text Formatting",
+            "**Paragraph level formatting**"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 12,
+      "content": {
+        "text": "For the lovers of poetry amongst you, paragraphs with hanging indents,\nlike this often come in handy. You can use hanging indents to ensure\nthat a line of poetry retains its individual identity as a line even\nwhen the screen is too narrow to display it as a single line. Not only\ndoes this paragraph have a hanging indent, it is also has an extra top\nmargin, setting it apart from the preceding paragraph."
+      },
+      "style_info": null,
+      "token_count": 101,
+      "parent": "5e5fa8f9-e8b3-5618-985d-fae1c39af013",
+      "children": []
+    },
+    {
+      "id": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "5",
+          "depth": 1,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 13,
+      "content": {
+        "text": "Tables"
+      },
+      "style_info": null,
+      "token_count": 1,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": [
+        "ca3bbc3e-a037-5db1-9021-926abfd3d559",
+        "b194918f-a18d-54cd-80be-c30328ccccab",
+        "d590c1c1-c9c9-53b8-8713-4a7b0d3d80c7",
+        "1777738f-8af9-50f3-bb68-2fe896cbfcd9",
+        "ae250868-3ef0-5e51-a706-694f1ce3b8da",
+        "29a026fc-00d7-5de3-b70c-aa3a73d537fc",
+        "4eaae8a3-6261-5874-83bf-b2e3bae69272",
+        "47f4021f-080d-5fab-9194-5c75ce8e87ae",
+        "e75f2349-8fb5-5fff-bc32-095422d85d9b"
+      ]
+    },
+    {
+      "id": "ca3bbc3e-a037-5db1-9021-926abfd3d559",
+      "node_type": "Table",
+      "location": {
+        "semantic": {
+          "path": "5.1",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 14,
+      "content": {
+        "text": "| ITEM        | NEEDED   |\n|-------------|----------|\n| Books       | 1        |\n| Pens        | 3        |\n| Pencils     | 2        |\n| Highlighter | 2 colors |\n| Scissors    | 1 pair   |"
+      },
+      "style_info": null,
+      "token_count": 47,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "b194918f-a18d-54cd-80be-c30328ccccab",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "5.2",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 15,
+      "content": {
+        "text": "Tables in Word can vary from the extremely simple to the extremely\ncomplex. calibre tries to do its best when converting tables. While you\nmay run into trouble with the occasional table, the vast majority of\ncommon cases should be converted very well, as demonstrated in this\nsection. Note that for optimum results, when creating tables in Word,\nyou should set their widths using percentages, rather than absolute\nunits. To the left of this paragraph is a floating two column table with\na nice green border and header row."
+      },
+      "style_info": null,
+      "token_count": 130,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "d590c1c1-c9c9-53b8-8713-4a7b0d3d80c7",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "5.3",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 16,
+      "content": {
+        "text": "Now let’s look at a fancier table—one with alternating row colors and\npartial borders. This table is stretched out to take 100% of the\navailable width."
+      },
+      "style_info": null,
+      "token_count": 38,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "1777738f-8af9-50f3-bb68-2fe896cbfcd9",
+      "node_type": "Table",
+      "location": {
+        "semantic": {
+          "path": "5.4",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 17,
+      "content": {
+        "text": "| City or Town | Point A | Point B | Point C | Point D | Point E |\n|--------------|:-------:|:-------:|:-------:|:-------:|:-------:|\n| Point A      | —       |         |         |         |         |\n| Point B      | 87      | —       |         |         |         |\n| Point C      | 64      | 56      | —       |         |         |\n| Point D      | 37      | 32      | 91      | —       |         |\n| Point E      | 93      | 35      | 54      | 43      | —       |"
+      },
+      "style_info": null,
+      "token_count": 119,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "ae250868-3ef0-5e51-a706-694f1ce3b8da",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "5.5",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 18,
+      "content": {
+        "text": "Next, we see a table with special formatting in various locations.\nNotice how the formatting for the header row and sub header rows is\npreserved."
+      },
+      "style_info": null,
+      "token_count": 36,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "29a026fc-00d7-5de3-b70c-aa3a73d537fc",
+      "node_type": "Table",
+      "location": {
+        "semantic": {
+          "path": "5.6",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 19,
+      "content": {
+        "text": "| College          | New students    | Graduating students | Change |\n|------------------|-----------------|---------------------|--------|\n|                  | *Undergraduate* |                     |        |\n| Cedar University | 110             | 103                 | +7     |\n| Oak Institute    | 202             | 210                 | -8     |\n|                  | *Graduate*      |                     |        |\n| Cedar University | 24              | 20                  | +4     |\n| Elm College      | 43              | 53                  | -10    |\n| Total            | 998             | 908                 | 90     |"
+      },
+      "style_info": null,
+      "token_count": 157,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "4eaae8a3-6261-5874-83bf-b2e3bae69272",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "5.7",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 20,
+      "content": {
+        "text": "*Source:* Fictitious data, for illustration purposes only"
+      },
+      "style_info": null,
+      "token_count": 14,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "47f4021f-080d-5fab-9194-5c75ce8e87ae",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "5.8",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 21,
+      "content": {
+        "text": "Next, we have something a little more complex, a nested table, i.e. a\ntable inside another table. Additionally, the inner table has some of\nits cells merged. The table is displayed horizontally centered."
+      },
+      "style_info": null,
+      "token_count": 50,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "e75f2349-8fb5-5fff-bc32-095422d85d9b",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "5.9",
+          "depth": 2,
+          "breadcrumbs": [
+            "Tables"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 22,
+      "content": {
+        "text": "We end with a fancy calendar, note how much of the original formatting\nis preserved. Note that this table will only display correctly on\nrelatively wide screens. In general, very wide tables or tables whose\ncells have fixed width requirements don’t fare well in ebooks."
+      },
+      "style_info": null,
+      "token_count": 67,
+      "parent": "34132214-1e4d-5a32-8481-11fc9d2c6a76",
+      "children": []
+    },
+    {
+      "id": "afa86083-24a9-55ed-9bf6-909bc29ac44d",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "6",
+          "depth": 1,
+          "breadcrumbs": [
+            "Structural Elements"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 23,
+      "content": {
+        "text": "Structural Elements"
+      },
+      "style_info": null,
+      "token_count": 4,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": [
+        "5968b220-8222-5d53-b1e8-05237942f7ce",
+        "ff7c246a-e32b-542b-8084-551d99e193e2",
+        "528500d5-dccf-52c5-82d0-db5ba7e34602",
+        "ad99285b-bb17-5b16-b7ba-8ec73dd4aaed",
+        "a7a90df2-29eb-5bd9-a122-92de3b0c001c"
+      ]
+    },
+    {
+      "id": "5968b220-8222-5d53-b1e8-05237942f7ce",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.1",
+          "depth": 2,
+          "breadcrumbs": [
+            "Structural Elements"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 24,
+      "content": {
+        "text": "Miscellaneous structural elements you can add to your document, like\nfootnotes, endnotes, dropcaps and the like."
+      },
+      "style_info": null,
+      "token_count": 28,
+      "parent": "afa86083-24a9-55ed-9bf6-909bc29ac44d",
+      "children": []
+    },
+    {
+      "id": "ff7c246a-e32b-542b-8084-551d99e193e2",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "6.2",
+          "depth": 2,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Footnotes & Endnotes"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 25,
+      "content": {
+        "text": "Footnotes & Endnotes"
+      },
+      "style_info": null,
+      "token_count": 5,
+      "parent": "afa86083-24a9-55ed-9bf6-909bc29ac44d",
+      "children": [
+        "66e29083-b2d4-501a-b3eb-6a611efe4663"
+      ]
+    },
+    {
+      "id": "66e29083-b2d4-501a-b3eb-6a611efe4663",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.2.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Footnotes & Endnotes"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 26,
+      "content": {
+        "text": "Footnotes[^1] and endnotes[^2] are automatically recognized and both are\nconverted to endnotes, with backlinks for maximum ease of use in ebook\ndevices."
+      },
+      "style_info": null,
+      "token_count": 38,
+      "parent": "ff7c246a-e32b-542b-8084-551d99e193e2",
+      "children": []
+    },
+    {
+      "id": "528500d5-dccf-52c5-82d0-db5ba7e34602",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "6.3",
+          "depth": 2,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Dropcaps"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 27,
+      "content": {
+        "text": "Dropcaps"
+      },
+      "style_info": null,
+      "token_count": 2,
+      "parent": "afa86083-24a9-55ed-9bf6-909bc29ac44d",
+      "children": [
+        "f87f2c61-0ef9-531c-a5b8-8fe77ce0d08e"
+      ]
+    },
+    {
+      "id": "f87f2c61-0ef9-531c-a5b8-8fe77ce0d08e",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.3.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Dropcaps"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 28,
+      "content": {
+        "text": "Drop caps are used to emphasize the leading paragraph at the start of a\nsection. In Word it is possible to specify how many lines of text a\ndrop-cap should use. Because of limitations in ebook technology, this is\nnot possible when converting. Instead, the converted drop cap will use\nfont size and line height to simulate the effect as well as possible.\nWhile not as good as the original, the result is usually tolerable. This\nparagraph has a “D” dropcap set to occupy three lines of text with a\nfont size of 58.5 pts. Depending on the screen width and capabilities of\nthe device you view the book on, this dropcap can look anything from\nperfect to ugly."
+      },
+      "style_info": null,
+      "token_count": 164,
+      "parent": "528500d5-dccf-52c5-82d0-db5ba7e34602",
+      "children": []
+    },
+    {
+      "id": "ad99285b-bb17-5b16-b7ba-8ec73dd4aaed",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "6.4",
+          "depth": 2,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Links"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 29,
+      "content": {
+        "text": "Links"
+      },
+      "style_info": null,
+      "token_count": 1,
+      "parent": "afa86083-24a9-55ed-9bf6-909bc29ac44d",
+      "children": [
+        "5192ec3a-1e9c-53a4-b204-647ac57cfa40"
+      ]
+    },
+    {
+      "id": "5192ec3a-1e9c-53a4-b204-647ac57cfa40",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.4.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Links"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 30,
+      "content": {
+        "text": "Two kinds of links are possible, those that refer to an external website\nand those that refer to locations inside the document itself. Both are\nsupported by calibre. For example, here is a link pointing to the\n[calibre download page](http://calibre-ebook.com/download). Then we have\na link that points back to the section on [paragraph level\nformatting](#paragraph-level-formatting) in this document."
+      },
+      "style_info": null,
+      "token_count": 100,
+      "parent": "ad99285b-bb17-5b16-b7ba-8ec73dd4aaed",
+      "children": []
+    },
+    {
+      "id": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "6.5",
+          "depth": 2,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 31,
+      "content": {
+        "text": "Table of Contents"
+      },
+      "style_info": null,
+      "token_count": 4,
+      "parent": "afa86083-24a9-55ed-9bf6-909bc29ac44d",
+      "children": [
+        "cff091e2-7cdd-504b-92be-d5bfbb11786b",
+        "86fa10d4-53e7-51a7-aa01-3c38050d2cc9",
+        "3976627b-05e5-5b7c-8d45-b442899a8ddc",
+        "21d7a919-50d1-5ff9-bbe4-ecaa916904c3",
+        "b5f9d197-2c0a-56d4-93d3-c40da19b66bb",
+        "4b37c2f9-d371-5216-b3b9-ea44b00c3712",
+        "4085c8bb-4edb-5e87-963b-854e889720a0",
+        "e92c10dc-77fe-5cb5-aee5-2d3a97dc7745",
+        "dbd58711-f6e4-59be-b2f1-1f8c4e24bd71",
+        "fff1c00c-5411-5a04-9737-5b3eb608e863",
+        "4f86a32f-36ae-5471-8874-5c0649b55d78",
+        "58068559-2ea3-514d-8d3a-201bd42554ae",
+        "954edb58-ba06-51af-81c5-6ee98f618c4a",
+        "9199d685-f2bb-5fbb-8a77-37a4e500dcff",
+        "61893104-5de6-5fa2-8cb0-4dd37a3b25c9",
+        "23d9769a-5fce-5a3a-a0d5-75ea2c4dc903",
+        "ca813fd3-4711-574e-be7f-aeb6ae43a8b9",
+        "d22b34a9-3dbd-53ee-b7b1-901a814120f2",
+        "11a3be75-77e9-5232-9b1e-e3faabcfa2d3",
+        "ac591a3a-4a52-5523-96d2-4fb50fbaa82f"
+      ]
+    },
+    {
+      "id": "cff091e2-7cdd-504b-92be-d5bfbb11786b",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 32,
+      "content": {
+        "text": "There are two approaches that calibre takes when generating a Table of\nContents. The first is if the Word document has a Table of Contents\nitself. Provided that the Table of Contents uses hyperlinks, calibre\nwill automatically use it. The levels of the Table of Contents are\nidentified by their left indent, so if you want the ebook to have a\nmulti-level Table of Contents, make sure you create a properly indented\nTable of Contents in Word."
+      },
+      "style_info": null,
+      "token_count": 110,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "86fa10d4-53e7-51a7-aa01-3c38050d2cc9",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.2",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 33,
+      "content": {
+        "text": "If no Table of Contents is found in the document, then a table of\ncontents is automatically generated from the headings in the document. A\nheading is identified as something that has the Heading 1 or Heading 2,\netc. style applied to it. These headings are turned into a Table of\nContents with Heading 1 being the topmost level, Heading 2 the second\nlevel and so on."
+      },
+      "style_info": null,
+      "token_count": 91,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "3976627b-05e5-5b7c-8d45-b442899a8ddc",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.3",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 34,
+      "content": {
+        "text": "You can see the Table of Contents created by calibre by clicking the\nTable of Contents button in whatever viewer you are using to view the\nconverted ebook."
+      },
+      "style_info": null,
+      "token_count": 38,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "21d7a919-50d1-5ff9-bbe4-ecaa916904c3",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.4",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 35,
+      "content": {
+        "text": "[Demonstration of DOCX support in calibre [1](#OLE_LINK1)](#OLE_LINK1)"
+      },
+      "style_info": null,
+      "token_count": 17,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "b5f9d197-2c0a-56d4-93d3-c40da19b66bb",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.5",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 36,
+      "content": {
+        "text": "[Text Formatting [2](#text-formatting)](#text-formatting)"
+      },
+      "style_info": null,
+      "token_count": 14,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "4b37c2f9-d371-5216-b3b9-ea44b00c3712",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.6",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 37,
+      "content": {
+        "text": "[Inline formatting [2](#inline-formatting)](#inline-formatting)"
+      },
+      "style_info": null,
+      "token_count": 15,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "4085c8bb-4edb-5e87-963b-854e889720a0",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.7",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 38,
+      "content": {
+        "text": "[Fun with fonts [2](#fun-with-fonts)](#fun-with-fonts)"
+      },
+      "style_info": null,
+      "token_count": 13,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "e92c10dc-77fe-5cb5-aee5-2d3a97dc7745",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.8",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 39,
+      "content": {
+        "text": "[Paragraph level formatting\n[2](#paragraph-level-formatting)](#paragraph-level-formatting)"
+      },
+      "style_info": null,
+      "token_count": 22,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "dbd58711-f6e4-59be-b2f1-1f8c4e24bd71",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.9",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 40,
+      "content": {
+        "text": "[Tables [3](#tables)](#tables)"
+      },
+      "style_info": null,
+      "token_count": 7,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "fff1c00c-5411-5a04-9737-5b3eb608e863",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.10",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 41,
+      "content": {
+        "text": "[Structural Elements [5](#structural-elements)](#structural-elements)"
+      },
+      "style_info": null,
+      "token_count": 17,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "4f86a32f-36ae-5471-8874-5c0649b55d78",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.11",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 42,
+      "content": {
+        "text": "[Footnotes & Endnotes [5](#footnotes-endnotes)](#footnotes-endnotes)"
+      },
+      "style_info": null,
+      "token_count": 17,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "58068559-2ea3-514d-8d3a-201bd42554ae",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.12",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 43,
+      "content": {
+        "text": "[Dropcaps [5](#dropcaps)](#dropcaps)"
+      },
+      "style_info": null,
+      "token_count": 9,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "954edb58-ba06-51af-81c5-6ee98f618c4a",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.13",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 44,
+      "content": {
+        "text": "[Links [5](#links)](#links)"
+      },
+      "style_info": null,
+      "token_count": 6,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "9199d685-f2bb-5fbb-8a77-37a4e500dcff",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.14",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 45,
+      "content": {
+        "text": "[Table of Contents [5](#table-of-contents)](#table-of-contents)"
+      },
+      "style_info": null,
+      "token_count": 15,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "61893104-5de6-5fa2-8cb0-4dd37a3b25c9",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.15",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 46,
+      "content": {
+        "text": "[Images [7](#images)](#images)"
+      },
+      "style_info": null,
+      "token_count": 7,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "23d9769a-5fce-5a3a-a0d5-75ea2c4dc903",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.16",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 47,
+      "content": {
+        "text": "[Lists [8](#lists)](#lists)"
+      },
+      "style_info": null,
+      "token_count": 6,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "ca813fd3-4711-574e-be7f-aeb6ae43a8b9",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.17",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 48,
+      "content": {
+        "text": "[Bulleted List [8](#bulleted-list)](#bulleted-list)"
+      },
+      "style_info": null,
+      "token_count": 12,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "d22b34a9-3dbd-53ee-b7b1-901a814120f2",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.18",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 49,
+      "content": {
+        "text": "[Numbered List [8](#numbered-list)](#numbered-list)"
+      },
+      "style_info": null,
+      "token_count": 12,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "11a3be75-77e9-5232-9b1e-e3faabcfa2d3",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.19",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 50,
+      "content": {
+        "text": "[Multi-level Lists [8](#multi-level-lists)](#multi-level-lists)"
+      },
+      "style_info": null,
+      "token_count": 15,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "ac591a3a-4a52-5523-96d2-4fb50fbaa82f",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "6.5.20",
+          "depth": 3,
+          "breadcrumbs": [
+            "Structural Elements",
+            "Table of Contents"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 51,
+      "content": {
+        "text": "[Continued Lists [8](#continued-lists)](#continued-lists)"
+      },
+      "style_info": null,
+      "token_count": 14,
+      "parent": "a7a90df2-29eb-5bd9-a122-92de3b0c001c",
+      "children": []
+    },
+    {
+      "id": "2c06f8b0-ca62-597a-b870-cd1932bf6904",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "7",
+          "depth": 1,
+          "breadcrumbs": [
+            "Images"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 52,
+      "content": {
+        "text": "Images"
+      },
+      "style_info": null,
+      "token_count": 1,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": [
+        "9f5d489d-9f2d-520e-bbac-582f3d6c6d2d",
+        "dab3afb1-4c1a-5443-97c6-6e1e4feef708",
+        "9635619e-0f4b-5990-a824-090376137003",
+        "49f7aa04-1b54-5c2e-8fbe-11d7db5fe07a"
+      ]
+    },
+    {
+      "id": "9f5d489d-9f2d-520e-bbac-582f3d6c6d2d",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "7.1",
+          "depth": 2,
+          "breadcrumbs": [
+            "Images"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 53,
+      "content": {
+        "text": "Images can be of three main types. Inline images are images that are\npart of the normal text flow, like this image of a green dot\n. Inline images do not cause breaks in the text\nand are usually small in\nsize. The next category of image is a floating image, one\nthat “floats “ on the page and is surrounded by text. Word supports more\ntypes of floating images than are possible with current ebook\ntechnology, so the conversion maps floating images to simple left and\nright floats, as you can see with the left and right arrow images on the\nsides of this paragraph."
+      },
+      "style_info": null,
+      "token_count": 141,
+      "parent": "2c06f8b0-ca62-597a-b870-cd1932bf6904",
+      "children": []
+    },
+    {
+      "id": "dab3afb1-4c1a-5443-97c6-6e1e4feef708",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "7.2",
+          "depth": 2,
+          "breadcrumbs": [
+            "Images"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 54,
+      "content": {
+        "text": "The final type of image is a “block” image, one that becomes a paragraph\non its own and has no text on either side. Below is a centered green\ndot."
+      },
+      "style_info": null,
+      "token_count": 37,
+      "parent": "2c06f8b0-ca62-597a-b870-cd1932bf6904",
+      "children": []
+    },
+    {
+      "id": "9635619e-0f4b-5990-a824-090376137003",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "7.3",
+          "depth": 2,
+          "breadcrumbs": [
+            "Images"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 55,
+      "content": {
+        "text": "Centered images like this are useful for large\npictures that should be a focus of attention."
+      },
+      "style_info": null,
+      "token_count": 23,
+      "parent": "2c06f8b0-ca62-597a-b870-cd1932bf6904",
+      "children": []
+    },
+    {
+      "id": "49f7aa04-1b54-5c2e-8fbe-11d7db5fe07a",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "7.4",
+          "depth": 2,
+          "breadcrumbs": [
+            "Images"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 56,
+      "content": {
+        "text": "Generally, it is not possible to translate the exact positioning of\nimages from a Word document to an ebook. That is because in Word, image\npositioning is specified in absolute units from the page boundaries.\nThere is no analogous technology in ebooks, so the conversion will\nusually end up placing the image either centered or floating close to\nthe point in the text where it was *inserted*, not necessarily where it\nappears on the page in Word."
+      },
+      "style_info": null,
+      "token_count": 111,
+      "parent": "2c06f8b0-ca62-597a-b870-cd1932bf6904",
+      "children": []
+    },
+    {
+      "id": "a0dce2f1-f627-5d13-a251-66228e08c7bc",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "8",
+          "depth": 1,
+          "breadcrumbs": [
+            "Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 57,
+      "content": {
+        "text": "Lists"
+      },
+      "style_info": null,
+      "token_count": 1,
+      "parent": "8949252a-43be-5ce8-b78d-dac4553906aa",
+      "children": [
+        "e0c889e3-024f-5c37-ac78-9de2960d1f36",
+        "1ad1745e-0eaf-5444-9b21-71f325bcf963",
+        "417e9a7f-9c95-55eb-90e9-b0374dea2bf5",
+        "f08a1e4f-731e-520c-a08e-51c2cde267e1",
+        "bdba2cfb-7e3f-5c49-a514-3f1b0a9d163a"
+      ]
+    },
+    {
+      "id": "e0c889e3-024f-5c37-ac78-9de2960d1f36",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "8.1",
+          "depth": 2,
+          "breadcrumbs": [
+            "Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 58,
+      "content": {
+        "text": "All types of lists are supported by the conversion, with the exception\nof lists that use fancy bullets, these get converted to regular bullets."
+      },
+      "style_info": null,
+      "token_count": 35,
+      "parent": "a0dce2f1-f627-5d13-a251-66228e08c7bc",
+      "children": []
+    },
+    {
+      "id": "1ad1745e-0eaf-5444-9b21-71f325bcf963",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "8.2",
+          "depth": 2,
+          "breadcrumbs": [
+            "Lists",
+            "Bulleted List"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 59,
+      "content": {
+        "text": "Bulleted List"
+      },
+      "style_info": null,
+      "token_count": 3,
+      "parent": "a0dce2f1-f627-5d13-a251-66228e08c7bc",
+      "children": [
+        "fe4562b7-46e0-58ba-b4d2-146a9a5ae88a"
+      ]
+    },
+    {
+      "id": "fe4562b7-46e0-58ba-b4d2-146a9a5ae88a",
+      "node_type": "List",
+      "location": {
+        "semantic": {
+          "path": "8.2.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Bulleted List"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 60,
+      "content": {
+        "text": "- One\n\n- Two"
+      },
+      "style_info": null,
+      "token_count": 3,
+      "parent": "1ad1745e-0eaf-5444-9b21-71f325bcf963",
+      "children": []
+    },
+    {
+      "id": "417e9a7f-9c95-55eb-90e9-b0374dea2bf5",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "8.3",
+          "depth": 2,
+          "breadcrumbs": [
+            "Lists",
+            "Numbered List"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 61,
+      "content": {
+        "text": "Numbered List"
+      },
+      "style_info": null,
+      "token_count": 3,
+      "parent": "a0dce2f1-f627-5d13-a251-66228e08c7bc",
+      "children": [
+        "5bbb0203-484e-5d6b-aad6-b9afe1505bf1"
+      ]
+    },
+    {
+      "id": "5bbb0203-484e-5d6b-aad6-b9afe1505bf1",
+      "node_type": "List",
+      "location": {
+        "semantic": {
+          "path": "8.3.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Numbered List"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 62,
+      "content": {
+        "text": "1.  One, with a very long line to demonstrate that the hanging indent\n    for the list is working correctly\n\n2.  Two"
+      },
+      "style_info": null,
+      "token_count": 29,
+      "parent": "417e9a7f-9c95-55eb-90e9-b0374dea2bf5",
+      "children": []
+    },
+    {
+      "id": "f08a1e4f-731e-520c-a08e-51c2cde267e1",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "8.4",
+          "depth": 2,
+          "breadcrumbs": [
+            "Lists",
+            "Multi-level Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 63,
+      "content": {
+        "text": "Multi-level Lists"
+      },
+      "style_info": null,
+      "token_count": 4,
+      "parent": "a0dce2f1-f627-5d13-a251-66228e08c7bc",
+      "children": [
+        "6e6c4031-ed15-595f-bbcb-3c47a1cafb4b",
+        "f5debedd-5479-59da-b98c-55812f341eac",
+        "e7c3b91b-0a0a-5774-8b1d-7db16281ed36"
+      ]
+    },
+    {
+      "id": "6e6c4031-ed15-595f-bbcb-3c47a1cafb4b",
+      "node_type": "List",
+      "location": {
+        "semantic": {
+          "path": "8.4.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Multi-level Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 64,
+      "content": {
+        "text": "1.  One\n\n    1.  Two\n\n        1.  Three\n\n        2.  Four with a very long line to demonstrate that the hanging\n            indent for the list is working correctly.\n\n        3.  Five\n\n2.  Six"
+      },
+      "style_info": null,
+      "token_count": 48,
+      "parent": "f08a1e4f-731e-520c-a08e-51c2cde267e1",
+      "children": []
+    },
+    {
+      "id": "f5debedd-5479-59da-b98c-55812f341eac",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "8.4.2",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Multi-level Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 65,
+      "content": {
+        "text": "A Multi-level list with bullets:"
+      },
+      "style_info": null,
+      "token_count": 8,
+      "parent": "f08a1e4f-731e-520c-a08e-51c2cde267e1",
+      "children": []
+    },
+    {
+      "id": "e7c3b91b-0a0a-5774-8b1d-7db16281ed36",
+      "node_type": "List",
+      "location": {
+        "semantic": {
+          "path": "8.4.3",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Multi-level Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 66,
+      "content": {
+        "text": "- One\n\n  - Two\n\n    - This bullet uses an image as the bullet item\n\n      - Four\n\n- Five"
+      },
+      "style_info": null,
+      "token_count": 22,
+      "parent": "f08a1e4f-731e-520c-a08e-51c2cde267e1",
+      "children": []
+    },
+    {
+      "id": "bdba2cfb-7e3f-5c49-a514-3f1b0a9d163a",
+      "node_type": "Section",
+      "location": {
+        "semantic": {
+          "path": "8.5",
+          "depth": 2,
+          "breadcrumbs": [
+            "Lists",
+            "Continued Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 67,
+      "content": {
+        "text": "Continued Lists"
+      },
+      "style_info": null,
+      "token_count": 3,
+      "parent": "a0dce2f1-f627-5d13-a251-66228e08c7bc",
+      "children": [
+        "6cf14f63-06f9-51a3-bc51-120a80fc305a",
+        "de6c5334-9812-5318-83f1-d6ebbf35c6a7",
+        "ce654085-b70f-54eb-b751-7f4ef8f6d6c7",
+        "63b21e15-77c2-5335-b7a4-74062ba2ebe7",
+        "9864ba83-d7a1-54a3-9bc6-87b233ad5605"
+      ]
+    },
+    {
+      "id": "6cf14f63-06f9-51a3-bc51-120a80fc305a",
+      "node_type": "List",
+      "location": {
+        "semantic": {
+          "path": "8.5.1",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Continued Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 68,
+      "content": {
+        "text": "1.  One\n\n2.  Two"
+      },
+      "style_info": null,
+      "token_count": 4,
+      "parent": "bdba2cfb-7e3f-5c49-a514-3f1b0a9d163a",
+      "children": []
+    },
+    {
+      "id": "de6c5334-9812-5318-83f1-d6ebbf35c6a7",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "8.5.2",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Continued Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 69,
+      "content": {
+        "text": "An interruption in our regularly scheduled listing, for this essential\nand very relevant public service announcement."
+      },
+      "style_info": null,
+      "token_count": 29,
+      "parent": "bdba2cfb-7e3f-5c49-a514-3f1b0a9d163a",
+      "children": []
+    },
+    {
+      "id": "ce654085-b70f-54eb-b751-7f4ef8f6d6c7",
+      "node_type": "List",
+      "location": {
+        "semantic": {
+          "path": "8.5.3",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Continued Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 70,
+      "content": {
+        "text": "3.  We now resume our normal programming\n\n4.  Four"
+      },
+      "style_info": null,
+      "token_count": 12,
+      "parent": "bdba2cfb-7e3f-5c49-a514-3f1b0a9d163a",
+      "children": []
+    },
+    {
+      "id": "63b21e15-77c2-5335-b7a4-74062ba2ebe7",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "8.5.4",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Continued Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 71,
+      "content": {
+        "text": "[^1]: In paged media, footnotes are usually displayed at the bottom of\nthe text. However, in ebooks, a better paradigm is to make them\nclickable endnotes that the user can browse at her pleasure. This\nconversion is handled automatically by calibre."
+      },
+      "style_info": null,
+      "token_count": 62,
+      "parent": "bdba2cfb-7e3f-5c49-a514-3f1b0a9d163a",
+      "children": []
+    },
+    {
+      "id": "9864ba83-d7a1-54a3-9bc6-87b233ad5605",
+      "node_type": "Paragraph",
+      "location": {
+        "semantic": {
+          "path": "8.5.5",
+          "depth": 3,
+          "breadcrumbs": [
+            "Lists",
+            "Continued Lists"
+          ]
+        },
+        "physical": null
+      },
+      "text_order": 72,
+      "content": {
+        "text": "[^2]: Endnotes are typically used for longer notes, they remain endnotes\nwhen converted into ebook form, except that they have an additional\nbacklink to make it easy to return to the current position after\nreading the note."
+      },
+      "style_info": null,
+      "token_count": 55,
+      "parent": "bdba2cfb-7e3f-5c49-a514-3f1b0a9d163a",
+      "children": []
+    }
+  ],
+  "document_info": {
+    "root_id": "8949252a-43be-5ce8-b78d-dac4553906aa",
+    "kind": "document",
+    "document_metadata": {
+      "title": null,
+      "author": null,
+      "description": null,
+      "language": null,
+      "created": null
+    },
+    "flow_type": "Free"
+  },
+  "structural_profile": {
+    "document_type": "Generic",
+    "total_nodes": 74,
+    "total_tokens": 2653,
+    "token_distribution": {
+      "by_node_type": {
+        "Document": {
+          "bins": [
+            {
+              "range_start": 0,
+              "range_end": 1,
+              "count": 1,
+              "token_sum": 0
+            }
+          ],
+          "total_count": 1,
+          "total_tokens": 0,
+          "mean": 0.0,
+          "median": 0.0,
+          "mode": 0,
+          "variance": 0.0
+        },
+        "List": {
+          "bins": [
+            {
+              "range_start": 3,
+              "range_end": 8,
+              "count": 2,
+              "token_sum": 7
+            },
+            {
+              "range_start": 8,
+              "range_end": 13,
+              "count": 1,
+              "token_sum": 12
+            },
+            {
+              "range_start": 13,
+              "range_end": 18,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 18,
+              "range_end": 23,
+              "count": 1,
+              "token_sum": 22
+            },
+            {
+              "range_start": 23,
+              "range_end": 28,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 28,
+              "range_end": 33,
+              "count": 1,
+              "token_sum": 29
+            },
+            {
+              "range_start": 33,
+              "range_end": 38,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 38,
+              "range_end": 43,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 43,
+              "range_end": 48,
+              "count": 0,
+              "token_sum": 0
+            }
+          ],
+          "total_count": 6,
+          "total_tokens": 118,
+          "mean": 19.666666,
+          "median": 17.0,
+          "mode": 3,
+          "variance": 295.46667
+        },
+        "Paragraph": {
+          "bins": [
+            {
+              "range_start": 6,
+              "range_end": 22,
+              "count": 18,
+              "token_sum": 218
+            },
+            {
+              "range_start": 22,
+              "range_end": 38,
+              "count": 9,
+              "token_sum": 266
+            },
+            {
+              "range_start": 38,
+              "range_end": 54,
+              "count": 5,
+              "token_sum": 209
+            },
+            {
+              "range_start": 54,
+              "range_end": 70,
+              "count": 6,
+              "token_sum": 379
+            },
+            {
+              "range_start": 70,
+              "range_end": 86,
+              "count": 2,
+              "token_sum": 143
+            },
+            {
+              "range_start": 86,
+              "range_end": 102,
+              "count": 3,
+              "token_sum": 292
+            },
+            {
+              "range_start": 102,
+              "range_end": 118,
+              "count": 2,
+              "token_sum": 221
+            },
+            {
+              "range_start": 118,
+              "range_end": 134,
+              "count": 1,
+              "token_sum": 130
+            },
+            {
+              "range_start": 134,
+              "range_end": 150,
+              "count": 1,
+              "token_sum": 141
+            },
+            {
+              "range_start": 150,
+              "range_end": 165,
+              "count": 1,
+              "token_sum": 164
+            }
+          ],
+          "total_count": 48,
+          "total_tokens": 2163,
+          "mean": 45.0625,
+          "median": 34.5,
+          "mode": 6,
+          "variance": 1560.0173
+        },
+        "Section": {
+          "bins": [
+            {
+              "range_start": 1,
+              "range_end": 2,
+              "count": 4,
+              "token_sum": 4
+            },
+            {
+              "range_start": 2,
+              "range_end": 3,
+              "count": 1,
+              "token_sum": 2
+            },
+            {
+              "range_start": 3,
+              "range_end": 4,
+              "count": 5,
+              "token_sum": 15
+            },
+            {
+              "range_start": 4,
+              "range_end": 5,
+              "count": 4,
+              "token_sum": 16
+            },
+            {
+              "range_start": 5,
+              "range_end": 6,
+              "count": 1,
+              "token_sum": 5
+            },
+            {
+              "range_start": 6,
+              "range_end": 7,
+              "count": 0,
+              "token_sum": 0
+            }
+          ],
+          "total_count": 16,
+          "total_tokens": 49,
+          "mean": 3.0625,
+          "median": 3.0,
+          "mode": 3,
+          "variance": 2.7291667
+        },
+        "Table": {
+          "bins": [
+            {
+              "range_start": 47,
+              "range_end": 58,
+              "count": 1,
+              "token_sum": 47
+            },
+            {
+              "range_start": 58,
+              "range_end": 69,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 69,
+              "range_end": 80,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 80,
+              "range_end": 91,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 91,
+              "range_end": 102,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 102,
+              "range_end": 113,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 113,
+              "range_end": 124,
+              "count": 1,
+              "token_sum": 119
+            },
+            {
+              "range_start": 124,
+              "range_end": 135,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 135,
+              "range_end": 146,
+              "count": 0,
+              "token_sum": 0
+            },
+            {
+              "range_start": 146,
+              "range_end": 157,
+              "count": 0,
+              "token_sum": 0
+            }
+          ],
+          "total_count": 3,
+          "total_tokens": 323,
+          "mean": 107.666664,
+          "median": 119.0,
+          "mode": 113,
+          "variance": 3121.3335
+        }
+      },
+      "overall": {
+        "bins": [
+          {
+            "range_start": 0,
+            "range_end": 17,
+            "count": 35,
+            "token_sum": 235
+          },
+          {
+            "range_start": 17,
+            "range_end": 34,
+            "count": 10,
+            "token_sum": 226
+          },
+          {
+            "range_start": 34,
+            "range_end": 51,
+            "count": 11,
+            "token_sum": 446
+          },
+          {
+            "range_start": 51,
+            "range_end": 68,
+            "count": 5,
+            "token_sum": 310
+          },
+          {
+            "range_start": 68,
+            "range_end": 85,
+            "count": 3,
+            "token_sum": 212
+          },
+          {
+            "range_start": 85,
+            "range_end": 102,
+            "count": 3,
+            "token_sum": 292
+          },
+          {
+            "range_start": 102,
+            "range_end": 119,
+            "count": 2,
+            "token_sum": 221
+          },
+          {
+            "range_start": 119,
+            "range_end": 136,
+            "count": 2,
+            "token_sum": 249
+          },
+          {
+            "range_start": 136,
+            "range_end": 153,
+            "count": 1,
+            "token_sum": 141
+          },
+          {
+            "range_start": 153,
+            "range_end": 165,
+            "count": 2,
+            "token_sum": 321
+          }
+        ],
+        "total_count": 74,
+        "total_tokens": 2653,
+        "mean": 35.851353,
+        "median": 17.0,
+        "mode": 0,
+        "variance": 1653.2244
+      }
+    },
+    "node_type_distribution": {
+      "counts": {
+        "Document": 1,
+        "List": 6,
+        "Paragraph": 48,
+        "Section": 16,
+        "Table": 3
+      },
+      "percentages": {
+        "Document": 1.3513514,
+        "List": 8.108108,
+        "Paragraph": 64.86486,
+        "Section": 21.621622,
+        "Table": 4.054054
+      }
+    },
+    "depth_distribution": {
+      "max_depth": 3,
+      "depth_counts": {
+        "0": 1,
+        "1": 8,
+        "2": 26,
+        "3": 39
+      },
+      "avg_depth": 2.391892
+    }
+  }
+}

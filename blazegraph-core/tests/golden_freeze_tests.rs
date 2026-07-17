@@ -35,13 +35,16 @@
 //! freezes only bgraph.md (bgraph.json is CR-88).
 
 use blazegraph_io_core::config::ParsingConfig;
+use blazegraph_io_core::graphs::serialization::canonical::graph_sha256;
 use blazegraph_io_core::graphs::serialization::markdown::emit_markdown;
+use blazegraph_io_core::graphs::serialization::version::FormatVersion;
 use blazegraph_io_core::preprocessors::docx::parse_docx;
 use blazegraph_io_core::preprocessors::md::{parse_markdown, ParseIdentity, ParseOptions};
 use blazegraph_io_core::preprocessors::Preprocessor;
 use blazegraph_io_core::processor::DocumentProcessor;
 use blazegraph_io_core::storage::{CacheDefaults, FileStorage, FreshFrom};
-use blazegraph_io_core::types::PreprocessorOutput;
+use blazegraph_io_core::types::{DocumentGraph, ParseProvenance, PreprocessorOutput, SortedDocumentGraph};
+use chrono::{DateTime, Utc};
 use std::path::{Path, PathBuf};
 
 // =========================================================================
@@ -118,7 +121,7 @@ fn golden_md_path() -> PathBuf {
 ///
 /// `CacheDefaults` with every write disabled keeps the run read-only: the
 /// committed cache is never mutated and no stray tiers are written.
-fn regenerate_bgraph_md() -> String {
+fn regenerate_attention() -> (DocumentGraph, ParseProvenance) {
     let golden = golden_dir();
     let pdf = golden.join("attention.pdf");
     let config_path = golden.join("config.yaml");
@@ -167,6 +170,12 @@ fn regenerate_bgraph_md() -> String {
     // graph holds. (The provisional Block D workaround — freezing WITH
     // `--include-style-info` because the default emit didn't self-verify —
     // is exactly the bug CR-86 fixes; it is gone.)
+    (graph, provenance)
+}
+
+/// The frozen md is `emit_markdown` over the same C2-replayed graph.
+fn regenerate_bgraph_md() -> String {
+    let (graph, provenance) = regenerate_attention();
     emit_markdown(&graph, &provenance)
 }
 
@@ -371,10 +380,11 @@ fn light_golden_md_path(ch: LightChannel) -> PathBuf {
     light_dir(ch).join("document.bgraph.md")
 }
 
-/// Parse the committed source through the core lib (JVM-free) and emit
-/// bgraph.md — the same parse + emit the CLI/API run, reproducing the CLI's
-/// filename convention (docx: basename; md: empty).
-fn regenerate_light_bgraph_md(ch: LightChannel) -> String {
+/// Parse the committed source through the core lib (JVM-free) — the same
+/// parse the CLI/API run. Returns the graph + provenance so both the md and
+/// json arms freeze from the identical in-memory graph. CR-92: the `source`
+/// block is content-only (no filename), identical across the md/docx channels.
+fn regenerate_light(ch: LightChannel) -> (DocumentGraph, ParseProvenance) {
     let source = light_dir(ch).join(ch.source_name());
     match ch {
         LightChannel::Md => {
@@ -382,18 +392,22 @@ fn regenerate_light_bgraph_md(ch: LightChannel) -> String {
                 .unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
             let result =
                 parse_markdown(&content, ParseOptions::default()).expect("demo-md source parses");
-            emit_markdown(&result.graph, &result.provenance)
+            (result.graph, result.provenance)
         }
         LightChannel::Docx => {
             let bytes =
                 std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
             let result =
                 parse_docx(&bytes, ParseOptions::default()).expect("demo-docx source parses");
-            // CR-92: no filename stamp — the source block is content-only now,
-            // identical shape across the md and docx channels.
-            emit_markdown(&result.graph, &result.provenance)
+            (result.graph, result.provenance)
         }
     }
+}
+
+/// The frozen md is `emit_markdown` over the freshly-parsed light graph.
+fn regenerate_light_bgraph_md(ch: LightChannel) -> String {
+    let (graph, provenance) = regenerate_light(ch);
+    emit_markdown(&graph, &provenance)
 }
 
 /// Test A analog — reproduction (freeze): byte-identity against the frozen md,
@@ -489,4 +503,291 @@ fn golden_freeze_demo_docx_reproduces_bgraph_md() {
 #[test]
 fn golden_freeze_demo_docx_roundtrips_verified() {
     check_light_roundtrips(LightChannel::Docx);
+}
+
+// =========================================================================
+// JSON wire — the customer-facing envelope (B6 / CR-85 item 7).
+//
+// bgraph.md is the human/git-friendly encoding; `graph.json`
+// (`SortedDocumentGraph`) is the machine wire — what the API serves and the
+// `pip install` SDK deserializes. It was frozen NOWHERE, so a json-shape drift
+// had no core tripwire. These arms freeze it too, and — crucially — tie it to
+// the md encoding so the two can't silently diverge. Per channel:
+//
+//   * **freeze** — byte-identity against a committed `document.bgraph.json`
+//     (bless-writable, un-ignored via `test_fixtures/**/*.json`). The one
+//     wall-clock field, `created_at`, is pinned to the epoch sentinel core
+//     already uses for "no real emission time" (`default_created_at`), so the
+//     bytes are deterministic. It is an envelope field (outside `graph_sha256`),
+//     so pinning it moves bytes, never identity.
+//   * **self-verify** — `verify_identity() == Verified`: the loaded json proves
+//     it is untampered from its own embedded hash (CR-88's library capability,
+//     now tested against the golden).
+//   * **sha-parity** — the json envelope `graph_sha256` equals the content-body
+//     hash the md encoding embeds for the same graph. This is the json↔md
+//     honesty check: the two serializations must agree on identity.
+//   * **round-trip** — serialize → `from_str` → `verify_identity()` still
+//     `Verified` (exercises the deserialize read path end to end).
+//   * **contract** — an explicit 1.0.0 wire contract (below): a breaking change
+//     fails a named assertion, an additive one does not.
+// =========================================================================
+
+/// The epoch-0 sentinel — the same "no real emission time" value core stamps
+/// via `default_created_at` (types.rs). Pinning `created_at` to it makes the
+/// frozen json byte-deterministic without lying about an emission time.
+fn epoch_sentinel() -> DateTime<Utc> {
+    DateTime::<Utc>::from_timestamp(0, 0).expect("epoch is always valid")
+}
+
+/// Emit the deterministic golden json for a graph: the exact
+/// `SortedDocumentGraph` the API serves and the SDK reads, with `created_at`
+/// pinned so the bytes are frozen-stable.
+fn emit_golden_json(graph: &DocumentGraph, provenance: &ParseProvenance) -> String {
+    let mut sorted = graph.to_sorted_graph(Some(provenance));
+    sorted.created_at = epoch_sentinel();
+    serde_json::to_string_pretty(&sorted).expect("SortedDocumentGraph serializes to json")
+}
+
+fn golden_json_path() -> PathBuf {
+    golden_dir().join("document.bgraph.json")
+}
+
+fn light_golden_json_path(ch: LightChannel) -> PathBuf {
+    light_dir(ch).join("document.bgraph.json")
+}
+
+/// The explicit 1.0.0 wire contract for `SortedDocumentGraph` — the value-level
+/// guarantees a consumer (API, SDK) may rely on, beyond what the Rust types
+/// already enforce on deserialize (field presence + enum domains). A *breaking*
+/// change (a dropped required field, a renamed field, a wrong version) returns
+/// `Err` with a named reason; an *additive* change (a new optional field) does
+/// NOT — serde drops unknowns on the way in, so this stays green. That gap is
+/// the breaking-vs-non-breaking boundary the golden byte-freeze alone can't draw.
+fn assert_schema_contract(g: &SortedDocumentGraph) -> Result<(), String> {
+    let expected = FormatVersion::CURRENT.schema_str();
+    if g.schema_version != expected {
+        return Err(format!(
+            "schema_version: expected {expected:?}, got {:?}",
+            g.schema_version
+        ));
+    }
+    if g.graph_sha256.len() != 64 || !g.graph_sha256.bytes().all(|b| b.is_ascii_hexdigit()) {
+        return Err(format!(
+            "graph_sha256 must be 64 hex chars, got {:?} ({} chars)",
+            g.graph_sha256,
+            g.graph_sha256.len()
+        ));
+    }
+    if g.nodes.is_empty() {
+        return Err("nodes must be non-empty".to_string());
+    }
+    let root_id = g.document_info.root_id;
+    if !g.nodes.iter().any(|n| n.id == root_id) {
+        return Err(format!(
+            "document_info.root_id {root_id} does not resolve to any node"
+        ));
+    }
+    for n in &g.nodes {
+        if n.node_type.is_empty() {
+            return Err(format!("node {} has an empty node_type", n.id));
+        }
+    }
+    match &g.parse_provenance {
+        None => return Err("parse_provenance must be present on an emitted graph".to_string()),
+        Some(p) => {
+            if p.source_format.is_empty() {
+                return Err("parse_provenance.source_format must be non-empty".to_string());
+            }
+            if p.source_sha256.len() != 64 {
+                return Err(format!(
+                    "parse_provenance.source_sha256 must be 64 hex chars, got {} chars",
+                    p.source_sha256.len()
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Freeze + verify one channel's json wire (see the section header).
+fn check_json_wire(graph: &DocumentGraph, provenance: &ParseProvenance, path: &Path, label: &str) {
+    let regenerated = emit_golden_json(graph, provenance);
+
+    if bless_enabled() {
+        std::fs::write(path, &regenerated).expect("write frozen golden json");
+        eprintln!(
+            "✅ BLESS_GOLDEN: re-froze {} ({} bytes)",
+            path.display(),
+            regenerated.len()
+        );
+    } else {
+        let frozen = std::fs::read_to_string(path).unwrap_or_else(|e| {
+            panic!(
+                "Missing frozen golden json at {}: {e}.\n\
+                 Generate it with:\n  \
+                 BLESS_GOLDEN=1 cargo test -p blazegraph-io-core --test golden_freeze_tests",
+                path.display()
+            )
+        });
+        if regenerated != frozen {
+            let max = regenerated.len().min(frozen.len());
+            let first_diff = (0..max)
+                .find(|&i| regenerated.as_bytes()[i] != frozen.as_bytes()[i])
+                .unwrap_or(max);
+            let start = first_diff.saturating_sub(80);
+            let end_r = (first_diff + 120).min(regenerated.len());
+            let end_f = (first_diff + 120).min(frozen.len());
+            panic!(
+                "Golden json wire mismatch ({label}): HEAD no longer reproduces the frozen \
+                 document.bgraph.json.\n\
+                 First divergence at byte {first_diff} (regenerated={} bytes, frozen={} bytes).\n\
+                 --- frozen window ---\n{}\n--- regenerated window ---\n{}\n\
+                 \nIf this legitimately moves the json wire (a schema change or version bump), \
+                 re-freeze:\n  \
+                 BLESS_GOLDEN=1 cargo test -p blazegraph-io-core --test golden_freeze_tests\n\
+                 and commit the updated document.bgraph.json. Otherwise investigate — the json \
+                 wire drifted from the frozen 1.0.0 shape.",
+                regenerated.len(),
+                frozen.len(),
+                &frozen[start..end_f],
+                &regenerated[start..end_r],
+            );
+        }
+    }
+
+    // Deserialize the emitted json (round-trip read path) and assert the wire
+    // properties on the reconstructed wrapper.
+    let sorted: SortedDocumentGraph = serde_json::from_str(&regenerated)
+        .unwrap_or_else(|e| panic!("golden json ({label}) must deserialize: {e}"));
+
+    assert!(
+        matches!(sorted.verify_identity(), ParseIdentity::Verified),
+        "golden json ({label}) must self-verify (envelope graph_sha256); got {:?}",
+        sorted.verify_identity()
+    );
+
+    let content_hash = graph_sha256(graph);
+    assert_eq!(
+        sorted.graph_sha256, content_hash,
+        "golden json ({label}) envelope graph_sha256 disagrees with the md/content-body hash — \
+         the json and md encodings have diverged on identity"
+    );
+
+    assert_schema_contract(&sorted)
+        .unwrap_or_else(|v| panic!("golden json ({label}) violates the 1.0.0 schema contract: {v}"));
+}
+
+#[test]
+fn golden_freeze_attention_json_wire() {
+    let (graph, provenance) = regenerate_attention();
+    check_json_wire(&graph, &provenance, &golden_json_path(), "attention");
+}
+
+#[test]
+fn golden_freeze_demo_md_json_wire() {
+    let (graph, provenance) = regenerate_light(LightChannel::Md);
+    check_json_wire(
+        &graph,
+        &provenance,
+        &light_golden_json_path(LightChannel::Md),
+        "demo-md",
+    );
+}
+
+#[test]
+fn golden_freeze_demo_docx_json_wire() {
+    let (graph, provenance) = regenerate_light(LightChannel::Docx);
+    check_json_wire(
+        &graph,
+        &provenance,
+        &light_golden_json_path(LightChannel::Docx),
+        "demo-docx",
+    );
+}
+
+// =========================================================================
+// Boundary proof — the design-flow's literal acceptance test: a deliberate
+// BREAKING schema change fails a fixture assertion; a NON-BREAKING (additive)
+// one does not. Encodes the accept/reject matrix so the contract's boundary is
+// *proven*, not merely asserted. Operates on the attention golden json.
+// =========================================================================
+
+/// The attention golden json as a mutable `serde_json::Value` to tamper with.
+fn attention_json_value() -> serde_json::Value {
+    let (graph, provenance) = regenerate_attention();
+    serde_json::from_str(&emit_golden_json(&graph, &provenance))
+        .expect("attention golden json parses to Value")
+}
+
+/// Deserialize a (possibly tampered) Value and run the contract, mirroring the
+/// consumer read path.
+fn contract_of(v: &serde_json::Value) -> Result<(), String> {
+    let sorted: SortedDocumentGraph =
+        serde_json::from_value(v.clone()).map_err(|e| format!("deserialize failed: {e}"))?;
+    assert_schema_contract(&sorted)
+}
+
+#[test]
+fn boundary_clean_golden_satisfies_contract() {
+    assert!(
+        contract_of(&attention_json_value()).is_ok(),
+        "the clean golden json must satisfy the contract"
+    );
+}
+
+#[test]
+fn boundary_breaking_version_drift_is_caught() {
+    let mut v = attention_json_value();
+    v["schema_version"] = serde_json::json!("2.0.0");
+    let err = contract_of(&v).expect_err("a schema_version bump must fail the contract");
+    assert!(
+        err.contains("schema_version"),
+        "the failure must name schema_version; got: {err}"
+    );
+}
+
+#[test]
+fn boundary_breaking_dropped_content_is_caught() {
+    // Required content removed — the nodes array emptied.
+    let mut v = attention_json_value();
+    v["nodes"] = serde_json::json!([]);
+    let err = contract_of(&v).expect_err("an emptied node set must fail the contract");
+    assert!(
+        err.contains("nodes"),
+        "the failure must name nodes; got: {err}"
+    );
+}
+
+#[test]
+fn boundary_breaking_enum_out_of_domain_is_rejected_by_the_type_layer() {
+    // An out-of-domain enum value is rejected at deserialize (the type layer) —
+    // a loud failure at the boundary, before the contract fn even runs.
+    let mut v = attention_json_value();
+    v["document_info"]["flow_type"] = serde_json::json!("Sideways");
+    let err = contract_of(&v).expect_err("an out-of-domain flow_type must be rejected");
+    assert!(
+        err.contains("deserialize failed"),
+        "the enum-domain break must fail at deserialize; got: {err}"
+    );
+}
+
+#[test]
+fn boundary_additive_optional_field_is_non_breaking() {
+    // A new, unknown envelope field is additive — serde drops it on read, so the
+    // wire stays backward-compatible. Both deserialize and the contract pass, and
+    // identity is untouched.
+    let mut v = attention_json_value();
+    v.as_object_mut()
+        .expect("envelope is a json object")
+        .insert("future_field_v2".to_string(), serde_json::json!({"anything": 123}));
+    assert!(
+        contract_of(&v).is_ok(),
+        "an additive optional field must remain non-breaking (contract stays green)"
+    );
+    let sorted: SortedDocumentGraph =
+        serde_json::from_value(v).expect("additive field still deserializes");
+    assert!(
+        matches!(sorted.verify_identity(), ParseIdentity::Verified),
+        "an additive envelope field must not affect identity"
+    );
 }

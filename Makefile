@@ -25,7 +25,7 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test sync-python-fixture test-python hooks bump-version version-check
+.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test golden-bless test sync-python-fixture test-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -106,6 +106,25 @@ golden-generate-all: golden-generate golden-generate-docs ## Re-bless the entire
 
 golden-test: ## Run the JVM-free golden freeze + roundtrip tests
 	cargo test -p blazegraph-io-core --test golden_freeze_tests
+
+## golden-bless: re-freeze the ENTIRE golden family in-place, JVM-free — every
+## channel's `document.bgraph.md` AND `document.bgraph.json`, plus the attention
+## `PRODUCED_BY` + materialized `config.yaml`. Replays the committed C2 cache
+## (attention) and re-parses the light sources (demo-md/docx); no Tika. Use
+## after an INTENDED output change (a version bump or a deliberate schema move),
+## then `make golden-test` must be green and the `git diff` must be only what you
+## expect. If the PIPELINE changed (not just the version), run a fresh Tika parse
+## first with `make golden-generate-all`, then this. See operations/release.md §3.
+golden-bless: ## Re-bless the golden family (md + json) in-place, JVM-free
+	BLESS_GOLDEN=1 cargo test -p blazegraph-io-core --test golden_freeze_tests
+
+## test: the self-contained Rust sweep — core + CLI, including the golden freeze
+## (bgraph.md + the json wire) and the schema-contract boundary proof. JVM-free:
+## the golden freeze replays the committed C2 cache. This is the submodule half
+## of the release runbook's Step 4; pair it with `make test-python` (the SDK
+## suite) here and `make test-downstream` (api + urd) in the parent Makefile.
+test: ## Run the full core + CLI test suite (incl golden freeze + json wire)
+	cargo test -p blazegraph-io-core -p blazegraph-io
 
 # --- Python SDK ----------------------------------------------------------
 PY_DIR      := blazegraph-python
