@@ -23,12 +23,17 @@ blazegraph-core/test_fixtures/**/*.pdf      linguist-generated=false linguist-ve
 # trust-critical text (bgraph.md / config.yaml / PRODUCED_BY) must never hide
 # behind an LFS pointer — the byte-honest golden freeze has to diff real bytes.
 #
-# When we stand up a bulk eval corpus, run `git lfs install` and uncomment,
-# scoped to a NEW corpus path so existing blobs are never touched:
-#
-#   eval-corpus/**/*.pdf   filter=lfs diff=lfs merge=lfs -text
-#   eval-corpus/**/*.json  filter=lfs diff=lfs merge=lfs -text
-#   eval-corpus/**/*.docx  filter=lfs diff=lfs merge=lfs -text
-#
-# (CR-89 item B / the LFS recommendation in the 2026-07-14 A/C/D session note.)
+# Bulk eval fixtures live under `eval-corpus/` (see its README for the policy).
+# git-lfs is installed + active (2026-07-17), so these rules are LIVE — new heavy
+# fixtures added under this NEW path land in LFS from birth. Existing blobs
+# elsewhere are never touched (retrofitting them would be a history rewrite, and
+# trust-critical golden text — bgraph.md / .json / config.yaml / PRODUCED_BY —
+# must stay byte-plain for the golden freeze). Scoped by extension so a stray
+# README/.md in the folder stays in plain git.
+eval-corpus/**/*.pdf   filter=lfs diff=lfs merge=lfs -text
+eval-corpus/**/*.json  filter=lfs diff=lfs merge=lfs -text
+eval-corpus/**/*.docx  filter=lfs diff=lfs merge=lfs -text
+
+# (CR-89 item B / the LFS recommendation in the 2026-07-14 A/C/D session note;
+#  folder reserved + rules activated 2026-07-17 alongside CR-93.)
 # ─────────────────────────────────────────────────────────────────────────

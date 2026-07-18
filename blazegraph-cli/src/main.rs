@@ -29,7 +29,7 @@ use blazegraph_io::JreManager;
 // `blazegraph strip ...` as the canonical forms.
 
 #[derive(Parser)]
-#[command(name = "blazegraph")]
+#[command(name = "blazegraph-io")]
 #[command(about = "A semantic document graph parser with configurable rules")]
 #[command(version)]
 struct Cli {

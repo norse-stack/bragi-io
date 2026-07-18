@@ -166,9 +166,10 @@ pub struct ParseProvenance {
 // const (last value `0.9.0`) is **retired**. The json wrapper's
 // `schema_version` and the bgraph.md doc-level `schema` field now carry
 // the **one** serialization-neutral schema/format version —
-// [`crate::BGRAPH_FORMAT_VERSION`] (`5.x`). The old json-only `0.x`
-// lineage (0.4.0 → 0.9.0) was a mislabel diverging from the honest,
-// consumer-visible `5.x` format history; it is preserved in git and in
+// [`crate::BGRAPH_FORMAT_VERSION`] (reset to `1.x` at Block C — currently
+// `1.0.0`). The old json-only `0.x` lineage (0.4.0 → 0.9.0) was a mislabel
+// diverging from the honest, consumer-visible format history (which ran
+// through `5.x` before the `1.0.0` reset); it is preserved in git and in
 // the version-model arch doc (arch-15). See `graph.rs::to_sorted_graph`
 // (the stamp site) and the drift-guard test in `graphs::serialization`.
 
