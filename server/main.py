@@ -2,6 +2,11 @@
 
 Provides a self-hosted API compatible with the hosted endpoint structure
 at api.blazegraph.io. No auth, no billing — just document parsing.
+
+Response contract (matches the Python SDK's remote-mode client,
+`blazegraphio.client._handle_response`):
+  * success → 200 `{"success": true, "graph": <SortedDocumentGraph>}`
+  * error   → 4xx/5xx `{"error": {"message": "<detail>"}}`
 """
 
 from __future__ import annotations
@@ -26,6 +31,11 @@ JAR_PATH = os.environ.get("BLAZEGRAPH_JAR_PATH", "/app/bin/blazing-tika-jni.jar"
 DEFAULT_CONFIG_PATH = os.environ.get("BLAZEGRAPH_CONFIG_PATH")
 
 
+def _error(status_code: int, message: str) -> JSONResponse:
+    """Error envelope the SDK client reads (`body["error"]["message"]`)."""
+    return JSONResponse(status_code=status_code, content={"error": {"message": message}})
+
+
 @app.get("/health")
 async def health() -> dict:
     return {"status": "ok"}
@@ -40,17 +50,14 @@ async def parse_pdf(
     # Validate file type
     if file.content_type and file.content_type != "application/pdf":
         if not (file.filename and file.filename.lower().endswith(".pdf")):
-            return JSONResponse(
-                status_code=400,
-                content={"error": f"Expected a PDF file, got: {file.content_type}"},
-            )
+            return _error(400, f"Expected a PDF file, got: {file.content_type}")
 
     # Validate output format
     valid_formats = {"graph", "sequential", "flat"}
     if output_format not in valid_formats:
-        return JSONResponse(
-            status_code=400,
-            content={"error": f"Invalid output_format '{output_format}'. Must be one of: {', '.join(sorted(valid_formats))}"},
+        return _error(
+            400,
+            f"Invalid output_format '{output_format}'. Must be one of: {', '.join(sorted(valid_formats))}",
         )
 
     tmp_dir = None
@@ -66,6 +73,7 @@ async def parse_pdf(
         # Build CLI command
         cmd = [
             CLI_PATH,
+            "parse",
             "-i", str(input_path),
             "--jar-path", JAR_PATH,
             "-f", output_format,
@@ -84,31 +92,19 @@ async def parse_pdf(
         )
 
         if result.returncode != 0:
-            return JSONResponse(
-                status_code=500,
-                content={"error": f"CLI processing failed: {result.stderr.strip() or result.stdout.strip()}"},
-            )
+            return _error(500, f"CLI processing failed: {result.stderr.strip() or result.stdout.strip()}")
 
         # Read output
         if not output_path.exists():
-            return JSONResponse(
-                status_code=500,
-                content={"error": "CLI completed but no output file was produced"},
-            )
+            return _error(500, "CLI completed but no output file was produced")
 
         output_data = json.loads(output_path.read_text())
-        return JSONResponse(content=output_data)
+        return JSONResponse(content={"success": True, "graph": output_data})
 
     except subprocess.TimeoutExpired:
-        return JSONResponse(
-            status_code=500,
-            content={"error": "Processing timed out after 300 seconds"},
-        )
+        return _error(500, "Processing timed out after 300 seconds")
     except Exception as exc:
-        return JSONResponse(
-            status_code=500,
-            content={"error": f"Unexpected error: {exc}"},
-        )
+        return _error(500, f"Unexpected error: {exc}")
     finally:
         # Clean up temp files
         if tmp_dir:

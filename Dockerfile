@@ -1,5 +1,8 @@
-# Stage 1: Build the Rust CLI binary
-FROM rust:1.93-slim AS builder
+# Stage 1: Build the Rust CLI binary.
+# Pin to bookworm (glibc 2.36) to match the Liberica runtime base below
+# (Debian 12 / glibc 2.36). An unpinned `rust:slim` pulls trixie (glibc 2.39+),
+# whose binary then fails at runtime: `GLIBC_2.39 not found`.
+FROM rust:1.93-slim-bookworm AS builder
 
 RUN apt-get update && apt-get install -y \
     pkg-config \
@@ -13,7 +16,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY blazegraph-core/ blazegraph-core/
 COPY blazegraph-cli/ blazegraph-cli/
 
-RUN cargo build --release -p blazegraph-cli
+RUN cargo build --release -p blazegraph-io
 
 # Stage 2: Runtime — Liberica JRE for font-metric parity with local dev JVM
 # (Eclipse Temurin computes different glyph widths → missing spaces in extracted text)
@@ -38,8 +41,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy CLI binary from builder
-COPY --from=builder /build/target/release/blazegraph-cli /app/bin/blazegraph-cli
+# Copy CLI binary from builder (package/bin is `blazegraph-io`; kept at the
+# internal path /app/bin/blazegraph-cli, which BLAZEGRAPH_CLI_PATH points at).
+COPY --from=builder /build/target/release/blazegraph-io /app/bin/blazegraph-cli
 
 # Copy Tika JAR and default processing config
 COPY blazegraph-core/deps/tika/jni-jars/blazing-tika-jni.jar /app/bin/blazing-tika-jni.jar
