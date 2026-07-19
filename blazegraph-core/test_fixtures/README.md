@@ -1,107 +1,83 @@
 # Test Fixtures
 
-Pipeline boundary tests for blazegraph-core. Tests load pre-generated snapshots and assert stability at the pipeline edges — no JVM required.
+Small, hand-curated fixtures for `blazegraph-core`. Tests load pre-generated
+snapshots and assert stability at the pipeline edges — **no JVM required**.
+
+Bulk evaluation corpora (large multi-document PDF/docx sets we score the parser
+against) do **not** live here — they live under [`eval-corpus/`](../../eval-corpus/),
+tracked with Git LFS. See [Where new corpus goes](#where-new-corpus-goes).
 
 ## Structure
 
 ```
 test_fixtures/
-├── pdfs/                          ← Fixture PDFs (committed to git)
+├── pdfs/                          ← Fixture PDFs (committed to plain git)
 │   ├── claude_shannon_paper.pdf      Small academic paper (~358KB)
-│   └── elements_of_euclid.pdf       Large book (~1.8MB)
-├── snapshots/                     ← Generated pipeline outputs (committed to git)
-│   ├── claude_shannon_paper/         Stage snapshots (stage-fixture tests)
-│   │   ├── stage1a_xhtml.html        Tika XHTML output (boundary 1)
-│   │   ├── stage1b_text_elements.json
-│   │   ├── stage2_parsed_elements.json
-│   │   ├── stage3_graph.json         Final graph output (boundary 2)
-│   │   └── summary.json
-│   ├── elements_of_euclid/           Stage snapshots
-│   │   └── ...
+│   └── elements_of_euclid.pdf        Large book (~1.8MB)
+├── snapshots/                     ← Generated pipeline snapshots (committed)
+│   ├── claude_shannon_paper/
+│   │   ├── stage1a_xhtml.html        Tika XHTML output        ┐ back `tika_boundary`
+│   │   ├── stage1b_text_elements.json                         │  (Boundary 1)
+│   │   ├── summary.json              byte + element counts    ┘
+│   │   └── stage3_graph.json         final graph — backs markdown_emit / markdown_roundtrip
+│   ├── elements_of_euclid/           same shape
 │   ├── c1-xhtml/<sha256>.xhtml      ← Golden-family cache tier C1 (Block D)
 │   └── c2-preprocessor/<sha256>.json ← Golden-family cache tier C2 (Block D)
-├── golden/                         ← Block D reconstruction anchors (committed)
+├── markdown/                       ← Generic-markdown parse fixtures (`generic_markdown_tests`)
+├── docx/structured.docx            ← docx-body `#[cfg(test)]` fixture
+├── golden/                         ← Block D reconstruction anchors (committed, plain git)
 │   └── 1.0.0/attention/
 │       ├── attention.pdf             The source document
 │       ├── config.yaml               The exact config the family binds to
-│       ├── document.bgraph.md         The frozen 1.0.0 emit (the anchor)
+│       ├── document.bgraph.md        The frozen 1.0.0 emit (the anchor)
 │       └── PRODUCED_BY               git HEAD sha at freeze time (codebase_sha binding)
 └── README.md
 ```
 
 ## The Sandwich Model
 
-Tests stabilize the boundaries, not the middle:
+Fixture tests stabilize the pipeline's **boundaries**, not its middle:
 
 ```
 Boundary 1 (stable):  PDF → Tika → XHTML → TextElements
-                      Only changes if Tika version changes.
+                      Guarded by `tika_boundary` — only moves if the Tika version does.
 
 Middle (flexible):    TextElements → Rules → ParsedElements
                       Where we iterate. NOT snapshot-tested.
 
-Boundary 2 (stable):  ParsedElements → Graph → graph.json
-                      Schema contract for API customers.
+Boundary 2 (stable):  ParsedElements → Graph → bgraph.{md,json}
+                      The schema contract for API customers — now owned by the
+                      golden freeze family + the json-wire freeze, NOT stage snapshots.
 ```
 
-## Workflow
-
-### Run existing tests
-
-```bash
-cargo test -p blazegraph-core
-```
-
-No JVM needed — tests load from saved snapshots.
-
-### Add a new fixture PDF
-
-1. Drop the PDF into `test_fixtures/pdfs/`
-2. Regenerate snapshots:
-   ```bash
-   make test-generate-fixtures
-   ```
-3. Add assertions for the new fixture in `tests/pipeline_tests.rs`
-4. Commit both the PDF and its snapshots
-
-### Regenerate all snapshots
-
-After pipeline changes that intentionally alter output:
-
-```bash
-make test-clean-fixtures
-make test-generate-fixtures
-cargo test -p blazegraph-core    # verify tests pass with new snapshots
-```
-
-Review the diff carefully before committing — the snapshot change IS the behavioral change.
-
-### Check fixture status
-
-```bash
-make test-list-fixtures
-```
-
-## Config
-
-Snapshots are generated using the standard processing config:
-
-```
-blazegraph-io/blazegraph-cli/configs/processing/config.yaml
-```
-
-This enables spatial clustering and paragraph merging — the same pipeline configuration used in production. Without it, text element counts are ~30x higher (raw Tika output without merging).
+> **CR-93 (2026-07-18):** Boundary 2 used to be guarded here by stage-snapshot
+> modules (`schema_contract`, `graph_structure`, `breadcrumbs`). The B6 json-wire
+> golden freeze now covers that ground at higher fidelity — byte-exact, plus an
+> explicit schema-contract boundary proof — so those modules were retired.
+> `tika_boundary` stays: the golden freeze replays the committed C2 cache and
+> **skips Tika by design**, so it *structurally cannot* catch a Tika regression —
+> which makes `tika_boundary` the **only** guard on that boundary.
 
 ## What the tests cover
 
-| Module | Tests | What it guards |
-|--------|-------|----------------|
-| `tika_boundary` | 4 | XHTML byte counts, text element counts per fixture |
-| `schema_contract` | 5 | Schema version, required fields, document_info shape |
-| `graph_structure` | 7 | Node counts, Document root, sections, node types, sort order |
-| `breadcrumbs` | 4 | Title in root, section propagation, depth sanity |
+| Module (file) | Tests | Guards |
+|---|---|---|
+| `tika_boundary` (`pipeline_tests.rs`) | 4 | XHTML byte + text-element counts per fixture — the sole Tika-drift guard |
+| `golden_freeze_tests.rs` | 14 | Byte-freeze of `bgraph.md` + the json wire, json↔md identity, schema-contract boundary proof |
+| `generic_markdown_tests.rs` | 14 | Generic-markdown parse paths on non-golden docs |
+| `markdown_roundtrip_tests.rs` | 18 | Round-trip on the shannon/euclid graphs (`stage3_graph.json`) |
+| `markdown_emit_tests.rs` | 2 | Emit stability on the same graphs |
+| docx `#[cfg(test)]` (`preprocessors/docx/`) | — | docx-body parse (`docx/structured.docx`) |
 
-**Total: 20 tests, ~0.2s, no JVM**
+No JVM: `tika_boundary` and the golden freeze both replay committed snapshots /
+the C2 cache.
+
+## Config
+
+The stage snapshots were generated with the standard processing config
+(`blazegraph-cli/configs/processing/config.yaml`) — spatial clustering + paragraph
+merging, the same pipeline configuration used in production. Without it, text
+element counts are ~30× higher (raw Tika output, unmerged).
 
 ## Golden freeze family (Block D — the cold-tier reconstruction anchor)
 
@@ -165,8 +141,23 @@ make golden-generate   # submodule Makefile; needs JRE + the Tika JAR
 > read and always rebuilds — so it commits no `c3-graph/` tier. When the writer
 > lands, `golden-generate` can populate the slot.
 
+## Where new corpus goes
+
+- **Small, hand-authored unit fixtures** (a new boundary PDF, a markdown/docx
+  case) → here, in plain git.
+- **Trust-critical golden text** (`document.bgraph.md`/`.json`, `config.yaml`,
+  `PRODUCED_BY`) → `golden/`, in **plain git** — the byte-honest freeze must diff
+  *real* bytes, never an LFS pointer.
+- **Bulk evaluation corpora** (large multi-doc PDF/docx sets + their generated
+  derivatives) → [`eval-corpus/`](../../eval-corpus/), tracked with **Git LFS**
+  (active). Keeps `git clone` fast and never bloats the open-core history — see
+  `eval-corpus/README.md` for the policy.
+
+Existing fixtures here are **never** retrofitted into LFS — that would be a
+history rewrite, and the golden anchors must stay byte-plain.
+
 ## Git notes
 
-Both `pdfs/` and `snapshots/` are committed to git. The `blazegraph-io/.gitignore` has a `*.json` rule with an exception for `test_fixtures/**/*.json`.
-
-If the snapshot directory grows past ~100MB, consider Git LFS for the larger files.
+`pdfs/` and `snapshots/` are committed to plain git. `blazegraph-io/.gitignore`
+carries a `*.json` rule with an exception for `test_fixtures/**/*.json`, so the
+snapshot JSON is tracked despite the global ignore.
