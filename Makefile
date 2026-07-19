@@ -25,7 +25,7 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test golden-bless test sync-python-fixture test-python hooks bump-version version-check
+.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -148,3 +148,28 @@ sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fix
 
 test-python: sync-python-fixture ## Regenerate fixtures + run the Python SDK test suite
 	cd $(PY_DIR) && .venv/bin/python -m pytest -q
+
+## build-python: build the SDK sdist + wheel into blazegraph-python/dist/ with uv.
+## The repo's python is uv-managed — the .venv carries no pip — so `uv build` (an
+## isolated build env) is the right tool, not `python -m build`. Cleans dist/ FIRST:
+## the dir historically accumulated stale 0.1.x–0.2.x artifacts and a publish ships
+## everything in dist/. Then `uvx twine check` pre-flights metadata + README render,
+## so a bad long_description fails HERE — not after the version is burned on PyPI
+## (you can't re-upload a version). This is the buildable half of release.md §7.
+build-python: ## Build + validate the Python SDK sdist + wheel (into blazegraph-python/dist/)
+	@command -v uv >/dev/null 2>&1 || { echo "❌ uv not found — the SDK build is uv-native (see release.md §7)"; exit 1; }
+	@echo "🐍 Building the Python SDK (sdist + wheel) with uv..."
+	rm -rf $(PY_DIR)/dist
+	cd $(PY_DIR) && uv build
+	@echo "🔎 Pre-flight (twine check — metadata + README render)..."
+	uvx twine check $(PY_DIR)/dist/*
+	@echo "✅ Built + checked:"; ls -1 $(PY_DIR)/dist
+
+## publish-python: build + upload the SDK to PyPI. Gated on `version-check` (the
+## code/release version must be coherent across crates + SDK before anything ships).
+## The upload needs a PyPI token: `UV_PUBLISH_TOKEN=pypi-… make publish-python` (or
+## ~/.pypirc). This is a publish lever — run it LAST. release.md §7.
+publish-python: version-check build-python ## Build + upload the Python SDK to PyPI (needs a PyPI token)
+	@echo "🚀 Uploading blazegraph-io to PyPI (uv publish)..."
+	cd $(PY_DIR) && uv publish
+	@echo "✅ Published. Verify: pip install blazegraph-io"
