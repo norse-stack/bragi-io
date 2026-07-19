@@ -11,9 +11,20 @@ use std::path::{Path, PathBuf};
 /// JRE version to download (LTS version for stability)
 const JRE_VERSION: &str = "21";
 
-/// Tika JAR download URL — pinned to the published release tag
-const TIKA_JAR_URL: &str = "https://github.com/AmplifyTechnology/blazegraph-io/raw/v0.1.1/blazegraph-core/deps/tika/jni-jars/blazing-tika-jni.jar";
 const TIKA_JAR_FILENAME: &str = "blazing-tika-jni.jar";
+
+/// Tika JAR download URL — tracks the crate's *own* release tag so an installed
+/// CLI always fetches the JAR published with its own version. The code/release
+/// version (`CARGO_PKG_VERSION`, kept in lockstep across core + CLI + SDK) maps
+/// 1:1 onto a `v{version}` git tag (e.g. `v0.5.0`). Deriving it here — rather
+/// than a hardcoded constant — keeps it from silently drifting: it was pinned to
+/// `v0.1.1`, so every fresh install fetched a stale JAR regardless of its version.
+fn tika_jar_url() -> String {
+    format!(
+        "https://github.com/AmplifyTechnology/blazegraph-io/raw/v{}/blazegraph-core/deps/tika/jni-jars/blazing-tika-jni.jar",
+        env!("CARGO_PKG_VERSION")
+    )
+}
 
 /// Manages JRE installation for the CLI
 pub struct JreManager {
@@ -106,7 +117,8 @@ impl JreManager {
         let manager = Self {
             data_dir: data_dir.clone(),
         };
-        manager.download_file(TIKA_JAR_URL, &temp_path)?;
+        let jar_url = tika_jar_url();
+        manager.download_file(&jar_url, &temp_path)?;
 
         fs::rename(&temp_path, &jar_path)
             .with_context(|| "Failed to move downloaded JAR to final location")?;
@@ -447,5 +459,17 @@ mod tests {
         assert!(url.contains("linux"));
         assert!(url.contains("x64"));
         assert!(url.contains("jre"));
+    }
+
+    /// Guards against the v0.1.1 drift: the Tika JAR URL must track the crate's
+    /// own release tag so a freshly installed CLI fetches its matching JAR.
+    #[test]
+    fn test_tika_jar_url_tracks_crate_version() {
+        let url = tika_jar_url();
+        assert!(
+            url.contains(&format!("/raw/v{}/", env!("CARGO_PKG_VERSION"))),
+            "Tika JAR URL must embed the crate's release tag: {url}"
+        );
+        assert!(url.ends_with(TIKA_JAR_FILENAME));
     }
 }
