@@ -58,15 +58,17 @@ use uuid::Uuid;
 /// `UUIDv5(BRAGI_NS, …)`, so editing these bytes silently re-IDs every node in
 /// every document ever produced — a content migration, not a rename.
 ///
-/// The line below is a *historical record of where the value came from*, not an
-/// instruction for deriving it. It is deliberately out of step with the const's
-/// name, and that is not a bug to fix: at T1.5b R3 the **name** moved to bragi
-/// while the **value** stayed put, precisely so the re-ID at R4 would be
-/// attributable to the 16 bytes and nothing else.
+/// The line below records *where the value came from*. It is *not* an
+/// instruction to derive it, and a future domain change is **not** a reason to
+/// recompute it. If `bragi-io.com` is ever retired, this constant stays exactly
+/// as it is: it is an identity, not a pointer to one.
 ///
-/// Historically: `UUIDv5(DNS, "blazegraph.io")` = a6f4212f-b2b3-5e5f-a124-e4f54c8bc5f9
+/// Provenance (T1.5b R4): `UUIDv5(DNS, "bragi-io.com")`. The predecessor value
+/// `a6f4212f-b2b3-5e5f-a124-e4f54c8bc5f9` (from `blazegraph.io`) was replaced
+/// once, deliberately, as a content migration — before anything shipped at this
+/// version. That was the only time it was ever safe to move.
 const BRAGI_NS: Uuid = Uuid::from_bytes([
-    0xa6, 0xf4, 0x21, 0x2f, 0xb2, 0xb3, 0x5e, 0x5f, 0xa1, 0x24, 0xe4, 0xf5, 0x4c, 0x8b, 0xc5, 0xf9,
+    0x33, 0xe6, 0xc7, 0xa6, 0x22, 0x5e, 0x5c, 0x65, 0xa1, 0x92, 0x6e, 0xb8, 0x6b, 0x63, 0x61, 0x4d,
 ]);
 
 /// Unit separator (`US`, 0x1f): delimits breadcrumb crumbs from one
