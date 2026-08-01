@@ -7,7 +7,7 @@
 //! round-trip decimal representation; that is RFC 8785 / JCS aligned by
 //! behavior, not by transitive crate dep).
 //!
-//! Used as the input to `graph_sha256`, which the bgraph.md forward
+//! Used as the input to `bgraph_sha256`, which the bgraph.md forward
 //! emitter (B2) embeds in the document-level block, and which the
 //! reverse parser (B3) recomputes for identity verification.
 //!
@@ -31,7 +31,7 @@ use sha2::{Digest, Sha256};
 
 /// Serialize a graph to canonical JSON: sorted object keys,
 /// default-compact, shortest-round-trip floats. Used as the input to
-/// [`graph_sha256`].
+/// [`bgraph_sha256`].
 ///
 /// `serde_json`'s default `to_string` is already compact and emits
 /// shortest-round-trip floats — the only piece this function adds is
@@ -42,7 +42,7 @@ use sha2::{Digest, Sha256};
 /// Content-body invariant (Block A / Amendment M, arch-14 §3.1):
 /// `DocumentGraph` *is* the content body — provenance, derived
 /// aggregates (`structural_profile`), and envelope fields
-/// (`graph_sha256` itself, `schema_version`, `created_at`) live on the
+/// (`bgraph_sha256` itself, `schema_version`, `created_at`) live on the
 /// `SortedDocumentGraph` wrapper or are threaded as explicit values,
 /// never on this type. The body is hashed whole: canonical_json has no
 /// per-field exclusion list, and must never grow one — a field stored
@@ -58,7 +58,7 @@ pub fn canonical_json(graph: &DocumentGraph) -> String {
 
 /// SHA-256 of `canonical_json(graph)`, hex-encoded (lowercase). Stable
 /// across runs of the same logical graph.
-pub fn graph_sha256(graph: &DocumentGraph) -> String {
+pub fn bgraph_sha256(graph: &DocumentGraph) -> String {
     let canonical = canonical_json(graph);
     let mut hasher = Sha256::new();
     hasher.update(canonical.as_bytes());
@@ -207,9 +207,9 @@ mod tests {
     }
 
     #[test]
-    fn graph_sha256_length_is_64_hex() {
+    fn bgraph_sha256_length_is_64_hex() {
         let graph = build_minimal_graph("seed");
-        let h = graph_sha256(&graph);
+        let h = bgraph_sha256(&graph);
         assert_eq!(h.len(), 64, "expected 64 hex chars, got {h:?}");
         assert!(
             h.chars()
@@ -219,17 +219,17 @@ mod tests {
     }
 
     #[test]
-    fn graph_sha256_is_stable_across_runs() {
+    fn bgraph_sha256_is_stable_across_runs() {
         let g1 = build_minimal_graph("seed");
         let g2 = build_minimal_graph("seed");
-        assert_eq!(graph_sha256(&g1), graph_sha256(&g2));
+        assert_eq!(bgraph_sha256(&g1), bgraph_sha256(&g2));
     }
 
     #[test]
-    fn graph_sha256_differs_for_different_graphs() {
+    fn bgraph_sha256_differs_for_different_graphs() {
         let g_a = build_minimal_graph("seed-a");
         let g_b = build_minimal_graph("seed-b");
-        assert_ne!(graph_sha256(&g_a), graph_sha256(&g_b));
+        assert_ne!(bgraph_sha256(&g_a), bgraph_sha256(&g_b));
     }
 
     /// Block A / Amendment M gate test — the direct proof the

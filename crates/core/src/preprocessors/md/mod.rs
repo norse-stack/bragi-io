@@ -69,14 +69,14 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// Follows X.Y.Z semantics = the *scale of node-ID churn* a consumer
 /// should expect (MAJOR: derivation rule changed, all IDs move; MINOR:
 /// additive structure, some IDs move; PATCH: affected nodes only). It
-/// is **not** the content discriminator — `graph_sha256` moves on any
+/// is **not** the content discriminator — `bgraph_sha256` moves on any
 /// content change; this version tells a consumer how much to
 /// diff/migrate. See arch-15 § Version model.
 ///
 /// CR-87 harmonized the json side onto this `5.x` lineage (json's
 /// `schema_version` went `0.9.0 → 5.0.0`, adopting the honest,
 /// consumer-visible history); the retired `SCHEMA_VERSION = 0.9.0`
-/// const was a mislabel. `graph_sha256` is unchanged — this const is a
+/// const was a mislabel. `bgraph_sha256` is unchanged — this const is a
 /// wrapper/envelope field, outside the hash.
 ///
 /// Downstream consumers pinning to the format axis (URD's compile-time
@@ -112,7 +112,7 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 ///
 /// v4.0.0 (Block A / Amendment M): **major** — the inaugural
 /// **content-only edition: identity became the content body.**
-/// `graph_sha256` is redefined from "canonical json incl. provenance"
+/// `bgraph_sha256` is redefined from "canonical json incl. provenance"
 /// to the hash of the content body alone: `parse_provenance` and
 /// `structural_profile` leave the hash (envelope / json-wrapper
 /// concerns), the CR-78 `confidence` placeholder leaves the wire
@@ -120,7 +120,7 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// `token_count` stays (deterministic `words/4`, a function of the
 /// text alone — DT-01). Node IDs are **unchanged** (the Amendment L
 /// key never referenced the evicted fields); only the doc-level
-/// `graph_sha256` re-baselines. The walk algorithm is byte-identical
+/// `bgraph_sha256` re-baselines. The walk algorithm is byte-identical
 /// to v2/v3, so 2.x/3.x files still parse structurally — but their
 /// stamped hashes were computed under the old definition and will not
 /// verify under the v4 recompute (use `--accept-drift` or regenerate).
@@ -158,8 +158,8 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// schema — including the retired `2.x`–`5.x` — is a clean
 /// `UnsupportedSchema`, not something to best-effort-read. Emit is
 /// byte-identical to the pre-reset `5.0.0` output except this version
-/// string and the json envelope's new `graph_sha256` field; the
-/// `graph_sha256` *value* is unchanged (the reset is a renumber, not a
+/// string and the json envelope's new `bgraph_sha256` field; the
+/// `bgraph_sha256` *value* is unchanged (the reset is a renumber, not a
 /// canonical-form change).
 pub const BGRAPH_FORMAT_VERSION: &str = "1.0.0";
 
@@ -185,7 +185,7 @@ pub fn parse_markdown(input: &str, opts: ParseOptions) -> Result<ParseResult, Pa
 ///
 /// Heuristic: the first non-blank line is literally ` ```bgraph ` (no
 /// suffix), AND the next line parses as JSON containing both `schema`
-/// and `graph_sha256` keys. Cheap; the false-positive risk is
+/// and `bgraph_sha256` keys. Cheap; the false-positive risk is
 /// negligible because the prefix is reserved by the v1.0.0 spec
 /// (see "Reserved fence prefix" in
 /// `docs/P2/core/architecture/08-bgraph-md-format.md`).
@@ -206,7 +206,7 @@ pub fn is_bgraph_md(input: &str) -> bool {
     let Some(obj) = value.as_object() else {
         return false;
     };
-    obj.contains_key("schema") && obj.contains_key("graph_sha256")
+    obj.contains_key("schema") && obj.contains_key("bgraph_sha256")
 }
 
 #[cfg(test)]
@@ -220,7 +220,7 @@ mod tests {
         // v2.1.0+: doc-level block carries no `title` (moved to
         // bgraph-metadata fence — CR-56 § I.4). Block C: honest 1.0.0.
         "```bgraph\n\
-         {\"schema\":\"1.0.0\",\"blazegraph_version\":\"0.6.0\",\"source\":{\"format\":\"pdf\",\"filename\":\"x.pdf\",\"sha256\":\"abc\"},\"flow_type\":\"Fixed\",\"config_hash\":\"def\",\"graph_sha256\":\"deadbeef\"}\n\
+         {\"schema\":\"1.0.0\",\"bragi_version\":\"0.6.0\",\"source\":{\"format\":\"pdf\",\"filename\":\"x.pdf\",\"sha256\":\"abc\"},\"flow_type\":\"Fixed\",\"config_hash\":\"def\",\"bgraph_sha256\":\"deadbeef\"}\n\
          ```\n"
     }
 
@@ -298,7 +298,7 @@ mod tests {
             },
         };
         let provenance = ParseProvenance {
-            blazegraph_version: "0.6.0".to_string(),
+            bragi_version: "0.6.0".to_string(),
             source_format: "markdown".to_string(),
             source_sha256: "abc".to_string(),
             config_hash: "def".to_string(),

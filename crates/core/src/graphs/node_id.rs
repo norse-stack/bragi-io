@@ -35,12 +35,12 @@
 //!
 //! - `source_sha256` + `config_hash` remain *document* discriminators in
 //!   `ParseProvenance` and the doc-level fence (and thus feed
-//!   `graph_sha256`). They are no longer *node* scoping.
+//!   `bgraph_sha256`). They are no longer *node* scoping.
 //! - Cross-corpus **content dedup** (identical content → one stored blob)
 //!   is the *absolute* coordinate and lives in URD's content-addressed
 //!   store — out of scope here. Blazegraph's bgraph is a unique-keyed
 //!   faithful graph; making the parse-level ID content-addressed would
-//!   collide two identical paragraphs and break the `graph_sha256`
+//!   collide two identical paragraphs and break the `bgraph_sha256`
 //!   round-trip. See CR-83 and CR-47.
 //!
 //! Node IDs remain:

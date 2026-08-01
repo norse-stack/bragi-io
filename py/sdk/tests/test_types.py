@@ -49,8 +49,8 @@ class TestBlazeGraphDeserialization:
         assert isinstance(attention_graph.structural_profile, StructuralProfile)
 
     def test_wrapper_identity_fields(self, attention_graph: BlazeGraph) -> None:
-        # 1.0.0 wrapper carries graph_sha256 (64 hex) + created_at.
-        assert len(attention_graph.graph_sha256) == 64
+        # 1.0.0 wrapper carries bgraph_sha256 (64 hex) + created_at.
+        assert len(attention_graph.bgraph_sha256) == 64
         assert attention_graph.created_at  # non-empty ISO timestamp
 
     def test_parse_provenance(self, attention_graph: BlazeGraph) -> None:

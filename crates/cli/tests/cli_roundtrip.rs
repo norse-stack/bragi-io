@@ -45,7 +45,7 @@ fn unique_temp_dir(test_name: &str) -> PathBuf {
 /// explicit emit argument, not graph state).
 fn synthetic_provenance() -> ParseProvenance {
     ParseProvenance {
-        blazegraph_version: "0.6.0-cli-test".to_string(),
+        bragi_version: "0.6.0-cli-test".to_string(),
         source_format: "markdown".to_string(),
         source_sha256: "cli-test-source-sha".to_string(),
         config_hash: "cli-test-config-hash".to_string(),
@@ -266,7 +266,7 @@ fn cli_emit_markdown_output_format_writes_bgraph_md() {
 #[test]
 fn cli_strict_mode_errors_on_drift() {
     // Block C.3: the shipped binary is strict by construction
-    // (compile-time `strict-identity`). A tampered graph_sha256 must
+    // (compile-time `strict-identity`). A tampered bgraph_sha256 must
     // produce a clean error with exit code != 0 and **no runtime
     // override** offered (the `--accept-drift` toggle was removed).
     let dir = unique_temp_dir("strict-drift");
@@ -274,11 +274,11 @@ fn cli_strict_mode_errors_on_drift() {
 
     let original = build_synthetic_graph();
     let mut md = emit_markdown(&original, &synthetic_provenance());
-    // Tamper: corrupt the embedded graph_sha256 so parse hits
+    // Tamper: corrupt the embedded bgraph_sha256 so parse hits
     // HashMismatch.
     md = md.replace(
-        "\"graph_sha256\":\"",
-        "\"graph_sha256\":\"00000000000000000000000000000000",
+        "\"bgraph_sha256\":\"",
+        "\"bgraph_sha256\":\"00000000000000000000000000000000",
     );
     std::fs::write(&fixture_md, &md).expect("write fixture md");
 
@@ -301,8 +301,8 @@ fn cli_strict_mode_errors_on_drift() {
     );
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stderr.contains("graph_sha256 mismatch"),
-        "stderr should mention graph_sha256 mismatch; got:\n{stderr}"
+        stderr.contains("bgraph_sha256 mismatch"),
+        "stderr should mention bgraph_sha256 mismatch; got:\n{stderr}"
     );
     assert!(
         stderr.contains("no runtime override"),
@@ -322,8 +322,8 @@ fn cli_rejects_removed_accept_drift_flag() {
     let original = build_synthetic_graph();
     let mut md = emit_markdown(&original, &synthetic_provenance());
     md = md.replace(
-        "\"graph_sha256\":\"",
-        "\"graph_sha256\":\"00000000000000000000000000000000",
+        "\"bgraph_sha256\":\"",
+        "\"bgraph_sha256\":\"00000000000000000000000000000000",
     );
     std::fs::write(&fixture_md, &md).expect("write fixture md");
 
@@ -450,7 +450,7 @@ fn cli_strip_default_mode_emits_frontmatter() {
     let yaml_str = format!("{frontmatter}\n");
     let parsed: serde_json::Value =
         serde_yaml::from_str(&yaml_str).expect("frontmatter must round-trip through serde_yaml");
-    assert!(parsed.get("graph_sha256").is_some());
+    assert!(parsed.get("bgraph_sha256").is_some());
     // Body survives.
     assert!(out.contains("First paragraph body."));
     // Source file untouched (content sanity).

@@ -18,7 +18,7 @@ use std::path::Path;
 /// **intermediates** (keyed by `pdf_hash` alone); C3 is the config-dependent
 /// **output** — the finished `DocumentGraph`, keyed by `pdf_hash + config_hash`.
 /// `bgraph.md`/`bgraph.json` are serializations *of* C3, emitted on demand;
-/// the graph is the canonical, format-neutral output (`graph_sha256` is over
+/// the graph is the canonical, format-neutral output (`bgraph_sha256` is over
 /// it). This is why C3, and only C3, folds config into its key.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CachePoint {

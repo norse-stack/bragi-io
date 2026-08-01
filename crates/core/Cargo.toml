@@ -2,7 +2,7 @@
 name = "bragi-io-core"
 # Code/release version (crate::VERSION) — the "which build?" axis, bumped
 # whenever emitted output changes so the graph cache key
-# (cache::versions::BLAZEGRAPH_VERSION = crate::VERSION) invalidates. Kept in
+# (cache::versions::BRAGI_VERSION = crate::VERSION) invalidates. Kept in
 # lockstep with the CLI + Python SDK via `make bump-version` (single command);
 # `make version-check` guards against drift. DELIBERATELY independent of the
 # schema/format axis (BGRAPH_FORMAT_VERSION = 1.0.0): code evolves on 0.x, the

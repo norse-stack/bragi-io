@@ -143,7 +143,7 @@ impl<'a> MetadataExtractor for PdfMetadataExtractor<'a> {
         // gets surfaced in pdf.extras with its raw name as the key.
         // BTreeMap iteration is ordered, so canonicalization is
         // deterministic — same input PDF always produces the same
-        // graph_sha256.
+        // bgraph_sha256.
         for (name, content) in &self.meta_tags {
             if CANONICAL_TAGS.contains(name) || STRONG_CONVENTION_TAGS.contains(name) {
                 continue;

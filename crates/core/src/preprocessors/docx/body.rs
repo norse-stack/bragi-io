@@ -97,7 +97,7 @@ struct EffectiveStyle {
 /// (`<w:b/>` → `**…**`, `<w:i/>` → `*…*`).
 ///
 /// `opts` is currently unused — the DOCX path has no strict-vs-drift
-/// distinction (no embedded `graph_sha256` to verify against). The argument
+/// distinction (no embedded `bgraph_sha256` to verify against). The argument
 /// is present for API symmetry with [`super::super::md::parse_markdown`].
 ///
 /// Returns [`ParseError::MalformedDocx`] if the bytes are not a valid ZIP or
@@ -151,7 +151,7 @@ pub fn parse_docx(bytes: &[u8], _opts: ParseOptions) -> Result<ParseResult, Pars
     let source_sha256 = sha256_hex(bytes);
     let config_hash = "none".to_string();
     let provenance = ParseProvenance {
-        blazegraph_version: crate::VERSION.to_string(),
+        bragi_version: crate::VERSION.to_string(),
         source_format: "docx".to_string(),
         source_sha256: source_sha256.clone(),
         config_hash: config_hash.clone(),

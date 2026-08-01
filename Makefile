@@ -67,7 +67,7 @@ golden-generate: build-cli
 	       $(GOLDEN_CACHE)/debug $(GOLDEN_CACHE)/stat
 	@# Fresh, full-pipeline parse: Tika (C0->C1) + preprocessor (->C2) + build
 	@# + emit. `--include-style-info` puts `style` on the wire so the frozen md
-	@# self-verifies (graph_sha256 covers node style_info). `-c $(GOLDEN_CONFIG)`
+	@# self-verifies (bgraph_sha256 covers node style_info). `-c $(GOLDEN_CONFIG)`
 	@# binds the emitted config_hash to the committed golden config.
 	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) \
 	JAVA_HOME=$(JRE_PATH) \

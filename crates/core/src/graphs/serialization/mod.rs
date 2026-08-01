@@ -7,7 +7,7 @@
 //!
 //! Submodules:
 //!
-//! - [`canonical`] — canonical JSON + `graph_sha256` (used as the
+//! - [`canonical`] — canonical JSON + `bgraph_sha256` (used as the
 //!   stable input to identity hashes and round-trip verification).
 //! - [`markdown`] — bgraph.md emitter (forward emitter B2 of the
 //!   MD+DOCX format expansion flow).

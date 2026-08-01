@@ -34,7 +34,7 @@ use super::types::{ParseError, ParseIdentity, ParseOptions, ParseResult};
 ///
 /// On success returns the reconstructed graph plus a parse-time
 /// identity signal:
-/// - [`ParseIdentity::Verified`] if `graph_sha256` of the parsed graph
+/// - [`ParseIdentity::Verified`] if `bgraph_sha256` of the parsed graph
 ///   matches the value embedded in the doc-level block.
 /// - [`ParseIdentity::Derivative`] if it does not match and
 ///   `opts.accept_drift = true`.
@@ -248,7 +248,7 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
     // namespace. The parser-side and emitter-side derive identical IDs
     // from the node content + breadcrumb path + occurrence — independent
     // of source/config/version. `source.sha256` + `config_hash` stay in
-    // `doc_level` as *document* identity (they feed `graph_sha256`), not
+    // `doc_level` as *document* identity (they feed `bgraph_sha256`), not
     // node scoping.
     let id_gen = NodeIdGenerator::new();
 
@@ -257,7 +257,7 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
     // below hashes the content body only, on both the emit and parse
     // sides.
     let provenance = ParseProvenance {
-        blazegraph_version: doc_level.blazegraph_version.clone(),
+        bragi_version: doc_level.bragi_version.clone(),
         source_format: doc_level.source.format.clone(),
         source_sha256: doc_level.source.sha256.clone(),
         config_hash: doc_level.config_hash.clone(),
@@ -291,17 +291,17 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
     graph.compute_breadcrumbs();
 
     // ----- Phase 5: identity verification. -----
-    let recomputed = canonical::graph_sha256(&graph);
-    let identity = if recomputed == doc_level.graph_sha256 {
+    let recomputed = canonical::bgraph_sha256(&graph);
+    let identity = if recomputed == doc_level.bgraph_sha256 {
         ParseIdentity::Verified
     } else if opts.accept_drift {
         ParseIdentity::Derivative {
-            original_sha256: doc_level.graph_sha256.clone(),
+            original_sha256: doc_level.bgraph_sha256.clone(),
             recomputed_sha256: recomputed,
         }
     } else {
         return Err(ParseError::HashMismatch {
-            original: doc_level.graph_sha256,
+            original: doc_level.bgraph_sha256,
             recomputed,
         });
     };
@@ -311,7 +311,7 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
     // re-derives. For drifted/derivative docs, mismatched embedded IDs are
     // *expected* — that is the drift — so this applies only when Verified.
     // (CR-83: IDs are content+breadcrumb-derived. This catches per-element
-    // fence tampering that the doc-level `graph_sha256` recompute — which
+    // fence tampering that the doc-level `bgraph_sha256` recompute — which
     // hashes the builder's derived IDs, not the embedded ones — cannot see.)
     #[cfg(debug_assertions)]
     if matches!(identity, ParseIdentity::Verified) {
@@ -524,13 +524,13 @@ struct DocLevelBlock {
     // files (no `kind`) parse as `document` — back-compatible read.
     #[serde(default = "crate::types::default_kind")]
     kind: String,
-    blazegraph_version: String,
+    bragi_version: String,
     source: DocLevelSource,
     flow_type: FlowType,
     #[serde(default)]
     topology: Option<String>,
     config_hash: String,
-    graph_sha256: String,
+    bgraph_sha256: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -574,7 +574,7 @@ struct NodeMetadata {
     // v4.0.0 (Block A / Amendment M): `confidence` left the wire. A
     // legacy (≤3.x) input carrying it parses fine — serde drops unknown
     // fields — but the value is discarded; it no longer round-trips
-    // (and a ≤3.x stamped graph_sha256 would not verify under the v4
+    // (and a ≤3.x stamped bgraph_sha256 would not verify under the v4
     // content-only recompute anyway).
     /// CR-45: per-element verbatim Tika style projection. `#[serde(default)]`
     /// makes the field tolerant of fixtures / hand-edited inputs that
@@ -685,7 +685,7 @@ mod tests {
     /// argument, not graph state).
     fn synthetic_provenance() -> ParseProvenance {
         ParseProvenance {
-            blazegraph_version: "0.6.0".to_string(),
+            bragi_version: "0.6.0".to_string(),
             source_format: "markdown".to_string(),
             source_sha256: "synthetic-source-sha".to_string(),
             config_hash: "synthetic-config-hash".to_string(),
@@ -766,7 +766,7 @@ mod tests {
         assert_eq!(info.document_metadata.title.as_deref(), Some("Title"));
         // Block A: provenance rides on the ParseResult, not the graph.
         let prov = &result.provenance;
-        assert_eq!(prov.blazegraph_version, "0.6.0");
+        assert_eq!(prov.bragi_version, "0.6.0");
         assert_eq!(prov.source_format, "markdown");
         assert_eq!(prov.source_sha256, "synthetic-source-sha");
         assert_eq!(prov.config_hash, "synthetic-config-hash");
@@ -872,7 +872,7 @@ mod tests {
         for retired in ["0.9.0", "2.0.0", "3.0.0", "4.0.0", "5.0.0", "6.0.0"] {
             let fixture = format!(
                 "```bgraph\n\
-                 {{\"schema\":\"{retired}\",\"blazegraph_version\":\"0.6.0\",\"source\":{{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"}},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"graph_sha256\":\"c\"}}\n\
+                 {{\"schema\":\"{retired}\",\"bragi_version\":\"0.6.0\",\"source\":{{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"}},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"bgraph_sha256\":\"c\"}}\n\
                  ```\n"
             );
             let result = parse(&fixture, ParseOptions { accept_drift: true });
@@ -889,7 +889,7 @@ mod tests {
         // (v2.0.0 tag names) must be rejected. The walk picks them up as
         // unrecognized tags via the fence-tag dispatch.
         let bad_codeblock = "```bgraph\n\
-             {\"schema\":\"1.0.0\",\"blazegraph_version\":\"0.6.0\",\"source\":{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"graph_sha256\":\"c\"}\n\
+             {\"schema\":\"1.0.0\",\"bragi_version\":\"0.6.0\",\"source\":{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"bgraph_sha256\":\"c\"}\n\
              ```\n\
              \n\
              ```bgraph-metadata\n{}\n```\n\
@@ -950,7 +950,7 @@ mod tests {
     fn parse_strict_mode_rejects_drift() {
         let graph = build_synthetic_graph(vec![("Paragraph", "Original.", 1, 0)], None, None);
         let md = emit(&graph);
-        // Mutate the body so graph_sha256 changes.
+        // Mutate the body so bgraph_sha256 changes.
         let tampered = md.replace("Original.", "Tampered.");
         let result = parse(&tampered, ParseOptions::default());
         assert!(matches!(result, Err(ParseError::HashMismatch { .. })));
@@ -999,7 +999,7 @@ mod tests {
         // new bgraph fence inside an active fence. (The scanner sees
         // this as a reserved-prefix violation.)
         let bogus = "```bgraph\n\
-                     {\"schema\":\"1.0.0\",\"blazegraph_version\":\"0.6.0\",\"source\":{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"graph_sha256\":\"c\"}\n\
+                     {\"schema\":\"1.0.0\",\"bragi_version\":\"0.6.0\",\"source\":{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"bgraph_sha256\":\"c\"}\n\
                      ```bgraph-section\n\
                      ```\n";
         // The inner `bgraph-section` open without a preceding ``` close is

@@ -78,7 +78,7 @@ pub struct DocumentInfo {
     /// Schema 0.8.0 (Block A / Amendment M): relocated here from
     /// `StructuralProfile`. It is a doc-level *identity scalar* — set
     /// once by the source channel, part of the content body, in
-    /// `graph_sha256` — unlike the profile's derived aggregates, which
+    /// `bgraph_sha256` — unlike the profile's derived aggregates, which
     /// left the hash. `#[serde(default)]` (= `Fixed`) keeps pre-0.8.0
     /// graph.json loadable.
     #[serde(default)]
@@ -88,7 +88,7 @@ pub struct DocumentInfo {
     // lives here. Provenance is *about the parse run*, not *of the
     // document* (content-not-provenance rule, arch-14 §3.1) — keeping it
     // on `DocumentInfo` put it inside `canonical_json(&DocumentGraph)`
-    // and thus inside `graph_sha256`, so every build/config change
+    // and thus inside `bgraph_sha256`, so every build/config change
     // churned identity without the content changing. It now rides on
     // `SortedDocumentGraph` (the on-disk wrapper) and is threaded as an
     // explicit value through the emit/serialize paths.
@@ -140,7 +140,7 @@ pub struct MessageMetadata {
 /// and emit round-trippable bgraph.md.
 ///
 /// `(source_sha256, config_hash)` is the identity pair that feeds
-/// `NodeIdGenerator::new`. Per CR-47, `blazegraph_version` rides
+/// `NodeIdGenerator::new`. Per CR-47, `bragi_version` rides
 /// along as provenance documentation only — it no longer enters the
 /// node-ID namespace, so node IDs survive parser version bumps for
 /// the same `(source, config)`. See
@@ -150,7 +150,7 @@ pub struct MessageMetadata {
 pub struct ParseProvenance {
     /// Parser version that produced this graph (e.g. `"0.2.2"`).
     /// Sourced from `env!("CARGO_PKG_VERSION")` at build time.
-    pub blazegraph_version: String,
+    pub bragi_version: String,
 
     /// Source format identifier (`"pdf"`, `"markdown"`, `"docx"`, …).
     pub source_format: String,
@@ -175,7 +175,7 @@ pub struct ParseProvenance {
 
 /// The in-memory graph — and, definitionally, the **content body**:
 /// `canonical_json(&DocumentGraph)` is the exact input to
-/// `graph_sha256`, hashed whole with no per-field exclusions (Block A /
+/// `bgraph_sha256`, hashed whole with no per-field exclusions (Block A /
 /// Amendment M; arch-14 §3.1). Anything that is not content — parse
 /// provenance, derived aggregates (`structural_profile`), emission
 /// metadata (`created_at`, `schema_version`) — lives on
@@ -195,9 +195,9 @@ pub struct SortedDocumentGraph {
     /// The content-body identity hash, embedded so a loaded graph.json is
     /// **self-verifiable** — symmetric with the md doc-level block (Block
     /// C.3). This is an **envelope** field: it wraps identity, is *not*
-    /// part of `canonical_json` / `graph_sha256` (which is computed over
+    /// part of `canonical_json` / `bgraph_sha256` (which is computed over
     /// `DocumentGraph` — the content body alone), and its value *equals*
-    /// the md doc-level block's `graph_sha256` for the same graph. Stamped
+    /// the md doc-level block's `bgraph_sha256` for the same graph. Stamped
     /// in `to_sorted_graph`; checked by
     /// [`SortedDocumentGraph::verify_identity`].
     ///
@@ -205,7 +205,7 @@ pub struct SortedDocumentGraph {
     /// it) loadable — the default is the empty string, which
     /// `verify_identity` treats as "no embedded hash to check against".
     #[serde(default)]
-    pub graph_sha256: String,
+    pub bgraph_sha256: String,
     /// Wall-clock time at which this graph was serialized to disk.
     /// Lives on the wrapper (not on `DocumentGraph`) so `canonical_json`
     /// is deterministic across runs of the same logical graph — see
@@ -219,7 +219,7 @@ pub struct SortedDocumentGraph {
     pub created_at: DateTime<Utc>,
     /// Origin of this graph — the (version, source, config) triple that
     /// reproduces it. Lives on the wrapper (not on `DocumentGraph`) so
-    /// it stays *outside* `canonical_json` / `graph_sha256`: provenance
+    /// it stays *outside* `canonical_json` / `bgraph_sha256`: provenance
     /// is about the parse run, not of the document (content-not-
     /// provenance rule — Block A / Amendment M, schema 0.8.0). Threaded
     /// as an explicit value from the build/parse path via
@@ -233,7 +233,7 @@ pub struct SortedDocumentGraph {
     /// Derived aggregate view of the node set — json-only convenience,
     /// recomputed at serialization time (`to_sorted_graph`), never part
     /// of the canonical hash. Schema 0.8.0 (Block A / Amendment M):
-    /// relocated off `DocumentGraph` — it was in `graph_sha256` but
+    /// relocated off `DocumentGraph` — it was in `bgraph_sha256` but
     /// never in the stored md body, the inverse form of the arch-14 §6
     /// intersection violation. `flow_type` (the one identity scalar it
     /// carried) moved to `DocumentInfo`.
@@ -260,7 +260,7 @@ pub struct DocumentNode {
     // field — never omitted. It serializes as `null` when style is off
     // (the default edition) and as data when `--include-style-info` is on.
     // The `skip_serializing_if` was removed so the key is always on the
-    // wire and always in `canonical_json` / `graph_sha256`: the value is
+    // wire and always in `canonical_json` / `bgraph_sha256`: the value is
     // gated at build time (see `processor::rules_and_graph`), so the graph
     // carries the config-correct value and hash-equals-wire holds by
     // construction. Always-present (not sometimes-present) keeps the field
@@ -281,7 +281,7 @@ pub struct DocumentNode {
     // Schema 0.8.0 (Block A / Amendment M): the CR-78 `confidence`
     // schema-ahead placeholder is REMOVED outright — no
     // `skip_serializing_if` slot kept. A placeholder that is
-    // empty-now/populated-later silently churns `graph_sha256` at the
+    // empty-now/populated-later silently churns `bgraph_sha256` at the
     // empty→populated moment (absent-from-canonical-bytes →
     // present-in-canonical-bytes) with no declared bump, so
     // schema-ahead into the identity form is retired. The upstream
@@ -478,7 +478,7 @@ pub struct StructuralProfile {
     pub document_type: DocumentType,
     // Schema 0.8.0 (Block A): `flow_type` moved to `DocumentInfo` — it
     // is a doc-level identity scalar, not a derived aggregate; it stays
-    // in `graph_sha256` while this struct leaves it.
+    // in `bgraph_sha256` while this struct leaves it.
     pub total_nodes: usize,
 
     // Analytics fields
@@ -507,7 +507,7 @@ pub struct TokenDistribution {
     /// `BTreeMap` (not `HashMap`) so json serialization is deterministic —
     /// `structural_profile` is a wrapper-only derived aggregate that the golden
     /// json freeze pins byte-for-byte; same reason `DocumentMetadata.extras` is
-    /// a `BTreeMap`. Not part of `graph_sha256` (content-body only).
+    /// a `BTreeMap`. Not part of `bgraph_sha256` (content-body only).
     pub by_node_type: BTreeMap<String, TokenHistogram>,
     pub overall: TokenHistogram,
 }
@@ -802,7 +802,7 @@ pub struct PdfMetadata {
 /// `layout`, Astro `pubDate`, Obsidian aliases, …).
 ///
 /// `BTreeMap` (not `HashMap`) so canonical JSON serialization is
-/// deterministic — same input must produce the same `graph_sha256`.
+/// deterministic — same input must produce the same `bgraph_sha256`.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct MdMetadata {
     pub draft: Option<bool>,

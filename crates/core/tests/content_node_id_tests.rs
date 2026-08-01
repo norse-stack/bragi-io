@@ -11,7 +11,7 @@
 //! `text_order → id` map is the natural lens: "which node, at which
 //! emission slot, kept its id".
 
-use bragi_io_core::graphs::serialization::canonical::graph_sha256;
+use bragi_io_core::graphs::serialization::canonical::bgraph_sha256;
 use bragi_io_core::preprocessors::md::{generic_md, ParseOptions};
 use bragi_io_core::types::*;
 use std::collections::{HashMap, HashSet};
@@ -57,7 +57,7 @@ fn id_of_text(g: &DocumentGraph, text: &str) -> NodeId {
 
 // =========================================================================
 // Bullet test #1 — the kicker: byte-identical paragraphs → distinct IDs,
-//                  graph_sha256 round-trip holds (no collision / data loss).
+//                  bgraph_sha256 round-trip holds (no collision / data loss).
 // =========================================================================
 
 #[test]
@@ -96,12 +96,12 @@ Same body.
         "all body nodes must have distinct IDs (no collision)"
     );
 
-    // graph_sha256 is deterministic across a fresh reparse of the same bytes.
+    // bgraph_sha256 is deterministic across a fresh reparse of the same bytes.
     let g2 = parse(md);
     assert_eq!(
-        graph_sha256(&g),
-        graph_sha256(&g2),
-        "graph_sha256 must be stable across reparse of identical bytes"
+        bgraph_sha256(&g),
+        bgraph_sha256(&g2),
+        "bgraph_sha256 must be stable across reparse of identical bytes"
     );
 }
 
@@ -374,8 +374,8 @@ Shared child body.
         "children of duplicate-heading siblings must stay unique (parent-occurrence folded into breadcrumb)"
     );
 
-    // graph_sha256 round-trips (faithful graph, no data loss).
-    assert_eq!(graph_sha256(&g), graph_sha256(&parse(md)));
+    // bgraph_sha256 round-trips (faithful graph, no data loss).
+    assert_eq!(bgraph_sha256(&g), bgraph_sha256(&parse(md)));
 }
 
 // =========================================================================
@@ -421,7 +421,7 @@ Body.
     // differ (["H1"] vs ["H2"]), so each is occurrence 0 in its own bucket.
     // We can't read occurrence directly, but we can confirm the ids match a
     // *fresh* derivation that swaps nothing — i.e. they are stable.
-    assert_eq!(graph_sha256(&g), graph_sha256(&parse(md)));
+    assert_eq!(bgraph_sha256(&g), bgraph_sha256(&parse(md)));
 }
 
 #[test]

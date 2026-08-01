@@ -106,7 +106,7 @@ impl MetadataExtractor for DocxMetadataExtractor {
     /// Any *other* present `core.xml` leaf that isn't a canonical field (e.g.
     /// `keywords`, `subject`, `category`) surfaces in `extras` keyed by its
     /// local name, so nothing is silently dropped. `extras` is a `BTreeMap`,
-    /// so serialization stays deterministic (cache-stable `graph_sha256`).
+    /// so serialization stays deterministic (cache-stable `bgraph_sha256`).
     /// Absent fields → `None` / omitted.
     fn extract_channel_metadata(&self, _: &()) -> ChannelMetadata {
         // Canonical core.xml fields are surfaced by the trait methods above —

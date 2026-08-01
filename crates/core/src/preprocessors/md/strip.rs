@@ -196,10 +196,10 @@ fn strip_with_frontmatter(input: &str) -> Result<String, ParseError> {
 /// for human-readable frontmatter:
 ///
 /// 1. `title` — most relevant content metadata first.
-/// 2. `schema`, `blazegraph_version`, `flow_type` — format / pipeline trait.
+/// 2. `schema`, `bragi_version`, `flow_type` — format / pipeline trait.
 /// 3. `source` — provenance (nested map; inner keys keep `serde_json::Map`
 ///    insertion order, which is alphabetical: filename, format, sha256).
-/// 4. `config_hash`, `graph_sha256` — hashes grouped at the bottom.
+/// 4. `config_hash`, `bgraph_sha256` — hashes grouped at the bottom.
 ///
 /// Any unknown top-level keys (forward-compat against future doc-level fields)
 /// are appended after the known set in alphabetical order, so a future doc-level
@@ -212,11 +212,11 @@ fn canonical_doc_level_ordering(value: serde_json::Value) -> serde_yaml::Value {
     const CANONICAL_KEYS: &[&str] = &[
         "title",
         "schema",
-        "blazegraph_version",
+        "bragi_version",
         "flow_type",
         "source",
         "config_hash",
-        "graph_sha256",
+        "bgraph_sha256",
     ];
 
     let serde_json::Value::Object(obj) = value else {
@@ -431,7 +431,7 @@ mod tests {
     fn sample_bgraph_md() -> String {
         [
             "```bgraph",
-            "{\"schema\":\"2.0.0\",\"blazegraph_version\":\"0.6.0\",\"source\":{\"format\":\"pdf\",\"filename\":\"x.pdf\",\"sha256\":\"src-sha\"},\"flow_type\":\"Fixed\",\"title\":\"Sample\",\"config_hash\":\"cfg-sha\",\"graph_sha256\":\"deadbeef\"}",
+            "{\"schema\":\"2.0.0\",\"bragi_version\":\"0.6.0\",\"source\":{\"format\":\"pdf\",\"filename\":\"x.pdf\",\"sha256\":\"src-sha\"},\"flow_type\":\"Fixed\",\"title\":\"Sample\",\"config_hash\":\"cfg-sha\",\"bgraph_sha256\":\"deadbeef\"}",
             "```",
             "",
             "```bgraph-outline",
@@ -493,7 +493,7 @@ mod tests {
         // at line-start as a fence.
         let md = "\
 ```bgraph
-{\"schema\":\"2.0.0\",\"graph_sha256\":\"x\"}
+{\"schema\":\"2.0.0\",\"bgraph_sha256\":\"x\"}
 ```
 
 Body text with a code sample:
@@ -549,7 +549,7 @@ End of body.
         // rest. body-only strips every bgraph fence; body survives.
         let md = "\
 ```bgraph
-{\"schema\":\"2.0.0\",\"graph_sha256\":\"x\"}
+{\"schema\":\"2.0.0\",\"bgraph_sha256\":\"x\"}
 ```
 
 - bullet one
@@ -630,7 +630,7 @@ fn main() {}
         let parsed: serde_json::Value =
             serde_yaml::from_str(&yaml_payload_with_nl).expect("frontmatter YAML must parse");
         assert_eq!(
-            parsed.get("graph_sha256").and_then(|v| v.as_str()),
+            parsed.get("bgraph_sha256").and_then(|v| v.as_str()),
             Some("deadbeef")
         );
         assert_eq!(parsed.get("schema").and_then(|v| v.as_str()), Some("2.0.0"));
@@ -658,7 +658,7 @@ fn main() {}
     }
 
     /// CR-55 Test 1b: canonical key ordering in the lifted frontmatter —
-    /// `title` first, identity hashes (`config_hash`, `graph_sha256`) grouped
+    /// `title` first, identity hashes (`config_hash`, `bgraph_sha256`) grouped
     /// at the bottom, `source` (nested provenance) just before them. The
     /// reorder is strip-layer-only; canonical bgraph.md keeps the JSON
     /// wire-format key order.
@@ -674,11 +674,11 @@ fn main() {}
         let expected_order = [
             "title:",
             "schema:",
-            "blazegraph_version:",
+            "bragi_version:",
             "flow_type:",
             "source:",
             "config_hash:",
-            "graph_sha256:",
+            "bgraph_sha256:",
         ];
         let mut last_idx: Option<usize> = None;
         for key in expected_order {

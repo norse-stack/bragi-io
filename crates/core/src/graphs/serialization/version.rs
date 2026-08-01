@@ -88,7 +88,7 @@ impl FormatVersion {
 /// [`canonical::canonical_json`]. For the current version this is the
 /// identity canonicalizer; a future arm supplies that version's frozen
 /// canonicalization profile (arch-14 §7) so an old edition still hashes to
-/// its stamped `graph_sha256`.
+/// its stamped `bgraph_sha256`.
 pub fn canonicalize_as(version: FormatVersion, graph: &DocumentGraph) -> String {
     match version {
         FormatVersion::V1_0 => canonical::canonical_json(graph),
@@ -164,11 +164,11 @@ mod tests {
     #[test]
     fn upcast_current_is_noop() {
         let graph = DocumentGraph::new();
-        let before = canonical::graph_sha256(&graph);
+        let before = canonical::bgraph_sha256(&graph);
         let after = upcast(graph, FormatVersion::V1_0);
         assert_eq!(
             before,
-            canonical::graph_sha256(&after),
+            canonical::bgraph_sha256(&after),
             "upcast of the current version must not touch the graph"
         );
     }

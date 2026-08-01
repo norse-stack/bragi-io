@@ -54,10 +54,10 @@ fn corpus_rfc_quic_default_mode_emits_parseable_frontmatter() {
         serde_yaml::from_str(&yaml_str).expect("frontmatter YAML must round-trip");
     // Headline keys present.
     for key in &[
-        "blazegraph_version",
+        "bragi_version",
         "config_hash",
         "flow_type",
-        "graph_sha256",
+        "bgraph_sha256",
         "schema",
         "source",
         "title",

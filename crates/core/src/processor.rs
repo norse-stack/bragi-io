@@ -149,14 +149,14 @@ impl DocumentProcessor {
         // document-namespace-scoped. These fields remain *document*
         // discriminators recorded in the doc-level envelope fence and the
         // graph.json wrapper. Block A: provenance is NOT stamped on the
-        // graph (it is not content, so it must not feed `graph_sha256`);
+        // graph (it is not content, so it must not feed `bgraph_sha256`);
         // it is constructed here — before any cache check, since it is a
         // pure function of (source bytes, config, build) — and returned
-        // beside the graph. `blazegraph_version` rides along as
+        // beside the graph. `bragi_version` rides along as
         // provenance documentation only.
         let config_hash = calculate_config_hash(config)?;
         let provenance = ParseProvenance {
-            blazegraph_version: crate::VERSION.to_string(),
+            bragi_version: crate::VERSION.to_string(),
             source_format: "pdf".to_string(),
             source_sha256: pdf_hash.clone(),
             config_hash: config_hash.clone(),
@@ -464,7 +464,7 @@ impl DocumentProcessor {
         // populated through the whole build. Here, as the last step before
         // the graph leaves the builder, we gate the *emitted* value on the
         // config: unless `include_style_info` is on, strip it to `None` so
-        // the graph carries the config-correct value. `graph_sha256`, md,
+        // the graph carries the config-correct value. `bgraph_sha256`, md,
         // and json all serialize this one graph → hash equals wire by
         // construction (the field is always on the wire as `null`; only the
         // value is gated here). Distinct `config_hash` per edition keeps the

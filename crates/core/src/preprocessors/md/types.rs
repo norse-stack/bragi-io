@@ -12,7 +12,7 @@ use crate::types::{DocumentGraph, ParseProvenance};
 /// Options controlling markdown parse behavior.
 ///
 /// `accept_drift = false` (the default) is **strict mode**: if the
-/// `graph_sha256` recomputed from the parsed graph does not match the
+/// `bgraph_sha256` recomputed from the parsed graph does not match the
 /// value embedded in the doc-level block, `parse` returns
 /// `Err(ParseError::HashMismatch { .. })`. This is the right setting
 /// for round-trip verification (B4) and for any pipeline that wants
@@ -21,11 +21,11 @@ use crate::types::{DocumentGraph, ParseProvenance};
 /// `accept_drift = true` lets the parser tolerate a hash mismatch and
 /// return `ParseResult { identity: ParseIdentity::Derivative { .. },
 /// .. }` — the graph still parses, but the caller now knows it is
-/// *derived from* (not identical to) the embedded `graph_sha256`. Use
+/// *derived from* (not identical to) the embedded `bgraph_sha256`. Use
 /// this when round-tripping a hand-edited bgraph.md.
 #[derive(Debug, Clone, Default)]
 pub struct ParseOptions {
-    /// If true, `graph_sha256` mismatch returns
+    /// If true, `bgraph_sha256` mismatch returns
     /// `ParseIdentity::Derivative` instead of erroring.
     /// Default: false (strict mode).
     pub accept_drift: bool,
@@ -49,25 +49,25 @@ pub struct ParseResult {
 
 /// Round-trip identity status for a parsed graph.
 ///
-/// `Verified` means `graph_sha256(parsed_graph) ==
-/// doc_level.graph_sha256` — the parsed graph is bit-for-bit the
+/// `Verified` means `bgraph_sha256(parsed_graph) ==
+/// doc_level.bgraph_sha256` — the parsed graph is bit-for-bit the
 /// original. `Derivative` carries both hashes so consumers can record
 /// "this graph is derived from {original_sha256}" in their own
 /// provenance metadata; the graph itself does not carry drift state.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ParseIdentity {
-    /// `graph_sha256` recomputed from the parsed graph matched the
+    /// `bgraph_sha256` recomputed from the parsed graph matched the
     /// value embedded in the doc-level block. The graph is bit-for-bit
     /// the original.
     Verified,
-    /// `graph_sha256` did not match. Only returned when
+    /// `bgraph_sha256` did not match. Only returned when
     /// `ParseOptions.accept_drift = true`. Carries both hashes for
     /// provenance.
     Derivative {
-        /// The `graph_sha256` value embedded in the source markdown's
+        /// The `bgraph_sha256` value embedded in the source markdown's
         /// doc-level block.
         original_sha256: String,
-        /// The `graph_sha256` recomputed from the parsed graph.
+        /// The `bgraph_sha256` recomputed from the parsed graph.
         recomputed_sha256: String,
     },
     // A third arm — `Unverifiable { version }` — is **reserved** for when
@@ -169,10 +169,10 @@ pub enum ParseError {
         source: serde_json::Error,
     },
 
-    /// `graph_sha256` recomputed from the parsed graph did not match
+    /// `bgraph_sha256` recomputed from the parsed graph did not match
     /// the value embedded in the doc-level block, and strict mode
     /// (`ParseOptions.accept_drift = false`) was requested.
-    #[error("graph_sha256 mismatch: original={original}, recomputed={recomputed}")]
+    #[error("bgraph_sha256 mismatch: original={original}, recomputed={recomputed}")]
     HashMismatch {
         original: String,
         recomputed: String,

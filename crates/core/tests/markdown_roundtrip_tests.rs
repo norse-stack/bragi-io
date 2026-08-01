@@ -10,7 +10,7 @@
 
 use bragi_io_core::graphs::builder::GraphBuilder;
 use bragi_io_core::graphs::node_id::NodeIdGenerator;
-use bragi_io_core::graphs::serialization::canonical::{canonical_json, graph_sha256};
+use bragi_io_core::graphs::serialization::canonical::{canonical_json, bgraph_sha256};
 use bragi_io_core::graphs::serialization::markdown::{
     emit_markdown, emit_markdown_with_options, EmitOptions,
 };
@@ -38,7 +38,7 @@ fn fixtures_dir() -> PathBuf {
 /// explicit emit argument, not graph state).
 fn synthetic_provenance() -> ParseProvenance {
     ParseProvenance {
-        blazegraph_version: "0.6.0-roundtrip".to_string(),
+        bragi_version: "0.6.0-roundtrip".to_string(),
         source_format: "markdown".to_string(),
         source_sha256: "roundtrip-source-sha".to_string(),
         config_hash: "roundtrip-config-hash".to_string(),
@@ -103,7 +103,7 @@ fn build_synthetic_graph(
 /// parsed reconstruction.
 fn fixture_provenance(name: &str) -> ParseProvenance {
     ParseProvenance {
-        blazegraph_version: "0.6.0-test".to_string(),
+        bragi_version: "0.6.0-test".to_string(),
         source_format: "pdf".to_string(),
         source_sha256: format!("test-source-sha-{name}"),
         config_hash: "test-config-hash".to_string(),
@@ -234,7 +234,7 @@ fn assert_roundtrip_identity(
         "expected Verified identity, got {:?}",
         result.identity
     );
-    assert_eq!(graph_sha256(graph), graph_sha256(&result.graph));
+    assert_eq!(bgraph_sha256(graph), bgraph_sha256(&result.graph));
     result.graph
 }
 
@@ -268,7 +268,7 @@ fn roundtrip_identity_with_style_data_verified() {
     // on the wire — re-parse, and assert the canonical bytes match and the
     // identity is `Verified`. Data on both sides, hash equals wire by
     // construction. (The null-style and this data-style graph have
-    // different `graph_sha256` — distinct editions, which is correct.)
+    // different `bgraph_sha256` — distinct editions, which is correct.)
     let mut original = build_synthetic_graph(
         vec![
             ("Section", "Introduction", 1, 0),
@@ -450,7 +450,7 @@ fn drift_detection_strict_errors() {
     // Mutate the body. Note: the JSON metadata still says
     // token_count = 2 (matching the original), so the recomputed
     // canonical bytes diverge only by content.text. The recomputed
-    // graph_sha256 differs.
+    // bgraph_sha256 differs.
     let tampered = md.replace("Original body.", "Tampered body.");
     let result = parse_markdown(&tampered, ParseOptions::default());
     assert!(
@@ -463,7 +463,7 @@ fn drift_detection_strict_errors() {
 fn drift_detection_accept_drift_returns_derivative() {
     let original = build_synthetic_graph(vec![("Paragraph", "Original body.", 1, 0)], None, None);
     let md = emit_markdown(&original, &synthetic_provenance());
-    let original_hash = graph_sha256(&original);
+    let original_hash = bgraph_sha256(&original);
     let tampered = md.replace("Original body.", "Tampered body.");
 
     let result = parse_markdown(&tampered, ParseOptions { accept_drift: true })
@@ -483,7 +483,7 @@ fn drift_detection_accept_drift_returns_derivative() {
             );
             assert_eq!(
                 recomputed_sha256,
-                graph_sha256(&result.graph),
+                bgraph_sha256(&result.graph),
                 "Derivative.recomputed_sha256 should match the parsed graph's hash",
             );
         }
@@ -498,7 +498,7 @@ fn reserved_prefix_in_body_is_handled_on_parse() {
     // should fail loud — either ReservedPrefixInBody or
     // MalformedFence is acceptable per the handoff.
     let bogus = "```bgraph\n\
-                 {\"schema\":\"1.0.0\",\"blazegraph_version\":\"0.6.0\",\"source\":{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"graph_sha256\":\"c\"}\n\
+                 {\"schema\":\"1.0.0\",\"bragi_version\":\"0.6.0\",\"source\":{\"format\":\"markdown\",\"filename\":\"x.md\",\"sha256\":\"a\"},\"flow_type\":\"Free\",\"config_hash\":\"b\",\"bgraph_sha256\":\"c\"}\n\
                  ```\n\
                  \n\
                  ```bgraph-mystery\n\
@@ -607,7 +607,7 @@ fn block_c_seam_is_a_pure_refactor() {
     // C.2: routing emit/canonicalize through the seam
     // (`FormatVersion::CURRENT`) reproduces the direct calls byte-for-
     // byte — the seam threads the version differently, it does not change
-    // the content. And the `graph_sha256` *value* is unchanged (it is
+    // the content. And the `bgraph_sha256` *value* is unchanged (it is
     // version-independent — the reset is a renumber, not a canonical-form
     // change).
     let graph = build_synthetic_graph(
@@ -629,19 +629,19 @@ fn block_c_seam_is_a_pure_refactor() {
         canonical_json(&graph),
         "the V1_0 canonicalize arm must be the identity canonicalizer"
     );
-    // the doc-level block's graph_sha256 equals the version-independent
+    // the doc-level block's bgraph_sha256 equals the version-independent
     // content-body hash — the seam did not move identity.
     let md = emit_markdown(&graph, &prov);
-    let doc_sha = doc_level_json(&md)["graph_sha256"]
+    let doc_sha = doc_level_json(&md)["bgraph_sha256"]
         .as_str()
         .unwrap()
         .to_string();
-    assert_eq!(doc_sha, graph_sha256(&graph), "graph_sha256 value must not move");
+    assert_eq!(doc_sha, bgraph_sha256(&graph), "bgraph_sha256 value must not move");
 }
 
 #[test]
 fn block_c_json_envelope_is_self_verifiable() {
-    // C.3: the json envelope now carries `graph_sha256`, equal to the md
+    // C.3: the json envelope now carries `bgraph_sha256`, equal to the md
     // doc-level block's value for the same graph; a round-tripped json
     // graph verifies to `Verified`.
     let graph = build_synthetic_graph(
@@ -653,12 +653,12 @@ fn block_c_json_envelope_is_self_verifiable() {
 
     let sorted = graph.to_sorted_graph(Some(&prov));
     // envelope value == content-body hash == md doc-level block value
-    assert_eq!(sorted.graph_sha256, graph_sha256(&graph));
+    assert_eq!(sorted.bgraph_sha256, bgraph_sha256(&graph));
     let md = emit_markdown(&graph, &prov);
     assert_eq!(
-        sorted.graph_sha256,
-        doc_level_json(&md)["graph_sha256"].as_str().unwrap(),
-        "json envelope graph_sha256 must equal the md doc-level block's"
+        sorted.bgraph_sha256,
+        doc_level_json(&md)["bgraph_sha256"].as_str().unwrap(),
+        "json envelope bgraph_sha256 must equal the md doc-level block's"
     );
 
     // serialize → deserialize → verify
@@ -680,7 +680,7 @@ fn block_c_json_verify_detects_tamper() {
     let graph = build_synthetic_graph(vec![("Paragraph", "original.", 1, 0)], Some("Doc"), None);
     let mut sorted = graph.to_sorted_graph(Some(&synthetic_provenance()));
 
-    // Tamper a body node's text; the embedded graph_sha256 is unchanged.
+    // Tamper a body node's text; the embedded bgraph_sha256 is unchanged.
     let body = sorted
         .nodes
         .iter_mut()

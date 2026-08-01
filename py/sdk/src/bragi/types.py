@@ -641,7 +641,7 @@ class ParseProvenance:
     CR-92: content-only — no ``source_filename`` (a transport/session detail).
     """
 
-    blazegraph_version: str
+    bragi_version: str
     source_format: str
     source_sha256: str
     config_hash: str
@@ -649,7 +649,7 @@ class ParseProvenance:
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "ParseProvenance":
         return cls(
-            blazegraph_version=d["blazegraph_version"],
+            bragi_version=d["bragi_version"],
             source_format=d["source_format"],
             source_sha256=d["source_sha256"],
             config_hash=d["config_hash"],
@@ -674,7 +674,7 @@ class BlazeGraph:
     nodes: List[DocumentNode]
     document_info: DocumentInfo
     structural_profile: StructuralProfile
-    graph_sha256: str = ""
+    bgraph_sha256: str = ""
     created_at: str = ""
     parse_provenance: Optional[ParseProvenance] = None
     _raw: Dict[str, Any] = field(default_factory=dict, repr=False)
@@ -759,7 +759,7 @@ class BlazeGraph:
 
         The dictionary should have the ``SortedDocumentGraph`` shape:
         ``schema_version``, ``nodes``, ``document_info``, ``structural_profile``,
-        plus the optional wrapper fields ``graph_sha256`` / ``created_at`` /
+        plus the optional wrapper fields ``bgraph_sha256`` / ``created_at`` /
         ``parse_provenance``.
         """
         nodes = [DocumentNode.from_dict(n) for n in d["nodes"]]
@@ -769,7 +769,7 @@ class BlazeGraph:
             nodes=nodes,
             document_info=DocumentInfo.from_dict(d["document_info"]),
             structural_profile=StructuralProfile.from_dict(d["structural_profile"]),
-            graph_sha256=d.get("graph_sha256", ""),
+            bgraph_sha256=d.get("bgraph_sha256", ""),
             created_at=d.get("created_at", ""),
             parse_provenance=ParseProvenance.from_dict(prov) if prov else None,
             _raw=d,

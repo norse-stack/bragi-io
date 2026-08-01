@@ -151,7 +151,7 @@ fn pod_to_json(pod: &Pod) -> Option<serde_json::Value> {
             serde_json::Value::Array(json_items)
         }
         Pod::Hash(map) => {
-            // Sorted-key order for canonicalization (graph_sha256
+            // Sorted-key order for canonicalization (bgraph_sha256
             // invariant requires deterministic serialization).
             let mut entries: Vec<(&String, &Pod)> = map.iter().collect();
             entries.sort_by(|a, b| a.0.cmp(b.0));

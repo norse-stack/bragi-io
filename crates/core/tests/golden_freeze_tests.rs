@@ -19,7 +19,7 @@
 //!     `golden/1.0.0/attention/document.bgraph.md`. Under `BLESS_GOLDEN=1`,
 //!     re-freeze (write the md + refresh `PRODUCED_BY`) instead of asserting.
 //!   * **B — roundtrip:** `parse_markdown` the frozen md and assert the
-//!     identity verdict is `Verified` (doc-level `graph_sha256`
+//!     identity verdict is `Verified` (doc-level `bgraph_sha256`
 //!     self-consistency).
 //!
 //! Family layout (all committed):
@@ -35,7 +35,7 @@
 //! freezes only bgraph.md (bgraph.json is CR-88).
 
 use bragi_io_core::config::ParsingConfig;
-use bragi_io_core::graphs::serialization::canonical::graph_sha256;
+use bragi_io_core::graphs::serialization::canonical::bgraph_sha256;
 use bragi_io_core::graphs::serialization::markdown::emit_markdown;
 use bragi_io_core::graphs::serialization::version::FormatVersion;
 use bragi_io_core::preprocessors::docx::parse_docx;
@@ -163,7 +163,7 @@ fn regenerate_attention() -> (DocumentGraph, ParseProvenance) {
     // edition**. `style_info` is now an always-present, config-valued node
     // field, gated at *build* time: the golden `config.yaml` leaves
     // `include_style_info` off (the default), so the built graph carries
-    // `style_info: None` on every node. `graph_sha256` covers that (`null`),
+    // `style_info: None` on every node. `bgraph_sha256` covers that (`null`),
     // the emitter serializes it (`"style":null`), and a re-parse
     // reconstructs `None` → the recomputed hash matches → `Verified` on the
     // default path. No emit flag: the emitter serializes exactly what the
@@ -328,7 +328,7 @@ fn golden_freeze_attention_roundtrips_verified() {
 
     assert!(
         matches!(result.identity, ParseIdentity::Verified),
-        "golden bgraph.md must self-verify (doc-level graph_sha256); got {:?}",
+        "golden bgraph.md must self-verify (doc-level bgraph_sha256); got {:?}",
         result.identity
     );
 }
@@ -461,7 +461,7 @@ fn check_light_reproduces(ch: LightChannel) {
     }
 }
 
-/// Test B analog — the frozen md self-verifies (doc-level graph_sha256).
+/// Test B analog — the frozen md self-verifies (doc-level bgraph_sha256).
 fn check_light_roundtrips(ch: LightChannel) {
     let path = light_golden_md_path(ch);
     // Same race-avoidance as attention's Test B: under bless, Test A is
@@ -479,7 +479,7 @@ fn check_light_roundtrips(ch: LightChannel) {
 
     assert!(
         matches!(result.identity, ParseIdentity::Verified),
-        "frozen {} golden must self-verify (doc-level graph_sha256); got {:?}",
+        "frozen {} golden must self-verify (doc-level bgraph_sha256); got {:?}",
         ch.dir_name(),
         result.identity
     );
@@ -518,12 +518,12 @@ fn golden_freeze_demo_docx_roundtrips_verified() {
 //     (bless-writable, un-ignored via `test_fixtures/**/*.json`). The one
 //     wall-clock field, `created_at`, is pinned to the epoch sentinel core
 //     already uses for "no real emission time" (`default_created_at`), so the
-//     bytes are deterministic. It is an envelope field (outside `graph_sha256`),
+//     bytes are deterministic. It is an envelope field (outside `bgraph_sha256`),
 //     so pinning it moves bytes, never identity.
 //   * **self-verify** — `verify_identity() == Verified`: the loaded json proves
 //     it is untampered from its own embedded hash (CR-88's library capability,
 //     now tested against the golden).
-//   * **sha-parity** — the json envelope `graph_sha256` equals the content-body
+//   * **sha-parity** — the json envelope `bgraph_sha256` equals the content-body
 //     hash the md encoding embeds for the same graph. This is the json↔md
 //     honesty check: the two serializations must agree on identity.
 //   * **round-trip** — serialize → `from_str` → `verify_identity()` still
@@ -571,11 +571,11 @@ fn assert_schema_contract(g: &SortedDocumentGraph) -> Result<(), String> {
             g.schema_version
         ));
     }
-    if g.graph_sha256.len() != 64 || !g.graph_sha256.bytes().all(|b| b.is_ascii_hexdigit()) {
+    if g.bgraph_sha256.len() != 64 || !g.bgraph_sha256.bytes().all(|b| b.is_ascii_hexdigit()) {
         return Err(format!(
-            "graph_sha256 must be 64 hex chars, got {:?} ({} chars)",
-            g.graph_sha256,
-            g.graph_sha256.len()
+            "bgraph_sha256 must be 64 hex chars, got {:?} ({} chars)",
+            g.bgraph_sha256,
+            g.bgraph_sha256.len()
         ));
     }
     if g.nodes.is_empty() {
@@ -662,14 +662,14 @@ fn check_json_wire(graph: &DocumentGraph, provenance: &ParseProvenance, path: &P
 
     assert!(
         matches!(sorted.verify_identity(), ParseIdentity::Verified),
-        "golden json ({label}) must self-verify (envelope graph_sha256); got {:?}",
+        "golden json ({label}) must self-verify (envelope bgraph_sha256); got {:?}",
         sorted.verify_identity()
     );
 
-    let content_hash = graph_sha256(graph);
+    let content_hash = bgraph_sha256(graph);
     assert_eq!(
-        sorted.graph_sha256, content_hash,
-        "golden json ({label}) envelope graph_sha256 disagrees with the md/content-body hash — \
+        sorted.bgraph_sha256, content_hash,
+        "golden json ({label}) envelope bgraph_sha256 disagrees with the md/content-body hash — \
          the json and md encodings have diverged on identity"
     );
 
@@ -768,6 +768,60 @@ fn boundary_breaking_enum_out_of_domain_is_rejected_by_the_type_layer() {
     assert!(
         err.contains("deserialize failed"),
         "the enum-domain break must fail at deserialize; got: {err}"
+    );
+}
+
+#[test]
+fn boundary_breaking_renamed_required_field_is_rejected_by_the_type_layer() {
+    // A *renamed* required field reads as a missing one. `bragi_version` carries
+    // no `#[serde(default)]`, so the break is loud at deserialize — the same
+    // class of change T1.5b R2 made when the producer-version field took its
+    // current name. Renaming the key must never read as "absent and fine".
+    let mut v = attention_json_value();
+    let prov = v["parse_provenance"]
+        .as_object_mut()
+        .expect("parse_provenance is a json object");
+    let carried = prov
+        .remove("bragi_version")
+        .expect("the clean golden carries bragi_version");
+    prov.insert("renamed_version_field".to_string(), carried);
+    let err = contract_of(&v).expect_err("a renamed required field must be rejected");
+    assert!(
+        err.contains("deserialize failed"),
+        "a renamed required field must fail at deserialize; got: {err}"
+    );
+}
+
+#[test]
+fn boundary_breaking_renamed_defaulted_field_is_caught_by_the_contract() {
+    // The asymmetric case, and the reason this contract exists. `bgraph_sha256`
+    // *does* carry `#[serde(default)]` (to keep pre-Block-C fixtures loadable),
+    // so renaming it does NOT fail at deserialize — it silently defaults to the
+    // empty string, and `verify_identity` reads empty as "no embedded hash to
+    // check against" rather than as a failure. The type layer cannot catch this
+    // one; only the contract's shape check stands between a renamed identity
+    // field and a silent pass.
+    let mut v = attention_json_value();
+    let obj = v.as_object_mut().expect("envelope is a json object");
+    let carried = obj
+        .remove("bgraph_sha256")
+        .expect("the clean golden carries bgraph_sha256");
+    obj.insert("renamed_digest_field".to_string(), carried);
+
+    // Precondition: the type layer lets this through, so the assertion below is
+    // really testing the contract and not serde.
+    let sorted: SortedDocumentGraph = serde_json::from_value(v.clone())
+        .expect("a renamed defaulted field still deserializes — that is the hazard");
+    assert!(
+        matches!(sorted.verify_identity(), ParseIdentity::Verified),
+        "identity verification cannot see the loss either — it treats the \
+         defaulted empty hash as 'nothing to check'"
+    );
+
+    let err = contract_of(&v).expect_err("a renamed defaulted field must fail the contract");
+    assert!(
+        err.contains("bgraph_sha256"),
+        "the failure must name bgraph_sha256; got: {err}"
     );
 }
 

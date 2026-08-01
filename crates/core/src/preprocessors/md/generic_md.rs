@@ -98,7 +98,7 @@ fn flush_inline_run(out: &mut String, run: &mut String, bold: bool, italic: bool
 ///
 /// `opts` is currently unused — the generic-markdown path has no
 /// strict-vs-drift distinction to honor (there's no embedded
-/// `graph_sha256` to verify against). The argument is present for
+/// `bgraph_sha256` to verify against). The argument is present for
 /// API symmetry with [`super::bgraph_md::parse`].
 pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError> {
     // 1. Frontmatter pre-pass — leaves `body` as a `&str` slice into
@@ -486,7 +486,7 @@ pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError
     let source_sha256 = sha256_hex(input.as_bytes());
     let config_hash = "none".to_string();
     let provenance = ParseProvenance {
-        blazegraph_version: crate::VERSION.to_string(),
+        bragi_version: crate::VERSION.to_string(),
         source_format: "markdown".to_string(),
         source_sha256: source_sha256.clone(),
         config_hash: config_hash.clone(),

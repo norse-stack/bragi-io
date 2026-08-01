@@ -466,7 +466,7 @@ fn run_parse_markdown(args: ParseArgs, content: String) -> Result<()> {
             recomputed,
         }) => {
             eprintln!(
-                "\n❌ bgraph.md graph_sha256 mismatch.\n\
+                "\n❌ bgraph.md bgraph_sha256 mismatch.\n\
                  \toriginal:   {original}\n\
                  \trecomputed: {recomputed}\n\
                  \n\
@@ -486,7 +486,7 @@ fn run_parse_markdown(args: ParseArgs, content: String) -> Result<()> {
 
     match result.identity {
         ParseIdentity::Verified => {
-            println!("✅ Round-trip identity verified (graph_sha256 matches).");
+            println!("✅ Round-trip identity verified (bgraph_sha256 matches).");
         }
         ParseIdentity::Derivative {
             original_sha256,
@@ -494,8 +494,8 @@ fn run_parse_markdown(args: ParseArgs, content: String) -> Result<()> {
         } => {
             eprintln!(
                 "⚠️  Graph reconstructed from drifted bgraph.md (--accept-drift):\n\
-                 \toriginal graph_sha256:   {original_sha256}\n\
-                 \trecomputed graph_sha256: {recomputed_sha256}\n\
+                 \toriginal bgraph_sha256:   {original_sha256}\n\
+                 \trecomputed bgraph_sha256: {recomputed_sha256}\n\
                  \tThe reconstructed graph is a derivative, not an identity round-trip."
             );
         }
@@ -520,7 +520,7 @@ fn run_parse_docx(args: ParseArgs) -> Result<()> {
         std::fs::read(&args.input).map_err(|e| anyhow!("failed to read {}: {e}", args.input))?;
 
     // `ParseOptions` is shared with the markdown channel; `accept_drift`
-    // is meaningless for DOCX (no embedded `graph_sha256` to verify),
+    // is meaningless for DOCX (no embedded `bgraph_sha256` to verify),
     // but we thread the build's compile-time strictness through for API
     // symmetry (Block C.3 — no runtime toggle).
     let opts = ParseOptions {

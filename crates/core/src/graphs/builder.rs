@@ -21,7 +21,7 @@ impl GraphBuilder {
     /// content ‖ occurrence)` — document-unique and edit-stable. There is
     /// no `(source_hash, config_hash)` document namespace anymore
     /// (`source_sha256` / `config_hash` stay as *document* discriminators
-    /// in `ParseProvenance` and `graph_sha256`, not as node scoping).
+    /// in `ParseProvenance` and `bgraph_sha256`, not as node scoping).
     ///
     /// Channel contract: `elements` arrives at this boundary fully
     /// transformed — no merge/reorder/post-process happens here. We

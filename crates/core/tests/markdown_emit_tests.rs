@@ -20,7 +20,7 @@ fn fixtures_dir() -> PathBuf {
 /// A: provenance is an explicit emit argument, not graph state).
 fn fixture_provenance(name: &str) -> ParseProvenance {
     ParseProvenance {
-        blazegraph_version: "0.6.0-test".to_string(),
+        bragi_version: "0.6.0-test".to_string(),
         source_format: "pdf".to_string(),
         source_sha256: format!("test-source-sha-{name}"),
         config_hash: "test-config-hash".to_string(),
@@ -79,11 +79,11 @@ fn emit_matches_node_counts_for_shannon_fixture() {
     // graph-identity only.
     for key in [
         "schema",
-        "blazegraph_version",
+        "bragi_version",
         "source",
         "flow_type",
         "config_hash",
-        "graph_sha256",
+        "bgraph_sha256",
     ] {
         assert!(
             parsed.get(key).is_some(),
@@ -137,12 +137,12 @@ fn emit_matches_node_counts_for_shannon_fixture() {
 /// loudly here rather than shipping a mismatch (the exact pre-CR-87 bug:
 /// json advertised `0.9.0` while md advertised `5.0.0`).
 ///
-/// (2) **Cache tracks the build (Option A).** `BLAZEGRAPH_VERSION ==
+/// (2) **Cache tracks the build (Option A).** `BRAGI_VERSION ==
 /// crate::VERSION`. If a hand-maintained cache-version literal is ever
 /// re-introduced (the drifted `0.1.1` this CR killed), this fails.
 #[test]
 fn cr87_version_axes_do_not_drift() {
-    use bragi_io_core::cache::versions::BLAZEGRAPH_VERSION;
+    use bragi_io_core::cache::versions::BRAGI_VERSION;
     use bragi_io_core::{BGRAPH_FORMAT_VERSION, VERSION};
 
     let graph = DocumentGraph::new();
@@ -175,8 +175,8 @@ fn cr87_version_axes_do_not_drift() {
     );
 
     assert_eq!(
-        BLAZEGRAPH_VERSION, VERSION,
-        "CR-87 drift: cache BLAZEGRAPH_VERSION ({BLAZEGRAPH_VERSION}) != crate::VERSION \
+        BRAGI_VERSION, VERSION,
+        "CR-87 drift: cache BRAGI_VERSION ({BRAGI_VERSION}) != crate::VERSION \
          ({VERSION}) — the graph cache key must track the build so output changes \
          invalidate stale entries",
     );

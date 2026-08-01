@@ -12,8 +12,8 @@ pub mod versions {
     /// invalidated cached graphs). Standing discipline: bump
     /// `crate::VERSION` whenever output changes (schema or formatting) —
     /// the cache then invalidates correctly, for free. The drift-guard
-    /// test asserts `BLAZEGRAPH_VERSION == crate::VERSION`.
-    pub const BLAZEGRAPH_VERSION: &str = crate::VERSION;
+    /// test asserts `BRAGI_VERSION == crate::VERSION`.
+    pub const BRAGI_VERSION: &str = crate::VERSION;
     pub const PROCESSING_VERSION: &str = "1.0.0";
 
     /// **Preprocessor-interface version** — the *preprocessor axis* of the
@@ -33,7 +33,7 @@ pub mod versions {
 pub struct GraphCacheKey {
     pub xhtml_hash: String,
     pub config_hash: String,
-    pub blazegraph_version: String,
+    pub bragi_version: String,
     pub processing_version: String,
 }
 
@@ -42,7 +42,7 @@ impl GraphCacheKey {
         Self {
             xhtml_hash,
             config_hash,
-            blazegraph_version: versions::BLAZEGRAPH_VERSION.to_string(),
+            bragi_version: versions::BRAGI_VERSION.to_string(),
             processing_version: versions::PROCESSING_VERSION.to_string(),
         }
     }
@@ -53,7 +53,7 @@ impl GraphCacheKey {
         let mut hasher = Sha256::new();
         hasher.update(&self.xhtml_hash);
         hasher.update(&self.config_hash);
-        hasher.update(&self.blazegraph_version);
+        hasher.update(&self.bragi_version);
         hasher.update(&self.processing_version);
         format!("{:x}", hasher.finalize())
     }
@@ -74,7 +74,7 @@ impl GraphCacheValue {
             graph,
             created_at: Utc::now(),
             processing_time_ms,
-            cache_version: versions::BLAZEGRAPH_VERSION.to_string(),
+            cache_version: versions::BRAGI_VERSION.to_string(),
         }
     }
 }

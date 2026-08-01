@@ -25,7 +25,7 @@ use serde::Serialize;
 /// (`ParsingConfig::include_style_info` → `processor::rules_and_graph`).
 /// The emitter is now dumb — it serializes exactly what the graph holds
 /// (`null` when the build stripped style, data when it kept it), so
-/// `graph_sha256` equals the wire in every mode. The struct is retained as
+/// `bgraph_sha256` equals the wire in every mode. The struct is retained as
 /// the seam for future *serialization-time* flags; there are none today.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct EmitOptions {}
@@ -36,7 +36,7 @@ pub struct EmitOptions {}
 ///
 /// `provenance` is an explicit, compile-time-required argument (Block A
 /// / Amendment M): it feeds only the doc-level *envelope* block — never
-/// `graph_sha256`, which covers the content body alone. It used to live
+/// `bgraph_sha256`, which covers the content body alone. It used to live
 /// on `graph.document_info` (with a runtime `.expect()` here); threading
 /// it as a value keeps zero hidden state on `DocumentGraph`.
 ///
@@ -123,7 +123,7 @@ fn emit_metadata_block(metadata: &DocumentMetadata) -> String {
 /// CR-57 (v2.1.0+ / Amendment I.4): `title` moves out to the
 /// `bgraph-metadata` block. The doc-level `bgraph` block carries only
 /// graph identity (schema, version, source, flow_type, config_hash,
-/// graph_sha256).
+/// bgraph_sha256).
 fn emit_document_level_block(graph: &DocumentGraph, provenance: &ParseProvenance) -> String {
     #[derive(Serialize)]
     struct DocLevelSource<'a> {
@@ -137,7 +137,7 @@ fn emit_document_level_block(graph: &DocumentGraph, provenance: &ParseProvenance
         // CR-82: artifact discriminator, emitted right after `schema`.
         // Always present (default `document`); part of graph identity.
         kind: &'a str,
-        blazegraph_version: &'a str,
+        bragi_version: &'a str,
         source: DocLevelSource<'a>,
         flow_type: &'a FlowType,
         // title removed — moved to bgraph-metadata (CR-56 § I.4)
@@ -150,7 +150,7 @@ fn emit_document_level_block(graph: &DocumentGraph, provenance: &ParseProvenance
         #[serde(skip_serializing_if = "Option::is_none")]
         topology: &'a Option<String>,
         config_hash: &'a str,
-        graph_sha256: String,
+        bgraph_sha256: String,
     }
 
     let block = DocLevelBlock {
@@ -161,7 +161,7 @@ fn emit_document_level_block(graph: &DocumentGraph, provenance: &ParseProvenance
         // so the emit is byte-identical.
         schema: FormatVersion::CURRENT.schema_str(),
         kind: &graph.document_info.kind,
-        blazegraph_version: &provenance.blazegraph_version,
+        bragi_version: &provenance.bragi_version,
         source: DocLevelSource {
             format: &provenance.source_format,
             sha256: &provenance.source_sha256,
@@ -169,7 +169,7 @@ fn emit_document_level_block(graph: &DocumentGraph, provenance: &ParseProvenance
         flow_type: &graph.document_info.flow_type,
         topology: &graph.document_info.topology,
         config_hash: &provenance.config_hash,
-        graph_sha256: canonical::graph_sha256(graph),
+        bgraph_sha256: canonical::bgraph_sha256(graph),
     };
     format!(
         "```bgraph\n{}\n```",
@@ -261,14 +261,14 @@ fn node_metadata_json(node: &DocumentNode) -> String {
         // v4.0.0 (Block A / Amendment M): the CR-78 `confidence` field is
         // gone from the wire — schema-ahead placeholders in the identity
         // form are retired (an empty→populated flip silently churned
-        // `graph_sha256`). The parser tolerates it on legacy inputs
+        // `bgraph_sha256`). The parser tolerates it on legacy inputs
         // (unknown fields are dropped).
         /// CR-45: verbatim Tika style projection (foreground / background
         /// color, font_family, font_size, is_bold, is_italic, font_class).
         /// CR-86 / DT-12: **always emitted** — `null` when
         /// `node.style_info` is `None` (the style-off edition), data when
         /// populated. No `skip_serializing_if`: the key is always on the
-        /// wire, mirroring `DocumentNode.style_info`, so `graph_sha256`
+        /// wire, mirroring `DocumentNode.style_info`, so `bgraph_sha256`
         /// (over the graph) equals the emitted bytes by construction. The
         /// value is gated at build time
         /// (`ParsingConfig::include_style_info`), never here. Shape is
@@ -319,7 +319,7 @@ mod tests {
     /// state).
     fn test_provenance() -> ParseProvenance {
         ParseProvenance {
-            blazegraph_version: "0.6.0".to_string(),
+            bragi_version: "0.6.0".to_string(),
             source_format: "markdown".to_string(),
             source_sha256: "deadbeef".to_string(),
             config_hash: "cafef00d".to_string(),
@@ -534,11 +534,11 @@ mod tests {
             serde_json::from_str(json_line).expect("doc-level JSON parses");
         for key in [
             "schema",
-            "blazegraph_version",
+            "bragi_version",
             "source",
             "flow_type",
             "config_hash",
-            "graph_sha256",
+            "bgraph_sha256",
         ] {
             assert!(
                 parsed.get(key).is_some(),
@@ -563,10 +563,10 @@ mod tests {
             source.get("filename").is_none(),
             "doc-level source block must not carry `filename` (CR-92); got {json_line}"
         );
-        let h = parsed["graph_sha256"]
+        let h = parsed["bgraph_sha256"]
             .as_str()
-            .expect("graph_sha256 is a string");
-        assert_eq!(h.len(), 64, "graph_sha256 should be 64 hex chars; got {h}");
+            .expect("bgraph_sha256 is a string");
+        assert_eq!(h.len(), 64, "bgraph_sha256 should be 64 hex chars; got {h}");
     }
 
     #[test]
@@ -618,7 +618,7 @@ mod tests {
         // Section + one Paragraph, the body shape (after the doc-level
         // + bgraph-metadata blocks) must be byte-identical to the
         // template below. The doc-level + metadata blocks change with
-        // provenance / graph_sha256 / metadata fields, so we anchor on
+        // provenance / bgraph_sha256 / metadata fields, so we anchor on
         // the section heading line.
         let graph = build_graph(vec![
             ("Section", "Intro", 1, 0),
@@ -1112,7 +1112,7 @@ mod tests {
         // When a node's `style_info` is `None` (the default null-style
         // edition — the build stripped it), the key is STILL emitted, as
         // `null`. This is the CR-86 always-present contract: the field is
-        // never omitted, so `graph_sha256` (which now covers `null`) equals
+        // never omitted, so `bgraph_sha256` (which now covers `null`) equals
         // the wire and a default-path re-parse self-verifies.
         let graph = build_graph(vec![("Paragraph", "Body.", 1, 0)]);
         let md = emit(&graph);
