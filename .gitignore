@@ -30,7 +30,14 @@ jre/
 
 # Cache directories
 .cache/
-blazegraph-cache/
+bragi-cache/
+
+# Python (the SDK's test venv — `make test-python` expects py/sdk/.venv)
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+/py/sdk/dist/
 
 # Output files (user-generated)
 *.json

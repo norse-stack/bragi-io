@@ -127,7 +127,7 @@ test: ## Run the full core + CLI test suite (incl golden freeze + json wire)
 	cargo test -p bragi-io-core -p bragi-io
 
 # --- Python SDK ----------------------------------------------------------
-PY_DIR      := blazegraph-python
+PY_DIR      := py/sdk
 PY_FIXTURES := $(PY_DIR)/tests/fixtures
 
 ## sync-python-fixture: regenerate the Python SDK's 1.0.0 graph.json fixtures
@@ -138,6 +138,9 @@ PY_FIXTURES := $(PY_DIR)/tests/fixtures
 ## fixture is a pure-Rust Free-flow parse. Ground truth for the SDK type tests.
 sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fixtures
 	@echo "🐍 Regenerating Python SDK fixtures (1.0.0 graph.json)..."
+	@# The dir holds only generated (gitignored) json, so git cannot track it and
+	@# it does not survive a clone or a directory move. Create it, don't assume it.
+	@mkdir -p $(PY_FIXTURES)
 	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
 	./$(CLI_BIN) parse -i $(GOLDEN_PDF) -f graph --include-style-info \
 		-c $(GOLDEN_CONFIG) -o $(PY_FIXTURES)/attention_graph.json \
