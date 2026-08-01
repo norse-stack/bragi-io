@@ -114,9 +114,9 @@ curl -X POST http://localhost:8080/v1/process/pdf \
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `RUST_LOG` | `info` | Log level for the CLI (`debug`, `info`, `warn`, `error`) |
-| `BLAZEGRAPH_CLI_PATH` | `/usr/local/bin/blazegraph-io` | Path to the CLI binary |
-| `BLAZEGRAPH_JAR_PATH` | `/app/tika-jni.jar` | Path to the Tika JAR |
-| `BLAZEGRAPH_CONFIG_PATH` | `/app/default_config.yaml` | Default config file |
+| `BRAGI_CLI_PATH` | `/usr/local/bin/blazegraph-io` | Path to the CLI binary |
+| `BRAGI_JAR_PATH` | `/app/tika-jni.jar` | Path to the Tika JAR |
+| `BRAGI_CONFIG_PATH` | `/app/default_config.yaml` | Default config file |
 
 ---
 

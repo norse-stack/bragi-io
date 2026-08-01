@@ -133,7 +133,7 @@ struct ParseArgs {
     // =========================================================================
     /// Override cache directory location.
     /// Default: ~/.local/share/blazegraph/cache/
-    /// Also configurable via BLAZEGRAPH_CACHE_DIR env var.
+    /// Also configurable via BRAGI_CACHE_DIR env var.
     #[arg(long)]
     cache_dir: Option<String>,
 
@@ -757,7 +757,7 @@ fn resolve_cache_dir(args: &ParseArgs) -> Result<String> {
     if let Some(ref dir) = args.cache_dir {
         return Ok(dir.clone());
     }
-    if let Ok(dir) = std::env::var("BLAZEGRAPH_CACHE_DIR") {
+    if let Ok(dir) = std::env::var("BRAGI_CACHE_DIR") {
         if !dir.is_empty() {
             return Ok(dir);
         }

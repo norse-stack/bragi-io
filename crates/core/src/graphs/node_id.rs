@@ -4,7 +4,7 @@
 //! plus its **breadcrumb path** (ancestor-heading trail) plus an
 //! **occurrence** index. There is no per-document namespace.
 //!
-//!   node_id = UUIDv5(BLAZEGRAPH_NS,
+//!   node_id = UUIDv5(BRAGI_NS,
 //!                    breadcrumb_path ‖ canonical_local_content ‖ occurrence)
 //!
 //! ## Why (CR-83)
@@ -12,7 +12,7 @@
 //! The previous derivation (CR-12 / CR-47) was **positional inside a
 //! source-hash-scoped namespace**:
 //!
-//!   node_id = UUIDv5( UUIDv5(BLAZEGRAPH_NS, "{source_sha}:{config_hash}"),
+//!   node_id = UUIDv5( UUIDv5(BRAGI_NS, "{source_sha}:{config_hash}"),
 //!                     text_order )
 //!
 //! Two failure modes for *editable* content (md / docx):
@@ -52,9 +52,20 @@
 use crate::types::NodeId;
 use uuid::Uuid;
 
-/// Fixed namespace UUID for all Blazegraph node IDs.
-/// Computed as UUIDv5(DNS, "blazegraph.io") = a6f4212f-b2b3-5e5f-a124-e4f54c8bc5f9
-const BLAZEGRAPH_NS: Uuid = Uuid::from_bytes([
+/// Fixed namespace UUID for all bragi node IDs.
+///
+/// **Frozen. Never recompute this value.** Every `node_id` is
+/// `UUIDv5(BRAGI_NS, …)`, so editing these bytes silently re-IDs every node in
+/// every document ever produced — a content migration, not a rename.
+///
+/// The line below is a *historical record of where the value came from*, not an
+/// instruction for deriving it. It is deliberately out of step with the const's
+/// name, and that is not a bug to fix: at T1.5b R3 the **name** moved to bragi
+/// while the **value** stayed put, precisely so the re-ID at R4 would be
+/// attributable to the 16 bytes and nothing else.
+///
+/// Historically: `UUIDv5(DNS, "blazegraph.io")` = a6f4212f-b2b3-5e5f-a124-e4f54c8bc5f9
+const BRAGI_NS: Uuid = Uuid::from_bytes([
     0xa6, 0xf4, 0x21, 0x2f, 0xb2, 0xb3, 0x5e, 0x5f, 0xa1, 0x24, 0xe4, 0xf5, 0x4c, 0x8b, 0xc5, 0xf9,
 ]);
 
@@ -100,7 +111,7 @@ impl NodeIdGenerator {
     }
 
     /// CR-83 / DT-10 (option C): the **document-root** node ID — the content
-    /// fingerprint of the whole document, `UUIDv5(BLAZEGRAPH_NS, ‖ sorted node
+    /// fingerprint of the whole document, `UUIDv5(BRAGI_NS, ‖ sorted node
     /// IDs)` over every non-root node.
     ///
     /// Why a fingerprint rather than a constant or a `source_sha256` scope:
@@ -115,7 +126,7 @@ impl NodeIdGenerator {
     /// - **Collision-free across distinct content**; two byte-identical docs
     ///   share a root (a doc-level dedup signal). Document identity *across
     ///   revisions* is URD's `stable_doc_id`, not this.
-    /// - Empty document (no child nodes) → `UUIDv5(BLAZEGRAPH_NS, [])`, one
+    /// - Empty document (no child nodes) → `UUIDv5(BRAGI_NS, [])`, one
     ///   well-defined degenerate root.
     ///
     /// Caveat (DT-10): the root is therefore the one node that rotates on
@@ -129,7 +140,7 @@ impl NodeIdGenerator {
         for id in sorted {
             key.extend_from_slice(id.as_bytes());
         }
-        Uuid::new_v5(&BLAZEGRAPH_NS, &key)
+        Uuid::new_v5(&BRAGI_NS, &key)
     }
 
     /// Derive a node ID from its canonical local content, breadcrumb path,
@@ -168,7 +179,7 @@ impl NodeIdGenerator {
             key.push(SEP_OCCURRENCE);
             key.extend_from_slice(&occurrence.to_le_bytes());
         }
-        Uuid::new_v5(&BLAZEGRAPH_NS, &key)
+        Uuid::new_v5(&BRAGI_NS, &key)
     }
 }
 
@@ -318,14 +329,14 @@ mod tests {
         expected_key.push(0x1f);
         expected_key.push(0x1f);
         expected_key.extend_from_slice(b"Hello.");
-        let expected = Uuid::new_v5(&BLAZEGRAPH_NS, &expected_key);
+        let expected = Uuid::new_v5(&BRAGI_NS, &expected_key);
         assert_eq!(NodeIdGenerator::node_id(b"Hello.", &["Intro"], 0), expected);
 
         // With occurrence 1: append 0x1e ‖ 1u32-le.
         let mut expected_key1 = expected_key.clone();
         expected_key1.push(0x1e);
         expected_key1.extend_from_slice(&1u32.to_le_bytes());
-        let expected1 = Uuid::new_v5(&BLAZEGRAPH_NS, &expected_key1);
+        let expected1 = Uuid::new_v5(&BRAGI_NS, &expected_key1);
         assert_eq!(
             NodeIdGenerator::node_id(b"Hello.", &["Intro"], 1),
             expected1

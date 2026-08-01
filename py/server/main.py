@@ -26,9 +26,9 @@ app = FastAPI(
     version="0.1.1",
 )
 
-CLI_PATH = os.environ.get("BLAZEGRAPH_CLI_PATH", "/app/bin/blazegraph-cli")
-JAR_PATH = os.environ.get("BLAZEGRAPH_JAR_PATH", "/app/bin/blazing-tika-jni.jar")
-DEFAULT_CONFIG_PATH = os.environ.get("BLAZEGRAPH_CONFIG_PATH")
+CLI_PATH = os.environ.get("BRAGI_CLI_PATH", "/app/bin/blazegraph-cli")
+JAR_PATH = os.environ.get("BRAGI_JAR_PATH", "/app/bin/blazing-tika-jni.jar")
+DEFAULT_CONFIG_PATH = os.environ.get("BRAGI_CONFIG_PATH")
 
 
 def _error(status_code: int, message: str) -> JSONResponse:

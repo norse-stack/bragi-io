@@ -42,7 +42,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy CLI binary from builder (package is `bragi-io`, bin is `bragi`; kept at the
-# internal path /app/bin/blazegraph-cli, which BLAZEGRAPH_CLI_PATH points at).
+# internal path /app/bin/blazegraph-cli, which BRAGI_CLI_PATH points at).
 COPY --from=builder /build/target/release/bragi /app/bin/blazegraph-cli
 
 # Copy Tika JAR and default processing config
@@ -54,9 +54,9 @@ COPY server/ /app/server/
 RUN python3.11 -m pip install --no-cache-dir --break-system-packages -r /app/server/requirements.txt
 
 # Environment
-ENV BLAZEGRAPH_CLI_PATH=/app/bin/blazegraph-cli
-ENV BLAZEGRAPH_JAR_PATH=/app/bin/blazing-tika-jni.jar
-ENV BLAZEGRAPH_CONFIG_PATH=/app/bin/config.yaml
+ENV BRAGI_CLI_PATH=/app/bin/blazegraph-cli
+ENV BRAGI_JAR_PATH=/app/bin/blazing-tika-jni.jar
+ENV BRAGI_CONFIG_PATH=/app/bin/config.yaml
 ENV JAVA_HOME=/usr/lib/jvm/jre
 
 EXPOSE 8080

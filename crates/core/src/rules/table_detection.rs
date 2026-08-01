@@ -36,8 +36,8 @@
 //! pattern) of per-leaf `{page, region_label, bbox, n_peaks, n_peaks_y,
 //! y_peak_cv, density, is_table}` for every body leaf. This is the eyeball
 //! tuning surface for `max_y_peak_cv` / `min_density`. It is **never** part of
-//! `bgraph.md` or the wire. Gated by `BLAZEGRAPH_TABLE_DUMP` (default on); the
-//! cache root comes from `BLAZEGRAPH_CACHE_DIR` (same as CR-71A).
+//! `bgraph.md` or the wire. Gated by `BRAGI_TABLE_DUMP` (default on); the
+//! cache root comes from `BRAGI_CACHE_DIR` (same as CR-71A).
 
 use super::engine::{FontSizeAnalysis, ParseRule, RuleEngine};
 use crate::analytics::page_stats::RegionSignature;
@@ -196,7 +196,7 @@ impl<'a> ParseRule for TableDetectionRule<'a> {
         );
 
         // Off-wire debug dump — every body leaf, with its verdict.
-        if std::env::var("BLAZEGRAPH_TABLE_DUMP")
+        if std::env::var("BRAGI_TABLE_DUMP")
             .map(|v| v != "0" && !v.eq_ignore_ascii_case("false"))
             .unwrap_or(true)
         {
@@ -217,7 +217,7 @@ impl<'a> ParseRule for TableDetectionRule<'a> {
 impl<'a> TableDetectionRule<'a> {
     /// Write the off-wire `<doc>.table.json` debug artifact. Mirrors the
     /// CR-71A `evidence.json` path convention: cache root from
-    /// `BLAZEGRAPH_CACHE_DIR` (default `cache`), one file under
+    /// `BRAGI_CACHE_DIR` (default `cache`), one file under
     /// `{cache}/table/`. The stem is derived from the document metadata title
     /// when present, else `unknown` — the rule has no provenance handle.
     fn emit_debug_dump(
@@ -267,7 +267,7 @@ impl<'a> TableDetectionRule<'a> {
         };
 
         let cache_root =
-            std::env::var("BLAZEGRAPH_CACHE_DIR").unwrap_or_else(|_| "cache".to_string());
+            std::env::var("BRAGI_CACHE_DIR").unwrap_or_else(|_| "cache".to_string());
         let dir = format!("{cache_root}/table");
         std::fs::create_dir_all(&dir)?;
         let stem = self.doc_stem();
@@ -282,10 +282,10 @@ impl<'a> TableDetectionRule<'a> {
     /// it uses the document title from metadata when available, else `unknown`.
     /// Sanitized to a filesystem-safe token.
     fn doc_stem(&self) -> String {
-        // `BLAZEGRAPH_TABLE_DUMP_STEM` lets the CLI/harness pin the filename to
+        // `BRAGI_TABLE_DUMP_STEM` lets the CLI/harness pin the filename to
         // the source stem (the rule otherwise can't see the source filename).
         let raw =
-            std::env::var("BLAZEGRAPH_TABLE_DUMP_STEM").unwrap_or_else(|_| "unknown".to_string());
+            std::env::var("BRAGI_TABLE_DUMP_STEM").unwrap_or_else(|_| "unknown".to_string());
         sanitize_stem(&raw)
     }
 }

@@ -5,7 +5,7 @@ parsing via the auto-located ``bragi`` binary and the Tika JVM bridge.
 Unlike ``test_local.py`` (which mocks ``subprocess``), this runs the actual
 pipeline against the golden ``attention.pdf`` and deserializes the real output.
 
-Pre-B7 (no published GitHub release), it points ``BLAZEGRAPH_CLI_PATH`` at the
+Pre-B7 (no published GitHub release), it points ``BRAGI_CLI_PATH`` at the
 locally-built ``target/release/bragi`` (search-order step 1 in
 ``_download.py``) and ``JAVA_HOME`` at an available JRE — no download needed.
 Skips cleanly when those aren't present (e.g. CI without a prior `make build-cli`).
@@ -65,13 +65,13 @@ pytestmark = pytest.mark.skipif(
 
 def test_local_parse_pdf_end_to_end(monkeypatch, tmp_path) -> None:
     """A real Tika-backed parse of attention.pdf through the SDK's local path."""
-    monkeypatch.setenv("BLAZEGRAPH_CLI_PATH", str(_CLI_BIN))
+    monkeypatch.setenv("BRAGI_CLI_PATH", str(_CLI_BIN))
     monkeypatch.setenv("JAVA_HOME", _JRE)
     monkeypatch.setenv("PREPROCESSOR_JRE_PATH", _JRE)
     monkeypatch.setenv("PREPROCESSOR_JAR_PATH", str(_TIKA_JAR))
     # Isolate the CLI's cache so the run is fresh (Tika actually executes) and
     # leaves no artifacts in the working tree.
-    monkeypatch.setenv("BLAZEGRAPH_CACHE_DIR", str(tmp_path / "cache"))
+    monkeypatch.setenv("BRAGI_CACHE_DIR", str(tmp_path / "cache"))
 
     graph = _local_parse_pdf(str(_ATTENTION_PDF))
 

@@ -125,7 +125,7 @@ def find_or_download_cli() -> Path:
     """Locate the bragi binary, downloading if necessary.
 
     Search order:
-    1. ``BLAZEGRAPH_CLI_PATH`` environment variable
+    1. ``BRAGI_CLI_PATH`` environment variable
     2. ``_runtime/bin/bragi`` (package-local, previous download)
     3. PATH / ``~/.cargo/bin/bragi``
     4. Download from GitHub Releases
@@ -137,13 +137,13 @@ def find_or_download_cli() -> Path:
         BlazeGraphNotFoundError: If download fails or platform is unsupported.
     """
     # 1. Environment variable override
-    env_path = os.environ.get("BLAZEGRAPH_CLI_PATH")
+    env_path = os.environ.get("BRAGI_CLI_PATH")
     if env_path:
         p = Path(env_path)
         if p.exists():
             return p
         raise BlazeGraphNotFoundError(
-            f"BLAZEGRAPH_CLI_PATH points to non-existent file: {env_path}"
+            f"BRAGI_CLI_PATH points to non-existent file: {env_path}"
         )
 
     # 2. Package-local binary

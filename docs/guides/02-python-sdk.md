@@ -237,7 +237,7 @@ All runtime artifacts live inside the package directory (`site-packages/bragi/_r
 
 ### Binary resolution order
 
-1. `BLAZEGRAPH_CLI_PATH` environment variable (user override)
+1. `BRAGI_CLI_PATH` environment variable (user override)
 2. `_runtime/bin/blazegraph-cli` (package-local, from previous download)
 3. System PATH / `~/.cargo/bin/blazegraph-cli` (user-installed via `cargo install`)
 4. Auto-download from GitHub Releases

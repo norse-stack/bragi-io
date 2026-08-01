@@ -17,7 +17,7 @@ impl GraphBuilder {
 
     /// Build a document graph with deterministic, content-derived node IDs.
     ///
-    /// CR-83: each node's ID is `UUIDv5(BLAZEGRAPH_NS, breadcrumb ‖
+    /// CR-83: each node's ID is `UUIDv5(BRAGI_NS, breadcrumb ‖
     /// content ‖ occurrence)` — document-unique and edit-stable. There is
     /// no `(source_hash, config_hash)` document namespace anymore
     /// (`source_sha256` / `config_hash` stay as *document* discriminators
@@ -160,7 +160,7 @@ impl GraphBuilder {
         // finished node set. We built under a content-free placeholder
         // (`id_gen.root_id()`) because child IDs aren't known until the loop
         // runs; the root's *persisted* ID is the content fingerprint of all
-        // non-root nodes — `UUIDv5(BLAZEGRAPH_NS, ‖ sorted node IDs)`. This
+        // non-root nodes — `UUIDv5(BRAGI_NS, ‖ sorted node IDs)`. This
         // makes the root derivable from the node set alone (URD can verify a
         // doc's identity without re-parsing) and rotate exactly when the
         // document's content/structure changes — never on a cosmetic edit.

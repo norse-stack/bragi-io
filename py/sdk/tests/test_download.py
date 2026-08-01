@@ -51,23 +51,23 @@ class TestDetectPlatform:
 class TestFindOrDownloadCli:
     """Test CLI discovery with various environment states."""
 
-    @patch.dict(os.environ, {"BLAZEGRAPH_CLI_PATH": "/usr/local/bin/blazegraph-cli"})
+    @patch.dict(os.environ, {"BRAGI_CLI_PATH": "/usr/local/bin/blazegraph-cli"})
     @patch("bragi._download.Path.exists", return_value=True)
     def test_env_var_found(self, _exists) -> None:
         result = find_or_download_cli()
         assert str(result) == "/usr/local/bin/blazegraph-cli"
 
-    @patch.dict(os.environ, {"BLAZEGRAPH_CLI_PATH": "/nonexistent/blazegraph-cli"})
+    @patch.dict(os.environ, {"BRAGI_CLI_PATH": "/nonexistent/blazegraph-cli"})
     def test_env_var_not_found(self) -> None:
-        with pytest.raises(BlazeGraphNotFoundError, match="BLAZEGRAPH_CLI_PATH"):
+        with pytest.raises(BlazeGraphNotFoundError, match="BRAGI_CLI_PATH"):
             find_or_download_cli()
 
     @patch.dict(os.environ, {}, clear=True)
     @patch("bragi._download.shutil.which", return_value=None)
     def test_falls_through_to_download(self, _which, tmp_path: Path) -> None:
         """When nothing is found locally, it attempts download."""
-        # Remove BLAZEGRAPH_CLI_PATH from env
-        os.environ.pop("BLAZEGRAPH_CLI_PATH", None)
+        # Remove BRAGI_CLI_PATH from env
+        os.environ.pop("BRAGI_CLI_PATH", None)
 
         with patch("bragi._download._BIN_DIR", tmp_path / "bin"):
             with patch(
@@ -80,7 +80,7 @@ class TestFindOrDownloadCli:
     @patch.dict(os.environ, {}, clear=True)
     @patch("bragi._download.shutil.which", return_value="/usr/bin/blazegraph-cli")
     def test_found_on_path(self, _which, tmp_path: Path) -> None:
-        os.environ.pop("BLAZEGRAPH_CLI_PATH", None)
+        os.environ.pop("BRAGI_CLI_PATH", None)
         with patch("bragi._download._BIN_DIR", tmp_path / "bin"):
             result = find_or_download_cli()
             assert str(result) == "/usr/bin/blazegraph-cli"

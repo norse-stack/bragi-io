@@ -129,7 +129,7 @@ struct EvidenceArtifact {
 /// PATH CONVENTION (a flagged fork — see the CR-71A report): `graph_sanity::apply`
 /// has access to neither the storage handle nor the cache dir / pdf hash (and
 /// the CR forbids a `processor.rs` change to thread them in). So: the cache root
-/// is taken from `BLAZEGRAPH_CACHE_DIR` (the same env var the CLI / sb_eval.sh
+/// is taken from `BRAGI_CACHE_DIR` (the same env var the CLI / sb_eval.sh
 /// use), defaulting to `cache`, and the filename stem from the threaded-in
 /// `ParseProvenance` (Block A moved provenance off the graph; it now arrives as
 /// an explicit argument). CR-92 cut `source_filename` — a transport detail, not
@@ -184,7 +184,7 @@ fn emit_evidence_artifact(
         sections,
     };
 
-    let cache_root = std::env::var("BLAZEGRAPH_CACHE_DIR").unwrap_or_else(|_| "cache".to_string());
+    let cache_root = std::env::var("BRAGI_CACHE_DIR").unwrap_or_else(|_| "cache".to_string());
     let dir = format!("{cache_root}/evidence");
     std::fs::create_dir_all(&dir)?;
     let stem = doc_stem(provenance);
