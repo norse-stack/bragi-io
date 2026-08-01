@@ -267,8 +267,16 @@ impl PdfBackend for TikaJniBackend {
             .map_err(|e| anyhow!("Failed to create Java byte array: {:?}", e))?;
 
         // Call static method: TikaMain.processToXhtml(byte[]) -> String
+        //
+        // DO NOT rename this to `com/bragi/...`. It is a JNI class lookup by
+        // string, and the class lives inside the vendored `blazing-tika-jni.jar`
+        // as `com/blazegraph/TikaMain` — the jar is a binary artifact that no
+        // rename sweep touches. The compiler cannot check this string and no
+        // test exercises it (the golden suite is deliberately JVM-free), so a
+        // rename here fails only at runtime, on the real Tika path. T1.5b R3
+        // renamed it and broke exactly that.
         let result = env.call_static_method(
-            "com/bragi/TikaMain",
+            "com/blazegraph/TikaMain",
             "processToXhtml",
             "([B)Ljava/lang/String;",
             &[(&java_bytes).into()],
