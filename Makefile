@@ -118,13 +118,19 @@ golden-test: ## Run the JVM-free golden freeze + roundtrip tests
 golden-bless: ## Re-bless the golden family (md + json) in-place, JVM-free
 	BLESS_GOLDEN=1 cargo test -p bragi-io-core --test golden_freeze_tests
 
-## test: the self-contained Rust sweep — core + CLI, including the golden freeze
-## (bgraph.md + the json wire) and the schema-contract boundary proof. JVM-free:
-## the golden freeze replays the committed C2 cache. This is the submodule half
-## of the release runbook's Step 4; pair it with `make test-python` (the SDK
-## suite) here and `make test-downstream` (api + urd) in the parent Makefile.
-test: ## Run the full core + CLI test suite (incl golden freeze + json wire)
+## test: the domain's full sweep — the Rust core + CLI (including the golden
+## freeze, the json wire and the schema-contract boundary proof) AND the Python
+## SDK suite. JVM-free: the golden freeze replays the committed C2 cache.
+##
+## The SDK suite is IN this target on purpose. It used to be a separate
+## `test-python` nobody's gate called, so the whole Python surface — the
+## client, the local runner, the download path, the type layer — sat outside
+## every green checkmark the repo printed. `make test` is what the mono's
+## domain runner and CI both call; anything not reachable from here is not
+## actually tested. Pair with `make test-downstream` (api + urd) in the mono.
+test: ## Run the full test suite — core + CLI + the Python SDK
 	cargo test -p bragi-io-core -p bragi-io
+	@$(MAKE) --no-print-directory test-python
 
 # --- Python SDK ----------------------------------------------------------
 PY_DIR      := py/sdk
@@ -149,7 +155,19 @@ sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fix
 		-o $(PY_FIXTURES)/demo_md_graph.json
 	@echo "✅ Python fixtures regenerated under $(PY_FIXTURES)/"
 
-test-python: sync-python-fixture ## Regenerate fixtures + run the Python SDK test suite
+## The SDK's test venv, created on demand. The repo's python is uv-managed, and
+## the venv is gitignored — so a fresh clone (and every CI runner) has no venv at
+## all. Building it here is what lets `test` depend on the SDK suite without
+## assuming someone ran uv by hand first.
+$(PY_DIR)/.venv/bin/python:
+	@command -v uv >/dev/null 2>&1 || { \
+	  echo "❌ uv not found — the Python SDK suite needs it: https://docs.astral.sh/uv/"; \
+	  exit 1; }
+	@echo "🐍 Creating the SDK test venv at $(PY_DIR)/.venv ..."
+	uv venv $(PY_DIR)/.venv
+	uv pip install --python $(PY_DIR)/.venv/bin/python -e "$(PY_DIR)[dev]"
+
+test-python: sync-python-fixture $(PY_DIR)/.venv/bin/python ## Regenerate fixtures + run the Python SDK test suite
 	cd $(PY_DIR) && .venv/bin/python -m pytest -q
 
 ## build-python: build the SDK sdist + wheel into py/sdk/dist/ with uv.

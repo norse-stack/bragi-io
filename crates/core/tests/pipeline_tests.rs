@@ -9,7 +9,8 @@
 //! The middle (rules engine) is intentionally NOT snapshot-tested —
 //! that's where we want room to iterate.
 //!
-//! To regenerate fixtures: `make test-generate-fixtures`
+//! Fixtures here are committed, not generated: CR-93 retired the generator and
+//! kept the snapshots as inputs. A missing one is a git problem, not a build step.
 //! No JVM required to run these tests.
 
 use bragi_io_core::analytics::DocumentAnalysis;
@@ -39,7 +40,7 @@ fn load_summary(fixture_name: &str) -> Value {
     let path = fixtures_dir().join(fixture_name).join("summary.json");
     let contents = std::fs::read_to_string(&path).unwrap_or_else(|_| {
         panic!(
-            "Missing fixture: {}. Run `make test-generate-fixtures`",
+            "Missing fixture: {}. These fixtures are COMMITTED, not generated — restore it from git. (CR-93 retired `make test-generate-fixtures`.)",
             path.display()
         )
     });
@@ -50,7 +51,7 @@ fn load_xhtml(fixture_name: &str) -> String {
     let path = fixtures_dir().join(fixture_name).join("stage1a_xhtml.html");
     std::fs::read_to_string(&path).unwrap_or_else(|_| {
         panic!(
-            "Missing fixture: {}. Run `make test-generate-fixtures`",
+            "Missing fixture: {}. These fixtures are COMMITTED, not generated — restore it from git. (CR-93 retired `make test-generate-fixtures`.)",
             path.display()
         )
     })
@@ -62,7 +63,7 @@ fn load_text_elements(fixture_name: &str) -> Value {
         .join("stage1b_text_elements.json");
     let contents = std::fs::read_to_string(&path).unwrap_or_else(|_| {
         panic!(
-            "Missing fixture: {}. Run `make test-generate-fixtures`",
+            "Missing fixture: {}. These fixtures are COMMITTED, not generated — restore it from git. (CR-93 retired `make test-generate-fixtures`.)",
             path.display()
         )
     });

@@ -32,7 +32,7 @@ fn load_fixture_graph(name: &str) -> (DocumentGraph, Value) {
     let path = fixtures_dir().join(name).join("stage3_graph.json");
     let raw = std::fs::read_to_string(&path).unwrap_or_else(|_| {
         panic!(
-            "Missing fixture: {}. Run `make test-generate-fixtures`",
+            "Missing fixture: {}. These fixtures are COMMITTED, not generated — restore it from git. (CR-93 retired `make test-generate-fixtures`.)",
             path.display()
         )
     });
