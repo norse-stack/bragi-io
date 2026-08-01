@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# blazegraph-io pre-commit — secret gate for the public repo.
+# bragi-io pre-commit — secret gate for the public repo.
 # Two layers: (1) a filename guard that works even without gitleaks,
 # (2) a gitleaks content scan of the staged diff. Override with
 # `git commit --no-verify` only when you are certain a hit is a false positive.

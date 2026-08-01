@@ -2,7 +2,7 @@
 
 Core library for semantic document graph processing. Parses PDFs into structured, queryable graphs with bounding boxes.
 
-This is the library crate that powers [`blazegraph-io`](https://crates.io/crates/blazegraph-io) (the CLI) and the [Blazegraph API](https://blazegraph.io).
+This is the library crate that powers [`bragi-io`](https://crates.io/crates/bragi-io) (the CLI) and the [Bragi API](https://bragi-io.com).
 
 ## Usage
 
@@ -27,12 +27,12 @@ for node in &graph.nodes {
 
 ## When to use this vs the CLI
 
-Use **bragi-io-core** when you want to embed the parser in your own Rust application. Use **blazegraph-io** (the CLI crate) for command-line usage.
+Use **bragi-io-core** when you want to embed the parser in your own Rust application. Use **bragi-io** (the CLI crate) for command-line usage.
 
 ## Documentation
 
-- [Schema Reference](https://github.com/AmplifyTechnology/blazegraph-io/blob/main/docs/reference/02-schema-reference.md) — Full `bgraph.json` field documentation
-- [Configuration Reference](https://github.com/AmplifyTechnology/blazegraph-io/blob/main/docs/reference/03-config-reference.md) — Tuning for your document type
+- [Schema Reference](https://github.com/norse-stack/bragi-io/blob/main/docs/reference/02-schema-reference.md) — Full `bgraph.json` field documentation
+- [Configuration Reference](https://github.com/norse-stack/bragi-io/blob/main/docs/reference/03-config-reference.md) — Tuning for your document type
 
 ## License
 

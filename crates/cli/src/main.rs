@@ -23,10 +23,10 @@ use bragi_io::JreManager;
 // B5 (2026-05-10) introduced an explicit subcommand surface — `parse`
 // and `strip` — alongside markdown input/output support. There is no
 // flag-only fallthrough mode: prior to B5 the CLI was a bare-args
-// invocation (`blazegraph -i foo.pdf`), but the design dialogue locked
+// invocation (`bragi -i foo.pdf`), but the design dialogue locked
 // in subcommands for clarity (no real users to preserve). The README
-// and example invocations use `blazegraph parse ...` and
-// `blazegraph strip ...` as the canonical forms.
+// and example invocations use `bragi parse ...` and
+// `bragi strip ...` as the canonical forms.
 
 #[derive(Parser)]
 #[command(name = "bragi")]
@@ -90,7 +90,7 @@ struct ParseArgs {
     /// Output file path (if not specified, auto-generated based on input).
     ///
     /// Auto-generated suffix is `.bgraph.md` for `-f markdown`, otherwise
-    /// `_blazegraph.json`.
+    /// `_bragi.json`.
     #[arg(short, long)]
     output: Option<String>,
 
@@ -132,7 +132,7 @@ struct ParseArgs {
     // Cache control (CR-11)
     // =========================================================================
     /// Override cache directory location.
-    /// Default: ~/.local/share/blazegraph/cache/
+    /// Default: ~/.local/share/bragi/cache/
     /// Also configurable via BRAGI_CACHE_DIR env var.
     #[arg(long)]
     cache_dir: Option<String>,
@@ -280,7 +280,7 @@ fn main() -> Result<()> {
 // =========================================================================
 
 fn run_parse(args: ParseArgs) -> Result<()> {
-    println!("🦀 Blazegraph Document Parser");
+    println!("🦀 Bragi Document Parser");
 
     if args.show_configs {
         show_help();
@@ -337,7 +337,7 @@ fn run_parse(args: ParseArgs) -> Result<()> {
              Supported formats:\n\
              \t.pdf            — PDF documents (full parsing pipeline)\n\
              \t.docx           — Word documents (OOXML channel)\n\
-             \t.bgraph.md      — Blazegraph markdown round-trip artifact\n\
+             \t.bgraph.md      — Bragi markdown round-trip artifact\n\
              \t.md, .markdown  — Generic markdown\n",
             args.input
         )),
@@ -712,7 +712,7 @@ fn detect_input_format(path: &Path) -> Result<InputFormat> {
 ///
 /// Suffix table:
 /// - `markdown` → `.bgraph.md`
-/// - everything else → `_blazegraph.json`
+/// - everything else → `_bragi.json`
 ///
 /// The `config` suffix (`_{config_stem}`) is preserved from pre-B5
 /// behavior on the JSON formats; it is intentionally NOT applied to
@@ -736,7 +736,7 @@ fn resolve_output_path(args: &ParseArgs) -> String {
     // Output-suffix table (B6):
     // - `-f markdown` (generic) → `.md`
     // - `-f bgraph-md` → `.bgraph.md`
-    // - everything else (graph/sequential/flat) → `_blazegraph.json`
+    // - everything else (graph/sequential/flat) → `_bragi.json`
     match args.output_format.as_str() {
         "markdown" => return format!("{input_name}.md"),
         "bgraph-md" => return format!("{input_name}.bgraph.md"),
@@ -749,10 +749,10 @@ fn resolve_output_path(args: &ParseArgs) -> String {
         .and_then(|s| s.to_str())
         .map(|s| format!("_{s}"))
         .unwrap_or_default();
-    format!("{input_name}{config_suffix}_blazegraph.json")
+    format!("{input_name}{config_suffix}_bragi.json")
 }
 
-/// Resolve cache directory: CLI flag > env var > default (~/.local/share/blazegraph/cache/)
+/// Resolve cache directory: CLI flag > env var > default (~/.local/share/bragi/cache/)
 fn resolve_cache_dir(args: &ParseArgs) -> Result<String> {
     if let Some(ref dir) = args.cache_dir {
         return Ok(dir.clone());
@@ -762,7 +762,7 @@ fn resolve_cache_dir(args: &ParseArgs) -> Result<String> {
             return Ok(dir);
         }
     }
-    // Default: ~/.local/share/blazegraph/cache/
+    // Default: ~/.local/share/bragi/cache/
     #[cfg(feature = "jni-backend")]
     {
         let data_dir = JreManager::get_data_dir()?;
@@ -771,7 +771,7 @@ fn resolve_cache_dir(args: &ParseArgs) -> Result<String> {
     #[cfg(not(feature = "jni-backend"))]
     {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-        Ok(format!("{}/.local/share/blazegraph/cache", home))
+        Ok(format!("{}/.local/share/bragi/cache", home))
     }
 }
 
@@ -864,27 +864,27 @@ fn show_help() {
     );
 
     println!("\n📝 Usage Examples:");
-    println!("  blazegraph parse -i document.pdf");
-    println!("  blazegraph parse -i document.docx");
-    println!("  blazegraph parse -i document.docx -f markdown -o document.md");
-    println!("  blazegraph parse -i document.pdf -f bgraph-md -o document.bgraph.md");
-    println!("  blazegraph parse -i document.md -f markdown -o roundtrip.md");
-    println!("  blazegraph parse -i document.md -f graph -o document.json");
-    println!("  blazegraph parse -i document.bgraph.md -o document.json");
-    println!("  blazegraph parse -i document.bgraph.md --accept-drift -o derived.json");
+    println!("  bragi parse -i document.pdf");
+    println!("  bragi parse -i document.docx");
+    println!("  bragi parse -i document.docx -f markdown -o document.md");
+    println!("  bragi parse -i document.pdf -f bgraph-md -o document.bgraph.md");
+    println!("  bragi parse -i document.md -f markdown -o roundtrip.md");
+    println!("  bragi parse -i document.md -f graph -o document.json");
+    println!("  bragi parse -i document.bgraph.md -o document.json");
+    println!("  bragi parse -i document.bgraph.md --accept-drift -o derived.json");
     println!(
-        "  blazegraph strip -i document.bgraph.md -o document.md   # default: body+frontmatter"
+        "  bragi strip -i document.bgraph.md -o document.md   # default: body+frontmatter"
     );
-    println!("  blazegraph strip -i document.bgraph.md --mode body-only -o document_body.md");
+    println!("  bragi strip -i document.bgraph.md --mode body-only -o document_body.md");
     println!(
-        "  blazegraph strip -i document.bgraph.md --node-types header,footer,margin -o clean.md"
+        "  bragi strip -i document.bgraph.md --node-types header,footer,margin -o clean.md"
     );
 
     #[cfg(feature = "jni-backend")]
     {
         println!("\n🔧 JNI Backend:");
         println!(
-            "  First run will auto-download Java Runtime (~60MB) to ~/.local/share/blazegraph/jre"
+            "  First run will auto-download Java Runtime (~60MB) to ~/.local/share/bragi/jre"
         );
         println!("  Or specify your own JRE: --jre-path /path/to/jre");
     }

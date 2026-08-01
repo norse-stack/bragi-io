@@ -24,7 +24,7 @@ use std::path::Path;
 pub enum CachePoint {
     /// C0: Original PDF bytes (source)
     C0,
-    /// C1: Blazegraph XHTML from Tika/JNI extraction (intermediate)
+    /// C1: Bragi XHTML from Tika/JNI extraction (intermediate)
     C1,
     /// C2: PreprocessorOutput — parsed elements + metadata (intermediate)
     C2,
@@ -190,7 +190,7 @@ pub trait DocumentStorage {
     fn get_pdf(&self, hash: &str) -> Result<Option<Vec<u8>>>;
     fn store_pdf(&self, hash: &str, data: &[u8]) -> Result<()>;
 
-    // C1: Blazegraph XHTML (raw string, not JSON)
+    // C1: Bragi XHTML (raw string, not JSON)
     fn get_xhtml(&self, pdf_hash: &str) -> Result<Option<String>>;
     fn store_xhtml(&self, pdf_hash: &str, xhtml: &str) -> Result<()>;
 
@@ -303,7 +303,7 @@ impl DocumentStorage for FileStorage {
         Ok(())
     }
 
-    // C1: Blazegraph XHTML (raw string file, .xhtml extension)
+    // C1: Bragi XHTML (raw string file, .xhtml extension)
     fn get_xhtml(&self, pdf_hash: &str) -> Result<Option<String>> {
         let path = self.xhtml_path(pdf_hash);
         if Path::new(&path).exists() {
@@ -581,7 +581,7 @@ mod tests {
 
     #[test]
     fn test_file_storage_roundtrip() {
-        let temp_dir = std::env::temp_dir().join("blazegraph_test_cache_cr11");
+        let temp_dir = std::env::temp_dir().join("bragi_test_cache_cr11");
         let _ = std::fs::remove_dir_all(&temp_dir); // clean slate
         let storage = FileStorage::new(temp_dir.to_str().unwrap()).unwrap();
 
@@ -655,7 +655,7 @@ mod tests {
 
     #[test]
     fn test_clear_cache_cascade() {
-        let temp_dir = std::env::temp_dir().join("blazegraph_test_clear_cr11");
+        let temp_dir = std::env::temp_dir().join("bragi_test_clear_cr11");
         let _ = std::fs::remove_dir_all(&temp_dir);
         let storage = FileStorage::new(temp_dir.to_str().unwrap()).unwrap();
 

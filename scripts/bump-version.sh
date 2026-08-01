@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Bundle-bump the Blazegraph CODE/RELEASE version across every crate + the
+# Bundle-bump the Bragi CODE/RELEASE version across every crate + the
 # Python SDK in one shot. This is the "which build?" axis (crate::VERSION, the
 # cargo-publish / PyPI number), bumped whenever emitted output changes.
 #
@@ -14,8 +14,8 @@
 #
 # Sites stamped (kept in lockstep):
 #   - crates/core/Cargo.toml        [package] version  (bragi-io-core)
-#   - crates/cli/Cargo.toml         [package] version  (blazegraph-io CLI)
-#   - py/sdk/pyproject.toml  [project] version  (blazegraph-io SDK)
+#   - crates/cli/Cargo.toml         [package] version  (bragi-io CLI)
+#   - py/sdk/pyproject.toml  [project] version  (bragi-io SDK)
 # The Python __init__.__version__ reads from installed metadata — no 4th site.
 #
 set -euo pipefail

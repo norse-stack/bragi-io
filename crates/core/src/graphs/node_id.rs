@@ -38,7 +38,7 @@
 //!   `bgraph_sha256`). They are no longer *node* scoping.
 //! - Cross-corpus **content dedup** (identical content → one stored blob)
 //!   is the *absolute* coordinate and lives in URD's content-addressed
-//!   store — out of scope here. Blazegraph's bgraph is a unique-keyed
+//!   store — out of scope here. Bragi's bgraph is a unique-keyed
 //!   faithful graph; making the parse-level ID content-addressed would
 //!   collide two identical paragraphs and break the `bgraph_sha256`
 //!   round-trip. See CR-83 and CR-47.
@@ -117,7 +117,7 @@ impl NodeIdGenerator {
     /// Why a fingerprint rather than a constant or a `source_sha256` scope:
     /// - **Derivable from the node set alone** (no source / provenance), so
     ///   URD can recompute or verify a document's identity from just its node
-    ///   IDs — no re-parse through Blazegraph (DT-10's headline property).
+    ///   IDs — no re-parse through Bragi (DT-10's headline property).
     /// - **Reorder-stable**: the IDs are sorted, so reordering siblings (same
     ///   ID set) keeps the same root.
     /// - **Edit-granular**: rotates only when some node's identity changes

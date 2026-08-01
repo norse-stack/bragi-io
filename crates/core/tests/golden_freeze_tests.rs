@@ -179,7 +179,7 @@ fn regenerate_bgraph_md() -> String {
     emit_markdown(&graph, &provenance)
 }
 
-/// `blazegraph-io` git HEAD sha — the codebase_sha binding recorded in the
+/// `bragi-io` git HEAD sha — the codebase_sha binding recorded in the
 /// `PRODUCED_BY` sidecar. Not part of any serialized artifact.
 fn git_head_sha() -> String {
     let out = std::process::Command::new("git")

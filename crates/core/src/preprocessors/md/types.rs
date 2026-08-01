@@ -100,10 +100,8 @@ pub enum ParseIdentity {
 /// [`StripMode::BodyWithFrontmatter`] supersedes it under the universal
 /// YAML-frontmatter markdown convention.
 ///
-/// [Strip ergonomics]:
-/// https://github.com/AmplifyTechnology/blazegraph-io-app/blob/main/docs/P2/core/architecture/08-bgraph-md-format.md#strip-ergonomics
-/// [Structural rule for content boundaries]:
-/// https://github.com/AmplifyTechnology/blazegraph-io-app/blob/main/docs/P2/core/architecture/08-bgraph-md-format.md#structural-rule-for-content-boundaries
+/// See the bgraph.md format spec, § *Strip ergonomics* and § *Structural rule
+/// for content boundaries*.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StripMode {
     /// **Default.** Strip every bgraph fence (per-element + doc-level)

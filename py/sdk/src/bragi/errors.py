@@ -1,31 +1,31 @@
-"""Exception hierarchy for Blazegraph SDK."""
+"""Exception hierarchy for Bragi SDK."""
 
 
-class BlazeGraphError(Exception):
-    """Base exception for all Blazegraph errors."""
+class BragiError(Exception):
+    """Base exception for all Bragi errors."""
 
     pass
 
 
-class BlazeGraphAuthError(BlazeGraphError):
+class BragiAuthError(BragiError):
     """Raised on 401 responses (bad or missing API key)."""
 
     pass
 
 
-class BlazeGraphCreditsError(BlazeGraphError):
+class BragiCreditsError(BragiError):
     """Raised on 402 responses (insufficient credits)."""
 
     pass
 
 
-class BlazeGraphProcessingError(BlazeGraphError):
+class BragiProcessingError(BragiError):
     """Raised on 500 responses or CLI processing failures."""
 
     pass
 
 
-class BlazeGraphNotFoundError(BlazeGraphError):
-    """Raised when the blazegraph-cli binary is not found (local mode only)."""
+class BragiNotFoundError(BragiError):
+    """Raised when the bragi binary is not found (local mode only)."""
 
     pass

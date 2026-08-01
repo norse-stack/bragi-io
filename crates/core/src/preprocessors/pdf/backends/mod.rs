@@ -1,13 +1,13 @@
 //! PDF Backend trait and backend enum
 //!
 //! Defines the interface that all PDF extraction backends must implement.
-//! All backends produce the same Blazegraph XHTML intermediate format.
+//! All backends produce the same Bragi XHTML intermediate format.
 
 use anyhow::Result;
 
 /// Backend trait for PDF extraction
 ///
-/// All backends must produce the same Blazegraph XHTML format with:
+/// All backends must produce the same Bragi XHTML format with:
 /// - Page divs with data-page attributes
 /// - Spans with data-bbox, data-line, data-segment attributes
 /// - CSS font classes in <style> block
@@ -15,7 +15,7 @@ use anyhow::Result;
 ///
 /// This allows the XHTML parser to be shared across all backends.
 pub trait PdfBackend: Send + Sync {
-    /// Extract PDF bytes to Blazegraph XHTML format
+    /// Extract PDF bytes to Bragi XHTML format
     fn extract_to_xhtml(&self, pdf_bytes: &[u8]) -> Result<String>;
 
     /// Backend identifier for logging/debugging

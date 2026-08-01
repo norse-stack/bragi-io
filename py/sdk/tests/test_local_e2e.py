@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 
 from bragi.local import _local_parse_pdf
-from bragi.types import BlazeGraph
+from bragi.types import Bragi
 
 _HERE = Path(__file__).resolve().parent
 _SUBMODULE_ROOT = _HERE.parent.parent  # …/bragi-io/
@@ -75,7 +75,7 @@ def test_local_parse_pdf_end_to_end(monkeypatch, tmp_path) -> None:
 
     graph = _local_parse_pdf(str(_ATTENTION_PDF))
 
-    assert isinstance(graph, BlazeGraph)
+    assert isinstance(graph, Bragi)
     assert graph.schema_version == "1.0.0"
     assert len(graph.nodes) > 0
     # PDF-via-Tika invariants (not byte-pinned to the committed fixture, since a

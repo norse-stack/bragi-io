@@ -1689,7 +1689,7 @@ mod tests {
 
     #[test]
     fn with_links_external_ref_resolved() {
-        // The external hyperlink (r:id → https://blazegraph.io/) resolves to
+        // The external hyperlink (r:id → https://bragi-io.com/) resolves to
         // exactly one ExternalRef::Uri with the visible link text.
         let graph = parse_fixture("with_links.docx");
         let externals: Vec<&ExternalRef> = graph
@@ -1706,7 +1706,7 @@ mod tests {
         assert_eq!(r.text, "the project site", "visible link text");
         match &r.target {
             ExternalRefTarget::Uri { url } => {
-                assert_eq!(url, "https://blazegraph.io/", "URL from rels Target")
+                assert_eq!(url, "https://bragi-io.com/", "URL from rels Target")
             }
         }
     }

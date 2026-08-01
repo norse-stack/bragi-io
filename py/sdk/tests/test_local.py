@@ -8,9 +8,9 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from bragi.errors import BlazeGraphProcessingError, BlazeGraphNotFoundError
+from bragi.errors import BragiProcessingError, BragiNotFoundError
 from bragi.local import _local_parse_pdf
-from bragi.types import BlazeGraph
+from bragi.types import Bragi
 
 _FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -33,7 +33,7 @@ class TestLocalParsePdf:
         tmp_path: Path,
     ) -> None:
         # Set up mock CLI path
-        mock_cli.return_value = tmp_path / "blazegraph-cli"
+        mock_cli.return_value = tmp_path / "bragi"
         mock_jre.return_value = tmp_path / "jre"
 
         # Create a dummy PDF
@@ -63,7 +63,7 @@ class TestLocalParsePdf:
 
         graph = _local_parse_pdf(str(pdf))
 
-        assert isinstance(graph, BlazeGraph)
+        assert isinstance(graph, Bragi)
         assert graph.schema_version == "1.0.0"
         assert len(graph.nodes) == 179
         mock_run.assert_called_once()
@@ -82,7 +82,7 @@ class TestLocalParsePdf:
         mock_cli: MagicMock,
         tmp_path: Path,
     ) -> None:
-        mock_cli.return_value = tmp_path / "blazegraph-cli"
+        mock_cli.return_value = tmp_path / "bragi"
         mock_jre.return_value = tmp_path / "jre"
 
         pdf = tmp_path / "test.pdf"
@@ -93,7 +93,7 @@ class TestLocalParsePdf:
         result.stderr = b"Error: corrupt PDF"
         mock_run.return_value = result
 
-        with pytest.raises(BlazeGraphProcessingError, match="corrupt PDF"):
+        with pytest.raises(BragiProcessingError, match="corrupt PDF"):
             _local_parse_pdf(str(pdf))
 
     @patch("bragi.local.find_or_download_cli")
@@ -106,7 +106,7 @@ class TestLocalParsePdf:
         mock_cli: MagicMock,
         tmp_path: Path,
     ) -> None:
-        mock_cli.return_value = tmp_path / "blazegraph-cli"
+        mock_cli.return_value = tmp_path / "bragi"
         mock_jre.return_value = tmp_path / "jre"
 
         pdf = tmp_path / "test.pdf"
@@ -118,7 +118,7 @@ class TestLocalParsePdf:
         result.stderr = b""
         mock_run.return_value = result
 
-        with pytest.raises(BlazeGraphProcessingError, match="did not produce output"):
+        with pytest.raises(BragiProcessingError, match="did not produce output"):
             _local_parse_pdf(str(pdf))
 
     @patch("bragi.local.find_or_download_cli")
@@ -131,7 +131,7 @@ class TestLocalParsePdf:
         mock_cli: MagicMock,
         tmp_path: Path,
     ) -> None:
-        mock_cli.return_value = tmp_path / "blazegraph-cli"
+        mock_cli.return_value = tmp_path / "bragi"
         mock_jre.return_value = tmp_path / "jre"
 
         pdf = tmp_path / "test.pdf"

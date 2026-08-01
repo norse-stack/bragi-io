@@ -20,8 +20,8 @@ cli=$(first_version "$ROOT/crates/cli/Cargo.toml")
 py=$(first_version "$ROOT/py/sdk/pyproject.toml")
 
 echo "  bragi-io-core (Cargo.toml) : $core"
-echo "  blazegraph-io  cli (Cargo.toml) : $cli"
-echo "  blazegraph-io  sdk (pyproject)  : $py"
+echo "  bragi-io  cli (Cargo.toml) : $cli"
+echo "  bragi-io  sdk (pyproject)  : $py"
 
 if [[ "$core" == "$cli" && "$cli" == "$py" ]]; then
   echo "✅ code/release version coherent: $core"

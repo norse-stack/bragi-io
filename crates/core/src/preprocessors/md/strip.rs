@@ -291,7 +291,7 @@ fn extract_doc_level_json_line(input: &str) -> Result<Option<&str>, ParseError> 
     Ok(None)
 }
 
-/// Apply the spec's [Structural rule for content boundaries] to remove
+/// Apply the spec's structural rule for content boundaries to remove
 /// every element whose per-element fence tag is in `tags`. Non-matching
 /// bgraph fences pass through verbatim.
 ///
@@ -309,8 +309,6 @@ fn extract_doc_level_json_line(input: &str) -> Result<Option<&str>, ParseError> 
 /// deletion boundary) follows the same discipline as
 /// [`strip_all_fences`].
 ///
-/// [Structural rule for content boundaries]:
-/// https://github.com/AmplifyTechnology/blazegraph-io-app/blob/main/docs/P2/core/architecture/08-bgraph-md-format.md#structural-rule-for-content-boundaries
 fn strip_with_node_types(input: &str, tags: &[String]) -> Result<String, ParseError> {
     // Split into line views (without trailing newlines) for boundary
     // analysis, but keep the original `split_inclusive` slices so we
@@ -947,7 +945,7 @@ A paragraph that mentions the reserved prefix in its body:
     }
 
     // Tests 11 + 12 (CLI clap-level rejection of unknown tags / `bgraph`)
-    // live in `blazegraph-io/crates/cli/tests/cli_roundtrip.rs`.
+    // live in `bragi-io/crates/cli/tests/cli_roundtrip.rs`.
     // They're not implementable as `strip.rs` unit tests because the
     // rejection happens at clap's `value_parser` layer before the lib is
     // called. The lib's `NodeTypes(Vec<String>)` accepts any strings;

@@ -18,14 +18,14 @@ from pathlib import Path
 
 import httpx
 
-from bragi.errors import BlazeGraphNotFoundError
+from bragi.errors import BragiNotFoundError
 
 _RUNTIME_DIR = Path(__file__).parent / "_runtime"
 _BIN_DIR = _RUNTIME_DIR / "bin"
 _JRE_DIR = _RUNTIME_DIR / "jre"
 
-_GITHUB_ORG = "amplifytechnology"
-_GITHUB_REPO = "blazegraph-io"
+_GITHUB_ORG = "norse-stack"
+_GITHUB_REPO = "bragi-io"
 
 # Map (system, machine) to (release asset suffix, archive extension)
 _PLATFORM_MAP: dict[tuple[str, str], tuple[str, str]] = {
@@ -40,13 +40,13 @@ def _detect_platform() -> tuple[str, str]:
     """Return the (platform_suffix, archive_extension) for the GitHub Release asset.
 
     Raises:
-        BlazeGraphNotFoundError: If the platform is unsupported.
+        BragiNotFoundError: If the platform is unsupported.
     """
     system = platform.system()
     machine = platform.machine()
     key = (system, machine)
     if key not in _PLATFORM_MAP:
-        raise BlazeGraphNotFoundError(
+        raise BragiNotFoundError(
             f"Unsupported platform: {system}/{machine}. "
             f"Supported: {', '.join(f'{s}/{m}' for s, m in _PLATFORM_MAP)}. "
             f"macOS Intel users: install via `cargo install bragi-io` or place bragi on PATH."
@@ -134,7 +134,7 @@ def find_or_download_cli() -> Path:
         Path to the binary.
 
     Raises:
-        BlazeGraphNotFoundError: If download fails or platform is unsupported.
+        BragiNotFoundError: If download fails or platform is unsupported.
     """
     # 1. Environment variable override
     env_path = os.environ.get("BRAGI_CLI_PATH")
@@ -142,7 +142,7 @@ def find_or_download_cli() -> Path:
         p = Path(env_path)
         if p.exists():
             return p
-        raise BlazeGraphNotFoundError(
+        raise BragiNotFoundError(
             f"BRAGI_CLI_PATH points to non-existent file: {env_path}"
         )
 
@@ -168,7 +168,7 @@ def find_or_download_cli() -> Path:
         tag = _latest_release_tag()
         return _download_and_extract(tag, platform_str, archive_ext)
     except Exception as exc:
-        raise BlazeGraphNotFoundError(
+        raise BragiNotFoundError(
             f"Could not find or download bragi: {exc}"
         ) from exc
 

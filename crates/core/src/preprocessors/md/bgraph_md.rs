@@ -1265,7 +1265,7 @@ mod tests {
         // v2.0.0 escape contract: a Paragraph body containing the
         // literal reserved prefix `` ```bgraph-section `` must
         // round-trip cleanly through emit → parse → canonical-equal.
-        // This is the "blazegraph parses its own docs" acceptance test.
+        // This is the "bragi parses its own docs" acceptance test.
         let prose_with_fence = "Example bgraph fence:\n\
                                 ```bgraph-section\n\
                                 {\"id\":\"...\",\"node_type\":\"Section\"}\n\

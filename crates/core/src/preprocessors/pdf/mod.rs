@@ -1,7 +1,7 @@
 //! PDF Preprocessor
 //!
 //! Main preprocessor for PDF documents. Uses pluggable backends to extract
-//! PDF content to Blazegraph XHTML, then parses into PreprocessorOutput.
+//! PDF content to Bragi XHTML, then parses into PreprocessorOutput.
 
 pub mod backends;
 pub mod metadata;
@@ -52,8 +52,8 @@ impl PdfBackend for PdfBackendImpl {
 /// PDF Preprocessor with pluggable backend
 ///
 /// Processes PDF documents through two stages:
-/// 1. Backend extraction: PDF bytes → Blazegraph XHTML
-/// 2. XHTML parsing: Blazegraph XHTML → PreprocessorOutput
+/// 1. Backend extraction: PDF bytes → Bragi XHTML
+/// 2. XHTML parsing: Bragi XHTML → PreprocessorOutput
 pub struct PdfPreprocessor {
     backend: PdfBackendImpl,
 }

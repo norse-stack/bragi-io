@@ -1,9 +1,9 @@
-//! Blazegraph XHTML Parser
+//! Bragi XHTML Parser
 //!
-//! Parses the Blazegraph XHTML intermediate format produced by PDF backends
+//! Parses the Bragi XHTML intermediate format produced by PDF backends
 //! into PreprocessorOutput. This parser is shared across all PDF backends.
 //!
-//! The Blazegraph XHTML format includes:
+//! The Bragi XHTML format includes:
 //! - Page divs with data-page attributes
 //! - Per-page meta: `<div class="page-meta" data-page data-width data-height />`
 //! - Asides: `<aside data-rotation="N">` — rotated content (e.g., arxiv sidebars)
@@ -67,7 +67,7 @@ static FONT_CLASS_REGEX: LazyLock<Regex> = LazyLock::new(|| {
 // Public entry point
 // ============================================================================
 
-/// Parse Blazegraph XHTML into PreprocessorOutput.
+/// Parse Bragi XHTML into PreprocessorOutput.
 ///
 /// Main entry point. Extracts text elements (with full structural context),
 /// document metadata, style data, and bookmark data.
@@ -845,7 +845,7 @@ fn extract_bookmark_data(xhtml: &str) -> Result<Option<BookmarkData>> {
 mod tests {
     use super::*;
 
-    /// Wrap a body fragment in a minimal valid Blazegraph XHTML document.
+    /// Wrap a body fragment in a minimal valid Bragi XHTML document.
     fn xhtml_with(body: &str) -> String {
         format!(
             r#"<?xml version="1.0" encoding="UTF-8"?>

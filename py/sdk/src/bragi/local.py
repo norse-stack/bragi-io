@@ -8,27 +8,27 @@ import tempfile
 from pathlib import Path
 
 from bragi._download import find_or_download_cli, get_jre_dir
-from bragi.errors import BlazeGraphProcessingError
-from bragi.types import BlazeGraph
+from bragi.errors import BragiProcessingError
+from bragi.types import Bragi
 
 
 def _local_parse_pdf(
     path: str,
     *,
     config_path: str | None = None,
-) -> BlazeGraph:
-    """Parse a PDF using the blazegraph-cli binary.
+) -> Bragi:
+    """Parse a PDF using the bragi binary.
 
     Args:
         path: Path to the PDF file.
         config_path: Optional path to a config YAML file.
 
     Returns:
-        A :class:`BlazeGraph` with fully typed nodes.
+        A :class:`Bragi` with fully typed nodes.
 
     Raises:
-        BlazeGraphProcessingError: If the CLI exits with an error.
-        BlazeGraphNotFoundError: If the CLI binary cannot be found.
+        BragiProcessingError: If the CLI exits with an error.
+        BragiNotFoundError: If the CLI binary cannot be found.
         FileNotFoundError: If the PDF file does not exist.
     """
     pdf_path = Path(path)
@@ -65,17 +65,17 @@ def _local_parse_pdf(
         if result.returncode != 0:
             stderr_text = result.stderr.decode("utf-8", errors="replace").strip()
             print("failed.")
-            raise BlazeGraphProcessingError(
-                f"blazegraph-cli exited with code {result.returncode}: {stderr_text}"
+            raise BragiProcessingError(
+                f"bragi exited with code {result.returncode}: {stderr_text}"
             )
 
         if not output_path.exists():
             print("failed.")
-            raise BlazeGraphProcessingError(
-                "blazegraph-cli completed but did not produce output."
+            raise BragiProcessingError(
+                "bragi completed but did not produce output."
             )
 
         print("done.")
 
         raw = json.loads(output_path.read_text(encoding="utf-8"))
-        return BlazeGraph.from_dict(raw)
+        return Bragi.from_dict(raw)

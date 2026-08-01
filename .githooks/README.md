@@ -1,6 +1,6 @@
 # Git hooks
 
-Secret-scanning hooks for this repo. Because `blazegraph-io` is public, a secret
+Secret-scanning hooks for this repo. Because `bragi-io` is public, a secret
 committed even once — and later removed — stays exposed in history. These hooks
 stop that at the door.
 

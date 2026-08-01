@@ -1,4 +1,4 @@
-# Blazegraph submodule Makefile.
+# Bragi submodule Makefile.
 #
 # The parent-repo Makefile carries the full dev workflow (build-jar, run-*,
 # sb-eval, the stage-fixture generators, …). This file holds only the

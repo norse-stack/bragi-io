@@ -167,7 +167,7 @@ mod tests {
     fn strong_convention_fields_route_to_md_namespace() {
         let map = fm(&[
             ("draft", serde_json::json!(true)),
-            ("tags", serde_json::json!(["rust", "blazegraph"])),
+            ("tags", serde_json::json!(["rust", "bragi"])),
             ("categories", serde_json::json!(["news"])),
         ]);
         let extractor = MdMetadataExtractor::from_map(map);
@@ -176,7 +176,7 @@ mod tests {
         assert_eq!(md_ns.draft, Some(true));
         assert_eq!(
             md_ns.tags,
-            vec!["rust".to_string(), "blazegraph".to_string()]
+            vec!["rust".to_string(), "bragi".to_string()]
         );
         assert_eq!(md_ns.categories, vec!["news".to_string()]);
         assert!(md_ns.extras.is_empty());

@@ -34,7 +34,7 @@ const BIN: &str = env!("CARGO_BIN_EXE_bragi");
 /// invocation gets a fresh dir so reruns don't conflict.
 fn unique_temp_dir(test_name: &str) -> PathBuf {
     let dir = std::env::temp_dir().join(format!(
-        "blazegraph-cli-test-{test_name}-{}",
+        "bragi-test-{test_name}-{}",
         uuid::Uuid::new_v4()
     ));
     std::fs::create_dir_all(&dir).expect("create temp dir");

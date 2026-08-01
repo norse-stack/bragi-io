@@ -21,14 +21,14 @@ const TIKA_JAR_FILENAME: &str = "blazing-tika-jni.jar";
 /// `v0.1.1`, so every fresh install fetched a stale JAR regardless of its version.
 fn tika_jar_url() -> String {
     format!(
-        "https://github.com/AmplifyTechnology/blazegraph-io/raw/v{}/crates/core/deps/tika/jni-jars/blazing-tika-jni.jar",
+        "https://github.com/norse-stack/bragi-io/raw/v{}/crates/core/deps/tika/jni-jars/blazing-tika-jni.jar",
         env!("CARGO_PKG_VERSION")
     )
 }
 
 /// Manages JRE installation for the CLI
 pub struct JreManager {
-    /// Base directory for blazegraph data (e.g., ~/.local/share/blazegraph)
+    /// Base directory for bragi data (e.g., ~/.local/share/bragi)
     data_dir: PathBuf,
 }
 
@@ -39,9 +39,9 @@ impl JreManager {
         Ok(Self { data_dir })
     }
 
-    /// Get the data directory (~/.local/share/blazegraph on all Unix platforms)
+    /// Get the data directory (~/.local/share/bragi on all Unix platforms)
     pub fn get_data_dir() -> Result<PathBuf> {
-        // Use ~/.local/share/blazegraph consistently on macOS/Linux
+        // Use ~/.local/share/bragi consistently on macOS/Linux
         // This is more predictable than platform-specific paths like ~/Library/Application Support
         let home = dirs::home_dir().ok_or_else(|| anyhow!("Could not determine home directory"))?;
 
@@ -50,13 +50,13 @@ impl JreManager {
             // On Windows, use the standard local app data location
             let base = dirs::data_local_dir()
                 .ok_or_else(|| anyhow!("Could not determine local data directory"))?;
-            Ok(base.join("blazegraph"))
+            Ok(base.join("bragi"))
         }
 
         #[cfg(not(windows))]
         {
-            // On macOS/Linux, use ~/.local/share/blazegraph
-            Ok(home.join(".local").join("share").join("blazegraph"))
+            // On macOS/Linux, use ~/.local/share/bragi
+            Ok(home.join(".local").join("share").join("bragi"))
         }
     }
 

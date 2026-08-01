@@ -239,7 +239,7 @@ impl TikaJniBackend {
 }
 
 impl PdfBackend for TikaJniBackend {
-    /// Process PDF bytes to Blazegraph XHTML
+    /// Process PDF bytes to Bragi XHTML
     ///
     /// # Thread Safety
     /// This method can be called from any thread. It will:
@@ -268,7 +268,7 @@ impl PdfBackend for TikaJniBackend {
 
         // Call static method: TikaMain.processToXhtml(byte[]) -> String
         let result = env.call_static_method(
-            "com/blazegraph/TikaMain",
+            "com/bragi/TikaMain",
             "processToXhtml",
             "([B)Ljava/lang/String;",
             &[(&java_bytes).into()],

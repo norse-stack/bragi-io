@@ -1,7 +1,7 @@
-"""FastAPI server wrapping the blazegraph-cli binary.
+"""FastAPI server wrapping the bragi binary.
 
 Provides a self-hosted API compatible with the hosted endpoint structure
-at api.blazegraph.io. No auth, no billing — just document parsing.
+at api.bragi.io. No auth, no billing — just document parsing.
 
 Response contract (matches the Python SDK's remote-mode client,
 `bragi.client._handle_response`):
@@ -21,12 +21,12 @@ from fastapi import FastAPI, File, Query, UploadFile
 from fastapi.responses import JSONResponse
 
 app = FastAPI(
-    title="Blazegraph IO — Self-Hosted",
-    description="Local document parsing API powered by blazegraph-cli",
+    title="Bragi IO — Self-Hosted",
+    description="Local document parsing API powered by bragi",
     version="0.1.1",
 )
 
-CLI_PATH = os.environ.get("BRAGI_CLI_PATH", "/app/bin/blazegraph-cli")
+CLI_PATH = os.environ.get("BRAGI_CLI_PATH", "/app/bin/bragi")
 JAR_PATH = os.environ.get("BRAGI_JAR_PATH", "/app/bin/blazing-tika-jni.jar")
 DEFAULT_CONFIG_PATH = os.environ.get("BRAGI_CONFIG_PATH")
 
@@ -62,7 +62,7 @@ async def parse_pdf(
 
     tmp_dir = None
     try:
-        tmp_dir = tempfile.mkdtemp(prefix="blazegraph_")
+        tmp_dir = tempfile.mkdtemp(prefix="bragi_")
         input_path = Path(tmp_dir) / "input.pdf"
         output_path = Path(tmp_dir) / "output.json"
 

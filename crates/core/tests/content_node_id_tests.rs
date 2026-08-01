@@ -455,7 +455,7 @@ Target.
 // =========================================================================
 // DT-10 (option C) — the document root ID is the content fingerprint of the
 //   node set: recomputable from the node IDs alone (URD's derive-without-
-//   Blazegraph), rotates on a content edit, stable across a reorder, and
+//   Bragi), rotates on a content edit, stable across a reorder, and
 //   collision-free across distinct docs (shared across byte-identical ones).
 // =========================================================================
 
@@ -497,7 +497,7 @@ Alpha.
 
     // (a) Derivable from the node set alone: the root equals the fingerprint
     //     re-computed from just the (non-root) node IDs — so URD can verify a
-    //     doc's identity without re-parsing through Blazegraph.
+    //     doc's identity without re-parsing through Bragi.
     let body_ids: Vec<NodeId> = id_set(&g).into_iter().collect();
     assert_eq!(
         root_of(&g),

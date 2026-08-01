@@ -1,6 +1,6 @@
 # Test Fixtures
 
-Small, hand-curated fixtures for `blazegraph-core`. Tests load pre-generated
+Small, hand-curated fixtures for `bragi-core`. Tests load pre-generated
 snapshots and assert stability at the pipeline edges — **no JVM required**.
 
 Bulk evaluation corpora (large multi-document PDF/docx sets we score the parser
@@ -93,7 +93,7 @@ The family:
 | `golden/1.0.0/attention/attention.pdf` | The source document. |
 | `golden/1.0.0/attention/config.yaml` | The exact config the family binds to (`config_hash` is stamped in the md). `dump_analytics: false` so the replay writes no sidecars. |
 | `golden/1.0.0/attention/document.bgraph.md` | The frozen `1.0.0` emit — style-bearing (`--include-style-info`) so it self-verifies. |
-| `golden/1.0.0/attention/PRODUCED_BY` | `blazegraph-io` git HEAD sha at freeze time — the `codebase_sha` binding. A sidecar, **not** a serialized-artifact field. |
+| `golden/1.0.0/attention/PRODUCED_BY` | `bragi-io` git HEAD sha at freeze time — the `codebase_sha` binding. A sidecar, **not** a serialized-artifact field. |
 | `snapshots/c1-xhtml/<sha>.xhtml`, `snapshots/c2-preprocessor/<sha>.json` | The committed cache tiers. `<sha>` is the SHA-256 of `attention.pdf`. |
 
 ### How the freeze test works (JVM-free)
@@ -158,6 +158,6 @@ history rewrite, and the golden anchors must stay byte-plain.
 
 ## Git notes
 
-`pdfs/` and `snapshots/` are committed to plain git. `blazegraph-io/.gitignore`
+`pdfs/` and `snapshots/` are committed to plain git. `bragi-io/.gitignore`
 carries a `*.json` rule with an exception for `test_fixtures/**/*.json`, so the
 snapshot JSON is tracked despite the global ignore.

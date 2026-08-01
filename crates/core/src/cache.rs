@@ -19,7 +19,7 @@ pub mod versions {
     /// **Preprocessor-interface version** — the *preprocessor axis* of the
     /// version model (arch-15), a **debug** signal for *us* (not a
     /// consumer contract): it disambiguates whether output drift came
-    /// from the blazegraph side or the preprocessor side of the
+    /// from the bragi side or the preprocessor side of the
     /// preprocessor→graph interface. Tika is the current preprocessor;
     /// the const is named generically because the model admits others
     /// (bump it when a preprocessor's output/interface contract changes).

@@ -1,10 +1,10 @@
-// Blazegraph Core Library
+// Bragi Core Library
 //
 // Provides document processing with pluggable preprocessor architecture.
 // Main interface for converting documents to semantic graphs.
 
 /// The **code axis** of the version model (arch-15 § Version model):
-/// the blazegraph-core crate version (e.g. `"0.3.0"`), from
+/// the bragi-io-core crate version (e.g. `"0.3.0"`), from
 /// `CARGO_PKG_VERSION` at build time. This is the canonical "parser
 /// version" for `ParseProvenance.bragi_version`: consumers that
 /// produce graphs through this crate (CLI, API) should stamp this rather

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-# blazegraph-io pre-push — full-history secret backstop before anything leaves
+# bragi-io pre-push — full-history secret backstop before anything leaves
 # the machine. The pre-commit hook is the primary gate; this catches secrets
 # that were committed with --no-verify or landed before the hooks were enabled.
 # Override with `git push --no-verify` only when certain a hit is a false positive.

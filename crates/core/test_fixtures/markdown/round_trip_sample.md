@@ -2,7 +2,7 @@
 title: Round-Trip Sample
 author: B6 Agent
 date: 2026-05-12
-tags: [markdown, blazegraph, round-trip]
+tags: [markdown, bragi, round-trip]
 draft: false
 ---
 # Round-Trip Sample
@@ -15,7 +15,7 @@ A fenced code block:
 
 ```rust
 fn main() {
-    println!("hello, blazegraph");
+    println!("hello, bragi");
 }
 ```
 

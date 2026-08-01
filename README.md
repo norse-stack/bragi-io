@@ -1,4 +1,4 @@
-# blazegraph-io
+# bragi-io
 
 Parse PDFs into semantic document graphs with bounding boxes. Built for GraphRAG.
 
@@ -14,13 +14,13 @@ Parse PDFs into semantic document graphs with bounding boxes. Built for GraphRAG
 ### Rust CLI
 
 ```bash
-cargo install blazegraph-io
+cargo install bragi-io
 ```
 
 ### Python
 
 ```bash
-pip install blazegraph-io
+pip install bragi-io
 ```
 
 No account needed. No API key. Runs entirely on your machine.
@@ -31,11 +31,11 @@ No account needed. No API key. Runs entirely on your machine.
 
 ```bash
 # Python
-pip uninstall blazegraph-io    # removes everything including cached runtime
+pip uninstall bragi-io    # removes everything including cached runtime
 
 # Rust CLI
-cargo uninstall blazegraph-io
-rm -rf ~/.local/share/blazegraph   # remove cached JRE and Tika JAR
+cargo uninstall bragi-io
+rm -rf ~/.local/share/bragi   # remove cached JRE and Tika JAR
 ```
 
 ## Usage
@@ -43,7 +43,7 @@ rm -rf ~/.local/share/blazegraph   # remove cached JRE and Tika JAR
 ### CLI
 
 ```bash
-blazegraph-io parse document.pdf -o bgraph.json
+bragi-io parse document.pdf -o bgraph.json
 ```
 
 Output goes to stdout by default. Use `-o` to write to a file.
@@ -99,14 +99,14 @@ This dual location model is what makes the output GraphRAG-ready: ground LLM out
 The default config works well for most documents. For specific document types, create a YAML config file:
 
 ```bash
-blazegraph-io parse contract.pdf -c my-config.yaml -o bgraph.json
+bragi-io parse contract.pdf -c my-config.yaml -o bgraph.json
 ```
 
 Build one config per document category (e.g., legal contracts, academic papers) and reuse it across similar documents. See the [Configuration Reference](docs/reference/03-config-reference.md) for all tuning parameters.
 
 ## Docker
 
-The Docker container runs the Blazegraph processing server — use it for async processing in your pipeline:
+The Docker container runs the Bragi processing server — use it for async processing in your pipeline:
 
 ```bash
 # Start the processing server
@@ -123,13 +123,13 @@ The container bundles the CLI, JRE, Tika, and the FastAPI server. No Rust toolch
 You can also run one-off CLI parses:
 
 ```bash
-docker run --rm -v $(pwd):/data blazegraph/blazegraph-io \
+docker run --rm -v $(pwd):/data bragi/bragi-io \
   parse /data/document.pdf -o /data/bgraph.json
 ```
 
 ## Hosted API
 
-Same parser, no infrastructure. Available at [blazegraph.io](https://blazegraph.io):
+Same parser, no infrastructure. Available at [bragi-io.com](https://bragi-io.com):
 
 ```python
 bg.configure(api_key="blaze_prod_...")
@@ -151,7 +151,7 @@ bg.configure(api_key="blaze_prod_...")
 graph = await bg.parse_pdf_async("paper.pdf")
 ```
 
-500 free credits on signup. See [blazegraph.io](https://blazegraph.io) for details.
+500 free credits on signup. See [bragi-io.com](https://bragi-io.com) for details.
 
 ## Documentation
 
@@ -163,10 +163,10 @@ graph = await bg.parse_pdf_async("paper.pdf")
 ## Project Structure
 
 ```
-blazegraph-io/
+bragi-io/
 ├── crates/core/     # Core parsing library (bragi-io-core on crates.io)
-├── crates/cli/      # Command-line interface (blazegraph-io on crates.io)
-├── py/sdk/   # Python SDK (blazegraph-io on PyPI)
+├── crates/cli/      # Command-line interface (bragi-io on crates.io)
+├── py/sdk/   # Python SDK (bragi-io on PyPI)
 └── docs/                # Documentation
 ```
 

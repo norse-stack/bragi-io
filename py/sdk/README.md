@@ -1,11 +1,11 @@
-# blazegraph-io
+# bragi-io
 
-Python SDK for [Blazegraph](https://blazegraph.io) — parse PDFs into typed semantic document graphs.
+Python SDK for [Bragi](https://bragi.io) — parse PDFs into typed semantic document graphs.
 
 ## Install
 
 ```bash
-pip install blazegraph-io
+pip install bragi-io
 ```
 
 Python 3.9+. Only dependency: `httpx`.
@@ -26,7 +26,7 @@ for section in graph.sections:
     print(f"  Page {section.location.physical.page}")
 ```
 
-On first run, the SDK downloads the `blazegraph-cli` binary and a JRE automatically. Subsequent runs are instant.
+On first run, the SDK downloads the `bragi` binary and a JRE automatically. Subsequent runs are instant.
 
 ## API Mode
 
@@ -75,9 +75,9 @@ print(section.render(graph, breadcrumbs=True))
 
 ## Documentation
 
-- [Python SDK Guide](https://blazegraph.io/docs/guides/python-sdk) — Full usage, configuration, error handling
-- [Schema Reference](https://blazegraph.io/docs/reference/schema) — Complete `graph.json` field documentation
-- [Configuration Reference](https://blazegraph.io/docs/reference/config) — Tuning for your document type
+- [Python SDK Guide](https://bragi.io/docs/guides/python-sdk) — Full usage, configuration, error handling
+- [Schema Reference](https://bragi.io/docs/reference/schema) — Complete `graph.json` field documentation
+- [Configuration Reference](https://bragi.io/docs/reference/config) — Tuning for your document type
 
 ## License
 

@@ -204,7 +204,7 @@ mod tests {
                      date: 2026-05-12\n\
                      description: Long form\n\
                      draft: true\n\
-                     tags: [rust, blazegraph, b6]\n\
+                     tags: [rust, bragi, b6]\n\
                      ---\n\
                      Body.\n";
         let (meta, _body) = extract_frontmatter(input);
@@ -219,7 +219,7 @@ mod tests {
             md_ns.tags,
             vec![
                 "rust".to_string(),
-                "blazegraph".to_string(),
+                "bragi".to_string(),
                 "b6".to_string()
             ]
         );

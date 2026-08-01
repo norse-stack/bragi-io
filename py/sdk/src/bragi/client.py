@@ -1,4 +1,4 @@
-"""HTTP client for the Blazegraph API (sync + async)."""
+"""HTTP client for the Bragi API (sync + async)."""
 
 from __future__ import annotations
 
@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING
 import httpx
 
 from bragi.errors import (
-    BlazeGraphAuthError,
-    BlazeGraphCreditsError,
-    BlazeGraphError,
-    BlazeGraphProcessingError,
+    BragiAuthError,
+    BragiCreditsError,
+    BragiError,
+    BragiProcessingError,
 )
-from bragi.types import BlazeGraph
+from bragi.types import Bragi
 
 if TYPE_CHECKING:
     from bragi._config import _Config
@@ -29,17 +29,17 @@ def _build_headers(cfg: "_Config") -> dict[str, str]:
     return {}
 
 
-def _handle_response(response: httpx.Response) -> BlazeGraph:
-    """Parse an API response into a BlazeGraph, raising on errors."""
+def _handle_response(response: httpx.Response) -> Bragi:
+    """Parse an API response into a Bragi, raising on errors."""
     if response.status_code == 401:
         body = response.json()
         msg = body.get("error", {}).get("message", "Unauthorized")
-        raise BlazeGraphAuthError(msg)
+        raise BragiAuthError(msg)
 
     if response.status_code == 402:
         body = response.json()
         msg = body.get("error", {}).get("message", "Insufficient credits")
-        raise BlazeGraphCreditsError(msg)
+        raise BragiCreditsError(msg)
 
     if response.status_code >= 500:
         try:
@@ -47,21 +47,21 @@ def _handle_response(response: httpx.Response) -> BlazeGraph:
             msg = body.get("error", {}).get("message", "Processing error")
         except Exception:
             msg = f"Server error (HTTP {response.status_code})"
-        raise BlazeGraphProcessingError(msg)
+        raise BragiProcessingError(msg)
 
     if response.status_code != 200:
-        raise BlazeGraphError(f"Unexpected HTTP {response.status_code}: {response.text}")
+        raise BragiError(f"Unexpected HTTP {response.status_code}: {response.text}")
 
     body = response.json()
     if not body.get("success"):
         error_info = body.get("error", {})
         msg = error_info.get("message", "Unknown error") if isinstance(error_info, dict) else str(error_info)
-        raise BlazeGraphProcessingError(msg)
+        raise BragiProcessingError(msg)
 
-    return BlazeGraph.from_dict(body["graph"])
+    return Bragi.from_dict(body["graph"])
 
 
-def _sync_parse_pdf(path: str, cfg: "_Config") -> BlazeGraph:
+def _sync_parse_pdf(path: str, cfg: "_Config") -> Bragi:
     """Send a PDF to the API using httpx sync client."""
     pdf_path = Path(path)
     if not pdf_path.exists():
@@ -78,7 +78,7 @@ def _sync_parse_pdf(path: str, cfg: "_Config") -> BlazeGraph:
     return _handle_response(response)
 
 
-async def _async_parse_pdf(path: str, cfg: "_Config") -> BlazeGraph:
+async def _async_parse_pdf(path: str, cfg: "_Config") -> Bragi:
     """Send a PDF to the API using httpx async client."""
     pdf_path = Path(path)
     if not pdf_path.exists():

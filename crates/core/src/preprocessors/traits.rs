@@ -10,7 +10,7 @@ use std::path::Path;
 
 /// Preprocessor trait - converts documents to PreprocessorOutput
 ///
-/// This is the key abstraction boundary in blazegraph. Preprocessors handle:
+/// This is the key abstraction boundary in bragi. Preprocessors handle:
 /// - Document format parsing (PDF, Word, etc.)
 /// - Text extraction and positioning
 /// - Basic structure detection (pages, paragraphs, etc.)

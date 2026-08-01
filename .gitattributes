@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────
-# Blazegraph test fixtures: tracked in git, but NOT hand-written source.
+# Bragi test fixtures: tracked in git, but NOT hand-written source.
 # Keep GitHub Linguist's language bar and diffs honest — fixtures are generated
 # or vendored, so they must not count toward "what we wrote in".
 # (CR-89 item B, 2026-07-14.)

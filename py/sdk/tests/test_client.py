@@ -11,12 +11,12 @@ import pytest
 from bragi._config import _Config
 from bragi.client import _handle_response, _sync_parse_pdf, _async_parse_pdf
 from bragi.errors import (
-    BlazeGraphAuthError,
-    BlazeGraphCreditsError,
-    BlazeGraphError,
-    BlazeGraphProcessingError,
+    BragiAuthError,
+    BragiCreditsError,
+    BragiError,
+    BragiProcessingError,
 )
-from bragi.types import BlazeGraph
+from bragi.types import Bragi
 
 _FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -55,7 +55,7 @@ class TestHandleResponse:
         body = _success_body()
         resp = _make_response(200, body)
         graph = _handle_response(resp)
-        assert isinstance(graph, BlazeGraph)
+        assert isinstance(graph, Bragi)
         assert graph.schema_version == "1.0.0"
         assert len(graph.nodes) == 179
 
@@ -65,7 +65,7 @@ class TestHandleResponse:
             "error": {"code": "unauthorized", "message": "Invalid API key"},
         }
         resp = _make_response(401, body)
-        with pytest.raises(BlazeGraphAuthError, match="Invalid API key"):
+        with pytest.raises(BragiAuthError, match="Invalid API key"):
             _handle_response(resp)
 
     def test_402_raises_credits_error(self) -> None:
@@ -74,7 +74,7 @@ class TestHandleResponse:
             "error": {"code": "payment_required", "message": "Insufficient credits"},
         }
         resp = _make_response(402, body)
-        with pytest.raises(BlazeGraphCreditsError, match="Insufficient credits"):
+        with pytest.raises(BragiCreditsError, match="Insufficient credits"):
             _handle_response(resp)
 
     def test_500_raises_processing_error(self) -> None:
@@ -83,14 +83,14 @@ class TestHandleResponse:
             "error": {"code": "processing_error", "message": "PDF corrupt"},
         }
         resp = _make_response(500, body)
-        with pytest.raises(BlazeGraphProcessingError, match="PDF corrupt"):
+        with pytest.raises(BragiProcessingError, match="PDF corrupt"):
             _handle_response(resp)
 
     def test_500_non_json(self) -> None:
         resp = MagicMock()
         resp.status_code = 500
         resp.json.side_effect = Exception("not json")
-        with pytest.raises(BlazeGraphProcessingError, match="Server error"):
+        with pytest.raises(BragiProcessingError, match="Server error"):
             _handle_response(resp)
 
     def test_success_false_raises(self) -> None:
@@ -99,12 +99,12 @@ class TestHandleResponse:
             "error": {"code": "bad_request", "message": "Empty body"},
         }
         resp = _make_response(200, body)
-        with pytest.raises(BlazeGraphProcessingError, match="Empty body"):
+        with pytest.raises(BragiProcessingError, match="Empty body"):
             _handle_response(resp)
 
     def test_unexpected_status(self) -> None:
         resp = _make_response(418, {"detail": "I'm a teapot"})
-        with pytest.raises(BlazeGraphError, match="Unexpected HTTP 418"):
+        with pytest.raises(BragiError, match="Unexpected HTTP 418"):
             _handle_response(resp)
 
 
@@ -112,7 +112,7 @@ class TestSyncParsePdf:
     """Test _sync_parse_pdf with mocked httpx.Client."""
 
     def test_file_not_found(self) -> None:
-        cfg = _Config(api_key="blaze_prod_test", url="https://api.blazegraph.io")
+        cfg = _Config(api_key="blaze_prod_test", url="https://api.bragi.io")
         with pytest.raises(FileNotFoundError, match="PDF not found"):
             _sync_parse_pdf("/nonexistent/file.pdf", cfg)
 
@@ -131,10 +131,10 @@ class TestSyncParsePdf:
         mock_client.post.return_value = mock_response
         mock_client_cls.return_value = mock_client
 
-        cfg = _Config(api_key="blaze_prod_test", url="https://api.blazegraph.io")
+        cfg = _Config(api_key="blaze_prod_test", url="https://api.bragi.io")
         graph = _sync_parse_pdf(str(pdf), cfg)
 
-        assert isinstance(graph, BlazeGraph)
+        assert isinstance(graph, Bragi)
         mock_client.post.assert_called_once()
         call_kwargs = mock_client.post.call_args
         assert "/v1/parse/pdf" in call_kwargs[0][0] or "/v1/parse/pdf" in str(call_kwargs)
@@ -145,7 +145,7 @@ class TestAsyncParsePdf:
 
     def test_file_not_found(self) -> None:
         import asyncio
-        cfg = _Config(api_key="blaze_prod_test", url="https://api.blazegraph.io")
+        cfg = _Config(api_key="blaze_prod_test", url="https://api.bragi.io")
         with pytest.raises(FileNotFoundError, match="PDF not found"):
             asyncio.get_event_loop().run_until_complete(
                 _async_parse_pdf("/nonexistent/file.pdf", cfg)
