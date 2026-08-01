@@ -16,20 +16,21 @@ blazegraph-core/test_fixtures/docx/**       linguist-generated=false linguist-ve
 blazegraph-core/test_fixtures/**/*.pdf      linguist-generated=false linguist-vendored=true
 
 # ─────────────────────────────────────────────────────────────────────────
-# LFS plumbing for FUTURE heavy fixtures — NOT active yet.
-#
-# git-lfs is not initialized in this repo, and existing fixtures stay in plain
-# git on purpose: retrofitting them to LFS is a history rewrite, and
-# trust-critical text (bgraph.md / config.yaml / PRODUCED_BY) must never hide
-# behind an LFS pointer — the byte-honest golden freeze has to diff real bytes.
+# LFS — LIVE for `eval-corpus/` only. Zero objects exist today.
 #
 # Bulk eval fixtures live under `eval-corpus/` (see its README for the policy).
-# git-lfs is installed + active (2026-07-17), so these rules are LIVE — new heavy
-# fixtures added under this NEW path land in LFS from birth. Existing blobs
-# elsewhere are never touched (retrofitting them would be a history rewrite, and
-# trust-critical golden text — bgraph.md / .json / config.yaml / PRODUCED_BY —
-# must stay byte-plain for the golden freeze). Scoped by extension so a stray
-# README/.md in the folder stays in plain git.
+# These rules are active, so heavy fixtures added under that path land in LFS
+# from birth. Scoped by extension, so a stray README/.md there stays plain.
+#
+# Everything OUTSIDE eval-corpus/ stays in plain git deliberately, and that is
+# not an oversight to be tidied later:
+#   * retrofitting existing blobs to LFS is a history rewrite, and
+#   * trust-critical golden text (bgraph.md / .json / config.yaml / PRODUCED_BY)
+#     must never hide behind an LFS pointer — the byte-honest golden freeze has
+#     to diff real bytes.
+#
+# The LFS endpoint is not configured here: git-lfs derives it from this clone's
+# own `origin`. Nothing to set up before your first `git clone`.
 eval-corpus/**/*.pdf   filter=lfs diff=lfs merge=lfs -text
 eval-corpus/**/*.json  filter=lfs diff=lfs merge=lfs -text
 eval-corpus/**/*.docx  filter=lfs diff=lfs merge=lfs -text
