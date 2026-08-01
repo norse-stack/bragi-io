@@ -2,7 +2,7 @@
 
 The dedicated home for **large, bulk evaluation fixtures** — the multi-document
 corpus we score the parser against, distinct from the small, hand-curated
-unit-test fixtures under `blazegraph-core/test_fixtures/`.
+unit-test fixtures under `crates/core/test_fixtures/`.
 
 Everything under this folder is tracked with **Git LFS** so heavy binaries
 (PDFs, generated JSON, docx) never bloat the plain-git history of the open-core
@@ -16,7 +16,7 @@ repo. This keeps `git clone` fast for everyone who just wants the code.
 ## What does NOT belong here
 
 - **Trust-critical golden text** — `document.bgraph.md`, `document.bgraph.json`,
-  `config.yaml`, `PRODUCED_BY`. These stay in `blazegraph-core/test_fixtures/golden/`
+  `config.yaml`, `PRODUCED_BY`. These stay in `crates/core/test_fixtures/golden/`
   in **plain git**: the byte-honest golden freeze must diff *real* bytes, never an
   LFS pointer. (See `test_fixtures/README.md` and the `.gitattributes` rationale.)
 - Small hand-authored unit-test fixtures — those stay in `test_fixtures/`.

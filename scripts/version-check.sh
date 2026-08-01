@@ -15,11 +15,11 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 # First `version = "..."` line = the [package]/[project] version.
 first_version() { awk -F'"' '/^version[[:space:]]*=/ { print $2; exit }' "$1"; }
 
-core=$(first_version "$ROOT/blazegraph-core/Cargo.toml")
-cli=$(first_version "$ROOT/blazegraph-cli/Cargo.toml")
-py=$(first_version "$ROOT/blazegraph-python/pyproject.toml")
+core=$(first_version "$ROOT/crates/core/Cargo.toml")
+cli=$(first_version "$ROOT/crates/cli/Cargo.toml")
+py=$(first_version "$ROOT/py/sdk/pyproject.toml")
 
-echo "  blazegraph-io-core (Cargo.toml) : $core"
+echo "  bragi-io-core (Cargo.toml) : $core"
 echo "  blazegraph-io  cli (Cargo.toml) : $cli"
 echo "  blazegraph-io  sdk (pyproject)  : $py"
 

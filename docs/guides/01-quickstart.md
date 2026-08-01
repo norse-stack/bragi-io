@@ -44,7 +44,7 @@ blazegraph-io parse document.pdf -o bgraph.json
 ### Python
 
 ```python
-import blazegraphio as bg
+import bragi as bg
 
 graph = bg.parse_pdf("document.pdf")
 
@@ -193,7 +193,7 @@ for child_id in root["children"]:
 Or use the Python SDK for typed access:
 
 ```python
-import blazegraphio as bg
+import bragi as bg
 
 graph = bg.parse_pdf("document.pdf")
 
@@ -228,7 +228,7 @@ make serve
 Then parse via the Python SDK:
 
 ```python
-import blazegraphio as bg
+import bragi as bg
 
 bg.configure(host="localhost:8080")
 graph = await bg.parse_pdf_async("document.pdf")

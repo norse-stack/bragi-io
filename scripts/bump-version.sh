@@ -13,9 +13,9 @@
 #         make bump-version V=<X.Y.Z>
 #
 # Sites stamped (kept in lockstep):
-#   - blazegraph-core/Cargo.toml        [package] version  (blazegraph-io-core)
-#   - blazegraph-cli/Cargo.toml         [package] version  (blazegraph-io CLI)
-#   - blazegraph-python/pyproject.toml  [project] version  (blazegraph-io SDK)
+#   - crates/core/Cargo.toml        [package] version  (bragi-io-core)
+#   - crates/cli/Cargo.toml         [package] version  (blazegraph-io CLI)
+#   - py/sdk/pyproject.toml  [project] version  (blazegraph-io SDK)
 # The Python __init__.__version__ reads from installed metadata — no 4th site.
 #
 set -euo pipefail
@@ -67,8 +67,8 @@ stamp_dep() {
 }
 
 echo "Bumping code/release version → $VERSION"
-stamp "$ROOT/blazegraph-core/Cargo.toml"
-stamp "$ROOT/blazegraph-cli/Cargo.toml"
-stamp "$ROOT/blazegraph-python/pyproject.toml"
-stamp_dep "$ROOT/blazegraph-cli/Cargo.toml" "blazegraph-io-core"
+stamp "$ROOT/crates/core/Cargo.toml"
+stamp "$ROOT/crates/cli/Cargo.toml"
+stamp "$ROOT/py/sdk/pyproject.toml"
+stamp_dep "$ROOT/crates/cli/Cargo.toml" "bragi-io-core"
 echo "Done. Run 'make version-check' to confirm coherence."

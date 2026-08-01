@@ -13,7 +13,7 @@ pip install blazegraph-io
 ## Quick Start
 
 ```python
-import blazegraphio as bg
+import bragi as bg
 
 graph = bg.parse_pdf("document.pdf")
 
@@ -211,7 +211,7 @@ print(graph.render())
 The SDK raises typed exceptions:
 
 ```python
-from blazegraphio.errors import (
+from bragi.errors import (
     BlazeGraphError,          # Base exception
     BlazeGraphAuthError,      # 401 — bad/missing API key (API mode)
     BlazeGraphCreditsError,   # 402 — insufficient credits (API mode)
@@ -233,7 +233,7 @@ except BlazeGraphProcessingError as e:
 
 ### Runtime management
 
-All runtime artifacts live inside the package directory (`site-packages/blazegraphio/_runtime/`). Nothing touches your home directory. `pip uninstall` is a clean removal.
+All runtime artifacts live inside the package directory (`site-packages/bragi/_runtime/`). Nothing touches your home directory. `pip uninstall` is a clean removal.
 
 ### Binary resolution order
 

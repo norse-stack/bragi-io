@@ -7,13 +7,13 @@
 
 # Generated fixtures — golden anchors, cache tiers, emitted artifacts, stage
 # snapshots. Machine-produced: exclude from language stats + collapse in diffs.
-blazegraph-core/test_fixtures/**            linguist-generated=true
+crates/core/test_fixtures/**            linguist-generated=true
 
 # Source documents we did NOT author (third-party inputs) → vendored, not
 # generated. Later-matching rules override the broad line above per attribute.
-blazegraph-core/test_fixtures/pdfs/**       linguist-generated=false linguist-vendored=true
-blazegraph-core/test_fixtures/docx/**       linguist-generated=false linguist-vendored=true
-blazegraph-core/test_fixtures/**/*.pdf      linguist-generated=false linguist-vendored=true
+crates/core/test_fixtures/pdfs/**       linguist-generated=false linguist-vendored=true
+crates/core/test_fixtures/docx/**       linguist-generated=false linguist-vendored=true
+crates/core/test_fixtures/**/*.pdf      linguist-generated=false linguist-vendored=true
 
 # ─────────────────────────────────────────────────────────────────────────
 # LFS — LIVE for `eval-corpus/` only. Zero objects exist today.

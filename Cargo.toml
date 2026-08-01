@@ -1,7 +1,7 @@
 [workspace]
 members = [
-    "blazegraph-core",
-    "blazegraph-cli",
+    "crates/core",
+    "crates/cli",
 ]
 resolver = "2"
 

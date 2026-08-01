@@ -13,10 +13,10 @@ WORKDIR /build
 
 # Copy workspace manifests first for better layer caching
 COPY Cargo.toml Cargo.lock ./
-COPY blazegraph-core/ blazegraph-core/
-COPY blazegraph-cli/ blazegraph-cli/
+COPY crates/core/ crates/core/
+COPY crates/cli/ crates/cli/
 
-RUN cargo build --release -p blazegraph-io
+RUN cargo build --release -p bragi-io
 
 # Stage 2: Runtime — Liberica JRE for font-metric parity with local dev JVM
 # (Eclipse Temurin computes different glyph widths → missing spaces in extracted text)
@@ -41,13 +41,13 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy CLI binary from builder (package/bin is `blazegraph-io`; kept at the
+# Copy CLI binary from builder (package is `bragi-io`, bin is `bragi`; kept at the
 # internal path /app/bin/blazegraph-cli, which BLAZEGRAPH_CLI_PATH points at).
-COPY --from=builder /build/target/release/blazegraph-io /app/bin/blazegraph-cli
+COPY --from=builder /build/target/release/bragi /app/bin/blazegraph-cli
 
 # Copy Tika JAR and default processing config
-COPY blazegraph-core/deps/tika/jni-jars/blazing-tika-jni.jar /app/bin/blazing-tika-jni.jar
-COPY blazegraph-cli/configs/processing/config.yaml /app/bin/config.yaml
+COPY crates/core/deps/tika/jni-jars/blazing-tika-jni.jar /app/bin/blazing-tika-jni.jar
+COPY crates/cli/configs/processing/config.yaml /app/bin/config.yaml
 
 # Copy server code and install Python deps using python3.11
 COPY server/ /app/server/

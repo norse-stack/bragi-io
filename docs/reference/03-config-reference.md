@@ -2,7 +2,7 @@
 
 Blazegraph's parsing pipeline is controlled by a YAML configuration. The default config works well for most documents. Create custom configs to tune thresholds for specific document categories.
 
-**Source of truth:** [`config.rs`](../../../../blazegraph-io/blazegraph-core/src/config.rs)
+**Source of truth:** [`config.rs`](../../../../blazegraph-io/crates/core/src/config.rs)
 
 ---
 

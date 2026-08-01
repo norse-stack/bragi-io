@@ -52,31 +52,31 @@ jobs:
           echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
 
       - name: Build CLI binary
-        run: cargo build --release -p blazegraph-io --target ${{ matrix.target }}
+        run: cargo build --release -p bragi-io --target ${{ matrix.target }}
 
       - name: Package archive (Linux/macOS)
         if: matrix.archive == 'tar.gz'
         run: |
           mkdir staging
-          cp target/${{ matrix.target }}/release/blazegraph-io staging/
-          cp blazegraph-core/deps/tika/jni-jars/blazing-tika-jni.jar staging/
+          cp target/${{ matrix.target }}/release/bragi staging/
+          cp crates/core/deps/tika/jni-jars/blazing-tika-jni.jar staging/
           cd staging
-          tar -czf ../blazegraph-io-${{ matrix.target }}.tar.gz blazegraph-io blazing-tika-jni.jar
+          tar -czf ../bragi-io-${{ matrix.target }}.tar.gz bragi blazing-tika-jni.jar
 
       - name: Package archive (Windows)
         if: matrix.archive == 'zip'
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Path staging
-          Copy-Item target/${{ matrix.target }}/release/blazegraph-io.exe staging/
-          Copy-Item blazegraph-core/deps/tika/jni-jars/blazing-tika-jni.jar staging/
-          Compress-Archive -Path staging/blazegraph-io.exe, staging/blazing-tika-jni.jar -DestinationPath blazegraph-io-${{ matrix.target }}.zip
+          Copy-Item target/${{ matrix.target }}/release/bragi.exe staging/
+          Copy-Item crates/core/deps/tika/jni-jars/blazing-tika-jni.jar staging/
+          Compress-Archive -Path staging/bragi.exe, staging/blazing-tika-jni.jar -DestinationPath bragi-io-${{ matrix.target }}.zip
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: blazegraph-io-${{ matrix.target }}
-          path: blazegraph-io-${{ matrix.target }}.${{ matrix.archive }}
+          name: bragi-io-${{ matrix.target }}
+          path: bragi-io-${{ matrix.target }}.${{ matrix.archive }}
 
   release:
     name: Create Release

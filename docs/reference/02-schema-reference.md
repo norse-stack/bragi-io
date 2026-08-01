@@ -3,7 +3,7 @@
 Complete field-by-field documentation of the BlazeGraph output format (`bgraph.json`).
 
 **Schema version:** `0.2.0`
-**Source of truth:** [`types.rs`](../../../../blazegraph-io/blazegraph-core/src/types.rs)
+**Source of truth:** [`types.rs`](../../../../blazegraph-io/crates/core/src/types.rs)
 
 All examples are from processing Claude Shannon's *A Mathematical Theory of Communication* (55 pages).
 

@@ -33,7 +33,7 @@ docker run -d -p 8080:8080 blazegraph-io
 Once the server is running, point the SDK at it:
 
 ```python
-import blazegraphio as bg
+import bragi as bg
 
 bg.configure(host="localhost:8080")
 graph = await bg.parse_pdf_async("document.pdf")

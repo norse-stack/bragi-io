@@ -11,15 +11,15 @@
 # Toolchain resolution (mirrors the parent Makefile's defaults).
 # ---------------------------------------------------------------------------
 JRE_PATH ?= $(or $(JAVA_HOME),$(HOME)/.sdkman/candidates/java/current)
-JAR_PATH ?= blazegraph-core/deps/tika/jni-jars/blazing-tika-jni.jar
+JAR_PATH ?= crates/core/deps/tika/jni-jars/blazing-tika-jni.jar
 
-CLI_BIN     := target/release/blazegraph-io
+CLI_BIN     := target/release/bragi
 
 # ---------------------------------------------------------------------------
 # Golden freeze family (Block D — the cold-tier reconstruction anchor).
 # ---------------------------------------------------------------------------
-GOLDEN_DIR    := blazegraph-core/test_fixtures/golden/1.0.0/attention
-GOLDEN_CACHE  := blazegraph-core/test_fixtures/snapshots
+GOLDEN_DIR    := crates/core/test_fixtures/golden/1.0.0/attention
+GOLDEN_CACHE  := crates/core/test_fixtures/snapshots
 GOLDEN_PDF    := $(GOLDEN_DIR)/attention.pdf
 GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
@@ -47,7 +47,7 @@ hooks: ## Enable the repo's secret-scanning git hooks (see .githooks/README.md)
 	@command -v gitleaks >/dev/null 2>&1 || echo "⚠  gitleaks not found — install it: brew install gitleaks"
 
 build-cli: ## Build the JNI CLI (release) — needed to run a fresh Tika parse
-	cargo build --release -p blazegraph-io
+	cargo build --release -p bragi-io
 
 ## golden-generate: rebuild the golden freeze family from the PDF with a CLEAN,
 ## FRESH Tika parse (needs the JVM). `--fresh-from c0` forces Tika to run and
@@ -88,14 +88,14 @@ golden-generate: build-cli
 	@echo "   C1/C2 cache: $(GOLDEN_CACHE)/{c1-xhtml,c2-preprocessor}/"
 	@echo ""
 	@echo "Next: verify the JVM-free replay reproduces it byte-for-byte:"
-	@echo "   make golden-test   (or: cargo test -p blazegraph-io-core --test golden_freeze_tests)"
+	@echo "   make golden-test   (or: cargo test -p bragi-io-core --test golden_freeze_tests)"
 
 ## golden-generate-docs: regenerate the JVM-free channel goldens (docx + md)
 ## from their committed source docs. The docx and markdown channels are
 ## pure-Rust (no Tika/JVM). These goldens are the single blessed fixtures the
 ## downstream (urd-adapters / urd-cli) reads directly. Verification tests for
 ## them are tracked in CR-91 (DRAFT).
-GOLDEN_1_0_0 := blazegraph-core/test_fixtures/golden/1.0.0
+GOLDEN_1_0_0 := crates/core/test_fixtures/golden/1.0.0
 golden-generate-docs: build-cli
 	@echo "📄 Regenerating the docx + md channel goldens (JVM-free)..."
 	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-docx/source.docx -f bgraph-md -o $(GOLDEN_1_0_0)/demo-docx/document.bgraph.md
@@ -105,7 +105,7 @@ golden-generate-docs: build-cli
 golden-generate-all: golden-generate golden-generate-docs ## Re-bless the entire 1.0.0 golden family (PDF + docx + md)
 
 golden-test: ## Run the JVM-free golden freeze + roundtrip tests
-	cargo test -p blazegraph-io-core --test golden_freeze_tests
+	cargo test -p bragi-io-core --test golden_freeze_tests
 
 ## golden-bless: re-freeze the ENTIRE golden family in-place, JVM-free — every
 ## channel's `document.bgraph.md` AND `document.bgraph.json`, plus the attention
@@ -116,7 +116,7 @@ golden-test: ## Run the JVM-free golden freeze + roundtrip tests
 ## expect. If the PIPELINE changed (not just the version), run a fresh Tika parse
 ## first with `make golden-generate-all`, then this. See operations/release.md §3.
 golden-bless: ## Re-bless the golden family (md + json) in-place, JVM-free
-	BLESS_GOLDEN=1 cargo test -p blazegraph-io-core --test golden_freeze_tests
+	BLESS_GOLDEN=1 cargo test -p bragi-io-core --test golden_freeze_tests
 
 ## test: the self-contained Rust sweep — core + CLI, including the golden freeze
 ## (bgraph.md + the json wire) and the schema-contract boundary proof. JVM-free:
@@ -124,7 +124,7 @@ golden-bless: ## Re-bless the golden family (md + json) in-place, JVM-free
 ## of the release runbook's Step 4; pair it with `make test-python` (the SDK
 ## suite) here and `make test-downstream` (api + urd) in the parent Makefile.
 test: ## Run the full core + CLI test suite (incl golden freeze + json wire)
-	cargo test -p blazegraph-io-core -p blazegraph-io
+	cargo test -p bragi-io-core -p bragi-io
 
 # --- Python SDK ----------------------------------------------------------
 PY_DIR      := blazegraph-python
@@ -149,14 +149,14 @@ sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fix
 test-python: sync-python-fixture ## Regenerate fixtures + run the Python SDK test suite
 	cd $(PY_DIR) && .venv/bin/python -m pytest -q
 
-## build-python: build the SDK sdist + wheel into blazegraph-python/dist/ with uv.
+## build-python: build the SDK sdist + wheel into py/sdk/dist/ with uv.
 ## The repo's python is uv-managed — the .venv carries no pip — so `uv build` (an
 ## isolated build env) is the right tool, not `python -m build`. Cleans dist/ FIRST:
 ## the dir historically accumulated stale 0.1.x–0.2.x artifacts and a publish ships
 ## everything in dist/. Then `uvx twine check` pre-flights metadata + README render,
 ## so a bad long_description fails HERE — not after the version is burned on PyPI
 ## (you can't re-upload a version). This is the buildable half of release.md §7.
-build-python: ## Build + validate the Python SDK sdist + wheel (into blazegraph-python/dist/)
+build-python: ## Build + validate the Python SDK sdist + wheel (into py/sdk/dist/)
 	@command -v uv >/dev/null 2>&1 || { echo "❌ uv not found — the SDK build is uv-native (see release.md §7)"; exit 1; }
 	@echo "🐍 Building the Python SDK (sdist + wheel) with uv..."
 	rm -rf $(PY_DIR)/dist
@@ -170,6 +170,6 @@ build-python: ## Build + validate the Python SDK sdist + wheel (into blazegraph-
 ## The upload needs a PyPI token: `UV_PUBLISH_TOKEN=pypi-… make publish-python` (or
 ## ~/.pypirc). This is a publish lever — run it LAST. release.md §7.
 publish-python: version-check build-python ## Build + upload the Python SDK to PyPI (needs a PyPI token)
-	@echo "🚀 Uploading blazegraph-io to PyPI (uv publish)..."
+	@echo "🚀 Uploading bragi-io to PyPI (uv publish)..."
 	cd $(PY_DIR) && uv publish
-	@echo "✅ Published. Verify: pip install blazegraph-io"
+	@echo "✅ Published. Verify: pip install bragi-io"

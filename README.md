@@ -51,7 +51,7 @@ Output goes to stdout by default. Use `-o` to write to a file.
 ### Python
 
 ```python
-import blazegraphio as bg
+import bragi as bg
 
 graph = bg.parse_pdf("document.pdf")
 
@@ -64,7 +64,7 @@ for section in graph.sections:
 ### Rust library
 
 ```rust
-use blazegraph_io_core::{DocumentProcessor, ParsingConfig};
+use bragi_io_core::{DocumentProcessor, ParsingConfig};
 
 let config = ParsingConfig::default();
 let processor = DocumentProcessor::new(config);
@@ -113,7 +113,7 @@ The Docker container runs the Blazegraph processing server — use it for async 
 make serve
 
 # Parse via the Python SDK
-import blazegraphio as bg
+import bragi as bg
 bg.configure(host="localhost:8080")
 graph = await bg.parse_pdf_async("document.pdf")
 ```
@@ -164,9 +164,9 @@ graph = await bg.parse_pdf_async("paper.pdf")
 
 ```
 blazegraph-io/
-├── blazegraph-core/     # Core parsing library (blazegraph-io-core on crates.io)
-├── blazegraph-cli/      # Command-line interface (blazegraph-io on crates.io)
-├── blazegraph-python/   # Python SDK (blazegraph-io on PyPI)
+├── crates/core/     # Core parsing library (bragi-io-core on crates.io)
+├── crates/cli/      # Command-line interface (blazegraph-io on crates.io)
+├── py/sdk/   # Python SDK (blazegraph-io on PyPI)
 └── docs/                # Documentation
 ```
 

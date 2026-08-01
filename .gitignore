@@ -34,8 +34,8 @@ blazegraph-cache/
 
 # Output files (user-generated)
 *.json
-!blazegraph-cli/configs/**/*.json
-!blazegraph-core/test_fixtures/**/*.json
+!crates/cli/configs/**/*.json
+!crates/core/test_fixtures/**/*.json
 
 # Environment
 .env
