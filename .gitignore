@@ -3,6 +3,11 @@
 debug/
 release/
 
+# Release archives + staging (make build-archive / release.yml)
+/staging/
+bragi-io-*.tar.gz
+bragi-io-*.zip
+
 # Cargo
 # Note: Cargo.lock IS committed for reproducible CLI builds
 **/*.rs.bk

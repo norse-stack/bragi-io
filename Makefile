@@ -25,7 +25,7 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
+.PHONY: build-cli build-archive golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -48,6 +48,25 @@ hooks: ## Enable the repo's secret-scanning git hooks (see .githooks/README.md)
 
 build-cli: ## Build the JNI CLI (release) — needed to run a fresh Tika parse
 	cargo build --release -p bragi-io
+
+## build-archive: build the release CLI for one target triple and package the
+## EXACT archive release.yml ships — the `bragi` binary plus the vendored Tika
+## JAR. Extracted from release.yml (T1.6 C6 prep) so the build+package logic lives
+## once, in the Makefile, and is exercised locally at rung 2 on Linux — leaving
+## rung 5 (release.yml on a real repo) to prove only the matrix + upload +
+## release-creation WIRING, not the build. The Windows .zip leg stays in the
+## workflow (pwsh/Compress-Archive); this covers the three tar.gz targets. §9.
+##   make build-archive TARGET=aarch64-unknown-linux-gnu   ->  bragi-io-<triple>.tar.gz
+build-archive: ## Build + package the release tar.gz for TARGET=<triple> (bragi + Tika JAR)
+	@test -n "$(TARGET)" || { echo "usage: make build-archive TARGET=<rust-triple>"; exit 2; }
+	@test -f "$(JAR_PATH)" || { echo "❌ Tika JAR not found at $(JAR_PATH)"; exit 1; }
+	cargo build --release -p bragi-io --target $(TARGET)
+	rm -rf staging && mkdir staging
+	cp target/$(TARGET)/release/bragi staging/
+	cp $(JAR_PATH) staging/
+	cd staging && tar -czf ../bragi-io-$(TARGET).tar.gz bragi blazing-tika-jni.jar
+	@echo "✅ bragi-io-$(TARGET).tar.gz"
+	@tar -tzf bragi-io-$(TARGET).tar.gz
 
 ## golden-generate: rebuild the golden freeze family from the PDF with a CLEAN,
 ## FRESH Tika parse (needs the JVM). `--fresh-from c0` forces Tika to run and
