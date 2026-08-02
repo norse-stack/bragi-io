@@ -51,8 +51,10 @@ COPY --from=builder /build/target/release/bragi /app/bin/bragi
 COPY crates/core/deps/tika/jni-jars/blazing-tika-jni.jar /app/bin/blazing-tika-jni.jar
 COPY crates/cli/configs/processing/config.yaml /app/bin/config.yaml
 
-# Copy server code and install Python deps using python3.11
-COPY server/ /app/server/
+# Copy server code and install Python deps using python3.11.
+# Source moved to py/server/ at T1.5b R1; the internal path stays /app/server/
+# so the CMD's `server.main:app` module path is unchanged.
+COPY py/server/ /app/server/
 RUN python3.11 -m pip install --no-cache-dir --break-system-packages -r /app/server/requirements.txt
 
 # Environment
