@@ -25,7 +25,7 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
+.PHONY: build-cli golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -106,6 +106,14 @@ golden-generate-all: golden-generate golden-generate-docs ## Re-bless the entire
 
 golden-test: ## Run the JVM-free golden freeze + roundtrip tests
 	cargo test -p bragi-io-core --test golden_freeze_tests
+
+## jvm-smoke: the lane make test leaves out — a real PDF through the real JNI/Tika
+## path, asserting the fresh bgraph_sha256 + node count against the committed
+## golden. Needs a JVM (JRE_PATH/JAVA_HOME) and the vendored JAR. This is the
+## gate the `com/blazegraph/TikaMain` class string never had; T1.5b R3 broke that
+## string and four green gates missed it. See scripts/jvm-smoke.sh, T1.6 C3a.
+jvm-smoke: build-cli ## JVM smoke gate — a real JNI/Tika parse must reproduce the golden (needs a JVM)
+	@scripts/jvm-smoke.sh
 
 ## golden-bless: re-freeze the ENTIRE golden family in-place, JVM-free — every
 ## channel's `document.bgraph.md` AND `document.bgraph.json`, plus the attention
