@@ -1,6 +1,6 @@
 # Docker Guide
 
-Run the Blazegraph processing server as a container. No Rust toolchain, no Java install — the container bundles everything.
+Run the Bragi processing server as a container. No Rust toolchain, no Java install — the container bundles everything.
 
 ---
 
@@ -22,8 +22,8 @@ curl http://localhost:8080/health
 ### With docker run
 
 ```bash
-docker build -t blazegraph-io .
-docker run -d -p 8080:8080 blazegraph-io
+docker build -t bragi-io .
+docker run -d -p 8080:8080 bragi-io
 ```
 
 ---
@@ -42,7 +42,7 @@ for section in graph.sections:
     print(section.content.text)
 ```
 
-This is the self-hosted tier — async processing without needing a hosted API key. Same output as local mode, same `BlazeGraph` object.
+This is the self-hosted tier — async processing without needing a hosted API key. Same output as local mode, same `Bragi` object.
 
 ---
 
@@ -69,8 +69,8 @@ curl -X POST http://localhost:8080/v1/process/pdf \
 You can also use the container for one-off CLI parses without starting the server:
 
 ```bash
-docker run --rm -v $(pwd):/data blazegraph-io \
-  blazegraph-io parse /data/document.pdf -o /data/bgraph.json
+docker run --rm -v $(pwd):/data bragi-io \
+  bragi parse /data/document.pdf -o /data/bgraph.json
 ```
 
 ---
@@ -79,7 +79,7 @@ docker run --rm -v $(pwd):/data blazegraph-io \
 
 The Docker image bundles:
 
-- **blazegraph-cli** — the compiled Rust binary
+- **bragi** — the compiled Rust binary
 - **JRE** (BellSoft Liberica OpenJDK 21) — for Apache Tika PDF extraction
 - **Apache Tika** — PDF text extraction via JNI
 - **FastAPI + uvicorn** — the processing server
@@ -96,7 +96,7 @@ To use a custom config file, mount it into the container:
 ```bash
 docker run -d -p 8080:8080 \
   -v $(pwd)/my-config.yaml:/config/my-config.yaml \
-  blazegraph-io
+  bragi-io
 ```
 
 Then reference it in your API call:
@@ -114,9 +114,9 @@ curl -X POST http://localhost:8080/v1/process/pdf \
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `RUST_LOG` | `info` | Log level for the CLI (`debug`, `info`, `warn`, `error`) |
-| `BRAGI_CLI_PATH` | `/usr/local/bin/blazegraph-io` | Path to the CLI binary |
-| `BRAGI_JAR_PATH` | `/app/tika-jni.jar` | Path to the Tika JAR |
-| `BRAGI_CONFIG_PATH` | `/app/default_config.yaml` | Default config file |
+| `BRAGI_CLI_PATH` | `/app/bin/bragi` | Path to the CLI binary |
+| `BRAGI_JAR_PATH` | `/app/bin/blazing-tika-jni.jar` | Path to the Tika JAR |
+| `BRAGI_CONFIG_PATH` | `/app/bin/config.yaml` | Default config file |
 
 ---
 

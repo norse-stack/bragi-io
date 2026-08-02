@@ -1,9 +1,9 @@
 # Python SDK Guide
 
-The `blazegraph-io` Python package lets you parse PDFs into typed semantic document graphs.
+The `bragi-io` Python package lets you parse PDFs into typed semantic document graphs.
 
 ```bash
-pip install blazegraph-io
+pip install bragi-io
 ```
 
 **Requirements:** Python 3.9+. The only runtime dependency is `httpx`.
@@ -24,7 +24,7 @@ for section in graph.sections:
     print(section.content.text)
 ```
 
-On first run, the SDK automatically downloads the `blazegraph-cli` binary and a JRE. Subsequent runs are instant.
+On first run, the SDK automatically downloads the `bragi` binary and a JRE. Subsequent runs are instant.
 
 ---
 
@@ -34,7 +34,7 @@ The SDK works at three tiers. Your graph-processing code stays the same regardle
 
 ### Local mode (default)
 
-Runs the `blazegraph-cli` binary via subprocess. No account needed. Synchronous — blocks until the PDF is parsed.
+Runs the `bragi` binary via subprocess. No account needed. Synchronous — blocks until the PDF is parsed.
 
 ```python
 graph = bg.parse_pdf("document.pdf")
@@ -45,7 +45,7 @@ graph = bg.parse_pdf("document.pdf")
 Run the Docker container for async processing in your pipeline. No Rust toolchain or Java install needed — the container bundles everything.
 
 ```bash
-make serve  # starts the Blazegraph processing server
+make serve  # starts the Bragi processing server
 ```
 
 ```python
@@ -57,14 +57,14 @@ See the [Docker Guide](./03-docker.md) for setup.
 
 ### API mode
 
-Send PDFs to the hosted Blazegraph API at [blazegraph.io](https://blazegraph.io). Same interface, cloud-scale processing.
+Send PDFs to the hosted Bragi API at [bragi-io.com](https://bragi-io.com). Same interface, cloud-scale processing.
 
 ```python
 bg.configure(api_key="blaze_prod_XXX...")
 graph = await bg.parse_pdf_async("document.pdf")
 ```
 
-See the [API documentation](https://blazegraph.io/docs) for API key setup, credit system, and endpoint details.
+See the [API documentation](https://bragi-io.com/docs) for API key setup, credit system, and endpoint details.
 
 ### The three tiers
 
@@ -83,9 +83,9 @@ graph = await bg.parse_pdf_async("paper.pdf")
 
 ---
 
-## The BlazeGraph Object
+## The Bragi Object
 
-Every `parse_pdf` call returns a `BlazeGraph` — the top-level wrapper for the document graph.
+Every `parse_pdf` call returns a `Bragi` — the top-level wrapper for the document graph.
 
 ```python
 graph = bg.parse_pdf("document.pdf")
@@ -212,18 +212,18 @@ The SDK raises typed exceptions:
 
 ```python
 from bragi.errors import (
-    BlazeGraphError,          # Base exception
-    BlazeGraphAuthError,      # 401 — bad/missing API key (API mode)
-    BlazeGraphCreditsError,   # 402 — insufficient credits (API mode)
-    BlazeGraphProcessingError,# 500 — processing failure
-    BlazeGraphNotFoundError,  # CLI binary not found (local mode)
+    BragiError,          # Base exception
+    BragiAuthError,      # 401 — bad/missing API key (API mode)
+    BragiCreditsError,   # 402 — insufficient credits (API mode)
+    BragiProcessingError,# 500 — processing failure
+    BragiNotFoundError,  # CLI binary not found (local mode)
 )
 
 try:
     graph = bg.parse_pdf("document.pdf")
-except BlazeGraphNotFoundError:
-    print("blazegraph-cli not found — it should auto-download on first run")
-except BlazeGraphProcessingError as e:
+except BragiNotFoundError:
+    print("bragi not found — it should auto-download on first run")
+except BragiProcessingError as e:
     print(f"Processing failed: {e}")
 ```
 
@@ -238,18 +238,18 @@ All runtime artifacts live inside the package directory (`site-packages/bragi/_r
 ### Binary resolution order
 
 1. `BRAGI_CLI_PATH` environment variable (user override)
-2. `_runtime/bin/blazegraph-cli` (package-local, from previous download)
-3. System PATH / `~/.cargo/bin/blazegraph-cli` (user-installed via `cargo install`)
+2. `_runtime/bin/bragi` (package-local, from previous download)
+3. System PATH / `~/.cargo/bin/bragi` (user-installed via `cargo install`)
 4. Auto-download from GitHub Releases
 
 ### First run
 
 ```
 >>> bg.parse_pdf("document.pdf")
-Downloading blazegraph-cli v0.1.0 (aarch64-apple-darwin)... done.
+Downloading bragi v0.1.0 (aarch64-apple-darwin)... done.
 Downloading JRE (Eclipse Temurin 21)... done.
 Processing document.pdf... done.
-<BlazeGraph: 94 nodes, schema v0.2.0>
+<Bragi: 94 nodes, schema v0.2.0>
 ```
 
 ### Config file (local mode only)
@@ -286,7 +286,7 @@ All types are plain Python dataclasses with full IDE autocomplete.
 
 | Type | Description |
 |------|-------------|
-| `BlazeGraph` | Top-level graph wrapper |
+| `Bragi` | Top-level graph wrapper |
 | `DocumentNode` | A single node |
 | `NodeLocation` | Combined semantic + physical location |
 | `SemanticLocation` | Tree position (path, depth, breadcrumbs) |

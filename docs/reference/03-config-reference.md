@@ -1,8 +1,8 @@
 # Configuration Reference
 
-Blazegraph's parsing pipeline is controlled by a YAML configuration. The default config works well for most documents. Create custom configs to tune thresholds for specific document categories.
+Bragi's parsing pipeline is controlled by a YAML configuration. The default config works well for most documents. Create custom configs to tune thresholds for specific document categories.
 
-**Source of truth:** [`config.rs`](../../../../blazegraph-io/crates/core/src/config.rs)
+**Source of truth:** [`config.rs`](../../crates/core/src/config.rs)
 
 ---
 
@@ -42,7 +42,7 @@ Rules execute in the order listed. The default pipeline runs SectionDetection fi
 
 ## Section Detection
 
-Controls how Blazegraph identifies sections (headings) in the document.
+Controls how Bragi identifies sections (headings) in the document.
 
 ### Font-Based Detection
 
@@ -206,7 +206,7 @@ Useful for RAG pipelines where chunk size matters. Set `max_size` to your embedd
 Pass a YAML config file to the CLI:
 
 ```bash
-blazegraph-io parse document.pdf -c my-config.yaml -o bgraph.json
+bragi parse document.pdf -c my-config.yaml -o bgraph.json
 ```
 
 Build one config per document category (e.g., all your legal contracts, or all academic papers from a specific journal) and reuse it across that group. The default config works well for general-purpose parsing — custom configs are for when you need to tune specific thresholds.
@@ -276,4 +276,4 @@ For debugging or when you want raw extraction without semantic processing:
 minimal_parse: true
 ```
 
-This bypasses all rules and converts each Tika text element directly to a Paragraph node. Useful for understanding what the PDF extractor sees before Blazegraph applies its rules.
+This bypasses all rules and converts each Tika text element directly to a Paragraph node. Useful for understanding what the PDF extractor sees before Bragi applies its rules.

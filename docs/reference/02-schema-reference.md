@@ -1,9 +1,9 @@
 # bgraph.json Schema Reference
 
-Complete field-by-field documentation of the BlazeGraph output format (`bgraph.json`).
+Complete field-by-field documentation of the Bragi output format (`bgraph.json`).
 
 **Schema version:** `0.2.0`
-**Source of truth:** [`types.rs`](../../../../blazegraph-io/crates/core/src/types.rs)
+**Source of truth:** [`types.rs`](../../crates/core/src/types.rs)
 
 All examples are from processing Claude Shannon's *A Mathematical Theory of Communication* (55 pages).
 
@@ -172,7 +172,7 @@ Document-level metadata. Not a node in the tree — information *about* the docu
 
 ### DocumentMetadata
 
-Extracted from the PDF's XMP/metadata stream. All fields are pass-through — Blazegraph doesn't infer or modify metadata.
+Extracted from the PDF's XMP/metadata stream. All fields are pass-through — Bragi doesn't infer or modify metadata.
 
 ```json
 {

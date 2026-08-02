@@ -4,9 +4,9 @@ Parse your first PDF into a semantic document graph in under 60 seconds.
 
 ---
 
-## What Blazegraph Does
+## What Bragi Does
 
-Blazegraph transforms PDFs into structured semantic graphs. Instead of flat text extraction, you get a navigable tree of sections, paragraphs, and content — with physical coordinates that map every node to exact locations in the original PDF.
+Bragi transforms PDFs into structured semantic graphs. Instead of flat text extraction, you get a navigable tree of sections, paragraphs, and content — with physical coordinates that map every node to exact locations in the original PDF.
 
 **Input:** A PDF file.
 **Output:** A `bgraph.json` — a tree of typed nodes with semantic paths, physical bounding boxes, and token counts.
@@ -18,13 +18,13 @@ Blazegraph transforms PDFs into structured semantic graphs. Instead of flat text
 ### Rust CLI
 
 ```bash
-cargo install blazegraph-io
+cargo install bragi-io
 ```
 
 ### Python
 
 ```bash
-pip install blazegraph-io
+pip install bragi-io
 ```
 
 No account needed. No API key. Runs entirely on your machine.
@@ -38,7 +38,7 @@ No account needed. No API key. Runs entirely on your machine.
 ### CLI
 
 ```bash
-blazegraph-io parse document.pdf -o bgraph.json
+bragi parse document.pdf -o bgraph.json
 ```
 
 ### Python
@@ -61,7 +61,7 @@ Both produce identical `bgraph.json` output.
 
 ## Understand the Output
 
-Here's what Blazegraph produces for Claude Shannon's *A Mathematical Theory of Communication* (55 pages):
+Here's what Bragi produces for Claude Shannon's *A Mathematical Theory of Communication* (55 pages):
 
 ```
 55 pages → 3,022 text elements → 94 nodes → 1.1s
@@ -160,7 +160,7 @@ Every node has a **location** with two components:
 - `page`: page number (1-indexed)
 - `bounding_box`: exact coordinates (`x`, `y`, `width`, `height` in PDF points)
 
-This dual location is what makes Blazegraph useful for GraphRAG: a human says "page 1, the paragraph about communication" and a machine says `path: "2.2", page: 1, bbox: {x: 91.9, y: 585.9}` — both pointing at the same content, and the later can be incorperated into any application (highlights, animations, move to content, etc).
+This dual location is what makes Bragi useful for GraphRAG: a human says "page 1, the paragraph about communication" and a machine says `path: "2.2", page: 1, bbox: {x: 91.9, y: 585.9}` — both pointing at the same content, and the later can be incorperated into any application (highlights, animations, move to content, etc).
 
 ---
 
@@ -210,7 +210,7 @@ for section in graph.sections:
 The default config works well for most documents. For specific document types, create a YAML config that tunes section detection thresholds, spatial clustering, and size limits:
 
 ```bash
-blazegraph-io parse contract.pdf -c my-config.yaml -o bgraph.json
+bragi parse contract.pdf -c my-config.yaml -o bgraph.json
 ```
 
 The key insight: build one config per document category and reuse it across similar documents in that group. See the [Configuration Reference](../reference/03-config-reference.md) for all tuning parameters.
@@ -219,7 +219,7 @@ The key insight: build one config per document category and reuse it across simi
 
 ## Docker
 
-The Docker container runs the Blazegraph processing server — use it for async processing in your pipeline:
+The Docker container runs the Bragi processing server — use it for async processing in your pipeline:
 
 ```bash
 make serve
@@ -239,7 +239,7 @@ The container bundles the CLI, JRE, Tika, and the FastAPI server. No Rust toolch
 You can also run one-off CLI parses directly:
 
 ```bash
-docker run --rm -v $(pwd):/data blazegraph/blazegraph-io \
+docker run --rm -v $(pwd):/data bragi-io \
   parse /data/document.pdf -o /data/bgraph.json
 ```
 
@@ -250,4 +250,4 @@ docker run --rm -v $(pwd):/data blazegraph/blazegraph-io \
 - **[Schema Reference](../reference/02-schema-reference.md)** — Full field-by-field documentation of `bgraph.json`
 - **[Configuration Reference](../reference/03-config-reference.md)** — Tune parsing for your document type
 - **[Python SDK Guide](./02-python-sdk.md)** — Typed access, tree navigation, rendering
-- **[Hosted API](https://blazegraph.io)** — Scale without infrastructure, pay per page
+- **[Hosted API](https://bragi-io.com)** — Scale without infrastructure, pay per page
