@@ -1,8 +1,10 @@
 # Stage 1: Build the Rust CLI binary.
+# Rust version tracks rust-toolchain.toml (channel = "1.97") — keep this tag in
+# sync with it; FROM cannot read that file.
 # Pin to bookworm (glibc 2.36) to match the Liberica runtime base below
 # (Debian 12 / glibc 2.36). An unpinned `rust:slim` pulls trixie (glibc 2.39+),
 # whose binary then fails at runtime: `GLIBC_2.39 not found`.
-FROM rust:1.93-slim-bookworm AS builder
+FROM rust:1.97-slim-bookworm AS builder
 
 RUN apt-get update && apt-get install -y \
     pkg-config \

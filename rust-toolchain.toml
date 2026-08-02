@@ -1,0 +1,11 @@
+# Single source of truth for the Rust toolchain across every surface: the host,
+# the CI image (ci/Dockerfile), and the product image (Dockerfile). rustup reads
+# this on any cargo/rustc invocation inside the workspace and installs the pinned
+# toolchain if it is absent.
+#
+# Minor-pin (floats the patch), matching the Docker `rust:1.97` / Liberica `:21`
+# convention already used in the two Dockerfiles. When bumping the minor, update
+# the Docker `FROM rust:X` and the CI image's `ARG RUST_VERSION=X` to match —
+# those tags are resolved at FROM/build time and cannot read this file.
+[toolchain]
+channel = "1.97"
