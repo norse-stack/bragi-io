@@ -25,7 +25,7 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli build-archive golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
+.PHONY: build-cli build-archive golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke docs-check golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -133,6 +133,12 @@ golden-test: ## Run the JVM-free golden freeze + roundtrip tests
 ## string and four green gates missed it. See scripts/jvm-smoke.sh, T1.6 C3a.
 jvm-smoke: build-cli ## JVM smoke gate — a real JNI/Tika parse must reproduce the golden (needs a JVM)
 	@scripts/jvm-smoke.sh
+
+## docs-check: assert the published docs say what the code does — env vars vs the
+## Dockerfile, routes vs the FastAPI app, the SDK type table vs __all__, and that
+## relative links resolve. `make test` never reads docs/; this is that lane.
+docs-check: ## Docs-truth gates: env/routes/types/links vs source (CR-94 §G)
+	@python3 scripts/docs-check.py
 
 ## golden-bless: re-freeze the ENTIRE golden family in-place, JVM-free — every
 ## channel's `document.bgraph.md` AND `document.bgraph.json`, plus the attention
