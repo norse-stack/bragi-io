@@ -25,7 +25,17 @@ GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 
-.PHONY: build-cli build-archive golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke docs-check golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
+# ---------------------------------------------------------------------------
+# Canon parse — the ONE command behind every number in the public docs
+# (public-docs-generator). A DEFAULT-config parse of the canon document
+# (attention) to both serializations; the docs cite THESE numbers and show the
+# bare command form. Env-wired to the vendored JRE+JAR so it runs without the
+# first-use auto-download. Output is scratch under target/ (gitignored).
+# ---------------------------------------------------------------------------
+CANON_PDF := $(GOLDEN_DIR)/attention.pdf
+CANON_OUT := target/canon
+
+.PHONY: build-cli build-archive parse-canon serve golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke docs-check golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -48,6 +58,15 @@ hooks: ## Enable the repo's secret-scanning git hooks (see .githooks/README.md)
 
 build-cli: ## Build the JNI CLI (release) — needed to run a fresh Tika parse
 	cargo build --release -p bragi-io
+
+parse-canon: build-cli ## Parse the canon doc (attention) → json + bgraph.md — the docs' number source
+	@mkdir -p $(CANON_OUT)
+	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
+	  ./$(CLI_BIN) parse -i $(CANON_PDF) -o $(CANON_OUT)/attention.json
+	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
+	  ./$(CLI_BIN) parse -i $(CANON_PDF) -f bgraph-md -o $(CANON_OUT)/attention.bgraph.md
+	@echo "✅ canon → $(CANON_OUT)/attention.json + attention.bgraph.md"
+	@ls -la $(CANON_OUT)
 
 ## build-archive: build the release CLI for one target triple and package the
 ## EXACT archive release.yml ships — the `bragi` binary plus the vendored Tika
@@ -139,6 +158,17 @@ jvm-smoke: build-cli ## JVM smoke gate — a real JNI/Tika parse must reproduce 
 ## relative links resolve. `make test` never reads docs/; this is that lane.
 docs-check: ## Docs-truth gates: env/routes/types/links vs source (CR-94 §G)
 	@python3 scripts/docs-check.py
+
+## serve: run the self-hosted FastAPI parse API the public docs describe, so a
+## docs run can actually curl it. uv supplies fastapi+uvicorn (py/server has a
+## requirements.txt, no venv); the CLI env is wired so the server's subprocess
+## parse finds the vendored JRE+JAR. Matches the Dockerfile CMD (port 8080).
+serve: build-cli ## Run the self-hosted parse API at http://localhost:8080 (GET /health, POST /v1/parse/pdf)
+	@command -v uv >/dev/null 2>&1 || { echo "❌ uv not found — needed to run the server (see py/server/requirements.txt)"; exit 1; }
+	BRAGI_CLI_PATH=$(abspath $(CLI_BIN)) BRAGI_JAR_PATH=$(abspath $(JAR_PATH)) \
+	PREPROCESSOR_JRE_PATH=$(JRE_PATH) JAVA_HOME=$(JRE_PATH) \
+	  uv run --with-requirements py/server/requirements.txt \
+	    uvicorn main:app --app-dir py/server --host 0.0.0.0 --port 8080
 
 ## golden-bless: re-freeze the ENTIRE golden family in-place, JVM-free — every
 ## channel's `document.bgraph.md` AND `document.bgraph.json`, plus the attention
