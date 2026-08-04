@@ -1,10 +1,12 @@
 # bragi-io
 
-Parse PDFs into semantic document graphs with bounding boxes. Built for GraphRAG.
+The **Bragi** command-line tool. It turns a document into a **bgraph** — one structured, addressable graph of its sections, paragraphs, and content, with the coordinates to point back at the page each piece came from. The bgraph is the product; this CLI is one way to get one.
 
-```
-55 pages  →  3,022 text elements  →  94 nodes  →  1.1s
-```
+`cargo install bragi-io` installs a binary named `bragi`.
+
+![PDF, DOCX and Markdown converge through Bragi into one bgraph, serialized as bgraph.md and bgraph.json](https://cdn.jsdelivr.net/gh/norse-stack/bragi-io@main/docs/assets/convergence.svg)
+
+PDF, DOCX, and Markdown all converge to the same graph, emitted two ways: `bgraph.md` (canonical, human-readable) and `bgraph.json` (the machine escape hatch).
 
 ## Install
 
@@ -12,75 +14,91 @@ Parse PDFs into semantic document graphs with bounding boxes. Built for GraphRAG
 cargo install bragi-io
 ```
 
-No account needed. No API key. Runs entirely on your machine.
+On first use for a PDF, `bragi` fetches a Java runtime (used for PDF text extraction) and caches it; later runs reuse it. DOCX and Markdown parse in pure Rust, no runtime needed.
 
-> On first run, the CLI downloads a Java Runtime (~60MB) for PDF text extraction. It's cached for future use.
+## A real parse
+
+One parse of the canonical example — *Attention Is All You Need* — with the default config:
+
+```bash
+bragi parse -i attention.pdf -o attention.bgraph.json
+```
+
+```
+✅ Graph: 179 nodes
+```
+
+That's **179 nodes** (1 document, 30 sections, 147 paragraphs, 1 margin). Each node carries a semantic location (its `path` in the tree) and, for PDFs, a physical one (page + bounding box):
+
+```json
+{
+  "id": "7962788f-d2e7-50bc-8359-c47c4b37c03d",
+  "node_type": "Section",
+  "location": {
+    "semantic": { "path": "2", "depth": 1, "breadcrumbs": ["Attention Is All You Need", "Attention Is All You Need"] },
+    "physical": { "page": 1, "bounding_box": { "x": 211.5, "y": 149.1, "width": 188.4, "height": 16.5 } }
+  },
+  "content": { "text": "Attention Is All You Need" },
+  "token_count": 6
+}
+```
+
+## Two serializations
+
+One graph, emitted two ways:
+
+```bash
+bragi parse -i attention.pdf -o attention.bgraph.json            # bgraph.json  (default output)
+bragi parse -i attention.pdf -f bgraph-md -o attention.bgraph.md     # bgraph.md
+```
+
+- **`bgraph.md`** is canonical Markdown — readable and diffable, with each node's metadata in a fenced block beside its text.
+- **`bgraph.json`** is the full graph — every node, bounding box, and token count.
+
+Both invert to the same graph, and a bgraph carries a `bgraph_sha256` that proves the serialization round-trips.
 
 ## Usage
 
 ```bash
-# Parse a PDF, output to stdout
-bragi-io parse document.pdf
+# Input format is detected from the extension (.pdf, .docx, .md, .bgraph.md)
+bragi parse -i document.pdf -o document.bgraph.json
 
-# Write to a file
-bragi-io parse document.pdf -o bgraph.json
+# Canonical Markdown instead of JSON
+bragi parse -i document.pdf -f bgraph-md -o document.bgraph.md
 
-# Use a custom config
-bragi-io parse contract.pdf -c my-config.yaml -o bgraph.json
+# Tune parsing with a config (PDF channel)
+bragi parse -i contract.pdf -c my-config.yaml -o contract.bgraph.json
+
+# Turn a bgraph.md back into plain Markdown
+bragi strip -i document.bgraph.md -o document.md
 ```
 
-## What You Get
+### Output formats
 
-Every node in the output graph has:
+`-f, --output-format` selects the serialization:
 
-- **Semantic location** — tree position (`path: "2.3"`), depth, breadcrumbs
-- **Physical location** — page number, bounding box (`x`, `y`, `width`, `height` in PDF points)
-- **Content** — the node's text with pre-calculated token count
-- **Relationships** — parent and children UUIDs for tree navigation
+| Value | Emits |
+|-------|-------|
+| `graph` *(default)* | the `bgraph.json` graph serialization |
+| `bgraph-md` | the `bgraph.md` canonical Markdown serialization |
+| `sequential`, `flat`, `markdown` | flatter projections — ordered JSON segments, JSON text chunks, or plain Markdown |
 
-```json
-{
-  "node_type": "Paragraph",
-  "location": {
-    "semantic": { "path": "2.2", "depth": 2, "breadcrumbs": ["paper.pdf", "Introduction"] },
-    "physical": { "page": 1, "bounding_box": { "x": 91.9, "y": 585.9, "width": 427.5, "height": 164.2 } }
-  },
-  "content": { "text": "The fundamental problem of communication..." },
-  "token_count": 206
-}
-```
+Run `bragi parse --help` for every flag (config, caching, JRE path, style info, and more).
 
-This dual location model is what makes the output GraphRAG-ready: ground LLM outputs to specific physical locations in the original PDF.
+## Stable names
 
-## Configuration
-
-The default config works well for most documents. For specific document types, create a YAML config file and reuse it across similar documents.
-
-See the [Configuration Reference](https://github.com/norse-stack/bragi-io/blob/main/docs/reference/03-config-reference.md) for all tuning parameters.
+A node's id is derived from its content and its place in the tree — not from which version parsed it. Reparse after editing one paragraph and only that paragraph's id changes; every other node keeps its id. That edit-locality is what makes a bgraph safe to save and build on.
 
 ## As a library
 
-If you want to embed the parser in your own Rust application, use [`bragi-io-core`](https://crates.io/crates/bragi-io-core) instead.
+To embed the parser in a Rust program, depend on [`bragi-io-core`](https://crates.io/crates/bragi-io-core) instead of shelling out to this CLI.
 
-## Python SDK
+## Documentation
 
-A typed Python SDK is also available:
-
-```bash
-pip install bragi-io
-```
-
-See the [Python SDK Guide](https://github.com/norse-stack/bragi-io/blob/main/docs/guides/02-python-sdk.md).
-
-## Hosted API
-
-Same parser, no infrastructure. Available at [bragi-io.com](https://bragi-io.com). 500 free credits on signup.
+- [Quickstart](https://github.com/norse-stack/bragi-io/blob/main/docs/guides/01-quickstart.md)
+- [Schema reference](https://github.com/norse-stack/bragi-io/blob/main/docs/reference/02-schema-reference.md) — the `bgraph.json` fields
+- [Configuration reference](https://github.com/norse-stack/bragi-io/blob/main/docs/reference/03-config-reference.md)
 
 ## License
 
-Licensed under either of:
-
-- Apache License, Version 2.0
-- MIT license
-
-at your option.
+Licensed under either of Apache License, Version 2.0 or MIT license, at your option.

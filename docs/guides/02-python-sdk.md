@@ -1,6 +1,6 @@
 # Python SDK Guide
 
-The `bragi-io` Python package lets you parse PDFs into typed semantic document graphs.
+The `bragi-io` Python package turns a PDF into a **bgraph** — one structured, addressable graph of its sections, paragraphs, and content — and hands it back as fully typed Python objects. The bgraph is the product; this SDK is one door onto it.
 
 ```bash
 pip install bragi-io
@@ -15,130 +15,111 @@ pip install bragi-io
 ```python
 import bragi as bg
 
-graph = bg.parse_pdf("document.pdf")
+graph = bg.parse_pdf("attention.pdf")
 
-print(f"Nodes: {len(graph.nodes)}")
-print(f"Sections: {len(graph.sections)}")
+print(graph)                # <Bragi: 179 nodes, schema v1.0.0>
+print(len(graph.sections))  # 30
 
 for section in graph.sections:
     print(section.content.text)
 ```
 
-On first run, the SDK automatically downloads the `bragi` binary and a JRE. Subsequent runs are instant.
+On first use, the SDK fetches the `bragi` binary and a Java runtime automatically, then caches them; later runs reuse them.
 
 ---
 
-## Modes
+## Run modes
 
-The SDK works at three tiers. Your graph-processing code stays the same regardless of mode.
+The SDK is one interface over one pure function — where the parse *runs* is a one-line change, and your graph code stays the same.
 
-### Local mode (default)
+### Local (default)
 
-Runs the `bragi` binary via subprocess. No account needed. Synchronous — blocks until the PDF is parsed.
+Runs the `bragi` binary via subprocess. Synchronous — blocks until the parse is done.
 
 ```python
 graph = bg.parse_pdf("document.pdf")
 ```
 
-### Self-hosted mode
+### Self-hosted
 
-Run the Docker container for async processing in your pipeline. No Rust toolchain or Java install needed — the container bundles everything.
-
-```bash
-make serve  # starts the Bragi processing server
-```
+Point the SDK at your own server (see the [Docker Guide](./03-docker.md)). Pass the server's base URL — including the scheme:
 
 ```python
-bg.configure(host="localhost:8080")
+bg.configure(url="http://localhost:8080")
 graph = await bg.parse_pdf_async("document.pdf")
 ```
 
-See the [Docker Guide](./03-docker.md) for setup.
+### Hosted
 
-### API mode
-
-Send PDFs to the hosted Bragi API at [bragi-io.com](https://bragi-io.com). Same interface, cloud-scale processing.
+Point at the managed API by setting a key:
 
 ```python
-bg.configure(api_key="blaze_prod_XXX...")
+bg.configure(api_key="...")
 graph = await bg.parse_pdf_async("document.pdf")
 ```
 
-See the [API documentation](https://bragi-io.com/docs) for API key setup, credit system, and endpoint details.
-
-### The three tiers
-
-```python
-# 1. Local — scripts, notebooks, no setup
-graph = bg.parse_pdf("paper.pdf")
-
-# 2. Self-hosted — async processing via Docker
-bg.configure(host="localhost:8080")
-graph = await bg.parse_pdf_async("paper.pdf")
-
-# 3. Hosted API — scale without infrastructure
-bg.configure(api_key="blaze_prod_...")
-graph = await bg.parse_pdf_async("paper.pdf")
-```
+`parse_pdf_async` requires a configured `url` or `api_key`; without one it raises. Same input, same graph, whichever mode you use.
 
 ---
 
-## The Bragi Object
+## The Bragi object
 
-Every `parse_pdf` call returns a `Bragi` — the top-level wrapper for the document graph.
+Every `parse_pdf` call returns a `Bragi` — the top-level wrapper.
 
 ```python
 graph = bg.parse_pdf("document.pdf")
 
 graph.nodes                    # list[DocumentNode] — all nodes
-graph.sections                 # list[DocumentNode] — Section nodes only
-graph.paragraphs               # list[DocumentNode] — Paragraph nodes only
-graph.root                     # DocumentNode — the Document root
+graph.sections                 # Section nodes only
+graph.paragraphs               # Paragraph nodes only
+graph.root                     # the Document root
 graph.document_info            # DocumentInfo — metadata about the document
 graph.structural_profile       # StructuralProfile — graph statistics
-graph.schema_version           # str — schema version (e.g., "0.2.0")
+graph.schema_version           # "1.0.0"
+graph.bgraph_sha256            # the round-trip integrity hash
+graph.parse_provenance         # ParseProvenance — version, source, config
 ```
 
 ### Lookup helpers
 
 ```python
-node = graph.get_node("uuid-here")       # By ID
-page_nodes = graph.nodes_by_page(3)      # All nodes on page 3
+node = graph.get_node("7962788f-d2e7-50bc-8359-c47c4b37c03d")   # by id
+page_nodes = graph.nodes_by_page(1)                             # all nodes on a page
 ```
 
 ### Serialization
 
 ```python
-graph.to_dict()    # Raw dict (the original JSON)
+graph.to_dict()    # the raw bgraph.json dict
 graph.to_json()    # JSON string
 ```
 
 ---
 
-## Working with Nodes
+## Working with nodes
 
-Each node in the graph is a `DocumentNode` with typed fields:
+Each node is a `DocumentNode` with typed fields:
 
 ```python
-node = graph.nodes[0]
+node = graph.sections[0]
 
-node.id                        # str (UUID)
-node.node_type                 # str — "Document", "Section", "Paragraph", etc.
+node.id                        # str (UUID) — content-derived, stable
+node.node_type                 # str — "Document", "Section", "Paragraph", ...
 node.content.text              # str — the node's text
-node.token_count               # int — pre-calculated token count
+node.token_count               # int — pre-computed token count
 
-# Semantic location (tree position)
-node.location.semantic.path          # str — e.g., "2.3"
-node.location.semantic.depth         # int — tree depth
-node.location.semantic.breadcrumbs   # list[str] — human-readable trail
+# Semantic location (tree position) — always present
+node.location.semantic.path          # "2"
+node.location.semantic.depth         # 1
+node.location.semantic.breadcrumbs   # ["Attention Is All You Need", "Attention Is All You Need"]
 
-# Physical location (page position, PDF only)
-node.location.physical.page          # int — page number (1-indexed)
-node.location.physical.bounding_box  # BoundingBox (x, y, width, height)
+# Physical location (page position) — present for PDFs
+node.location.physical.page          # 1
+node.location.physical.bounding_box  # BoundingBox(x=211.5, y=149.1, width=188.4, height=16.5)
 
 # Tree relationships
-node.parent                    # str | None — parent node UUID
-node.children                  # list[str] — child node UUIDs
+node.parent                    # str | None — parent id
+node.children                  # list[str] — child ids
 ```
 
 ### Tree navigation
@@ -150,26 +131,15 @@ children = node.get_children(graph)  # list[DocumentNode]
 
 ---
 
-## Rendering Text
+## Rendering text
 
-The `render()` method recursively collects text from a node and all its descendants.
+`render()` recursively collects text from a node and its descendants.
 
-### Plain render
+### Plain
 
 ```python
 section = graph.sections[0]
 print(section.render(graph))
-```
-
-Output:
-```
-A Mathematical Theory of Communication
-
-The fundamental problem of communication is that of reproducing at one point
-either exactly or approximately a message selected at another point.
-
-Frequently the messages have meaning; that is they refer to or are correlated
-according to some system with certain physical or conceptual entities.
 ```
 
 ### With breadcrumbs
@@ -178,11 +148,10 @@ according to some system with certain physical or conceptual entities.
 print(section.render(graph, breadcrumbs=True))
 ```
 
-Output:
 ```
-[shannon1948.dvi > A Mathematical Theory of Communication]
+[Attention Is All You Need > Attention Is All You Need]
 
-The fundamental problem of communication...
+...the section's text, and its descendants...
 ```
 
 ### With node types
@@ -191,11 +160,10 @@ The fundamental problem of communication...
 print(section.render(graph, node_types=True))
 ```
 
-Output:
 ```
-[Section] A Mathematical Theory of Communication
+[Section] Attention Is All You Need
 
-[Paragraph] The fundamental problem of communication...
+[Paragraph] Provided proper attribution is provided...
 ```
 
 ### Full document
@@ -206,17 +174,15 @@ print(graph.render())
 
 ---
 
-## Error Handling
-
-The SDK raises typed exceptions:
+## Error handling
 
 ```python
 from bragi.errors import (
-    BragiError,          # Base exception
-    BragiAuthError,      # 401 — bad/missing API key (API mode)
-    BragiCreditsError,   # 402 — insufficient credits (API mode)
-    BragiProcessingError,# 500 — processing failure
-    BragiNotFoundError,  # CLI binary not found (local mode)
+    BragiError,           # base exception
+    BragiAuthError,       # bad/missing API key (hosted)
+    BragiCreditsError,    # insufficient credits (hosted)
+    BragiProcessingError, # the parse failed
+    BragiNotFoundError,   # the bragi binary wasn't found (local)
 )
 
 try:
@@ -224,33 +190,25 @@ try:
 except BragiNotFoundError:
     print("bragi not found — it should auto-download on first run")
 except BragiProcessingError as e:
-    print(f"Processing failed: {e}")
+    print(f"parse failed: {e}")
 ```
 
 ---
 
-## Local Mode Details
+## Local mode details
 
 ### Runtime management
 
-All runtime artifacts live inside the package directory (`site-packages/bragi/_runtime/`). Nothing touches your home directory. `pip uninstall` is a clean removal.
+Runtime artifacts live inside the package directory (`site-packages/bragi/_runtime/`). `pip uninstall` is a clean removal.
 
 ### Binary resolution order
 
-1. `BRAGI_CLI_PATH` environment variable (user override)
-2. `_runtime/bin/bragi` (package-local, from previous download)
-3. System PATH / `~/.cargo/bin/bragi` (user-installed via `cargo install`)
-4. Auto-download from GitHub Releases
+1. `BRAGI_CLI_PATH` environment variable (override)
+2. `_runtime/bin/bragi` (package-local, from a previous download)
+3. `bragi` on `PATH`, then `~/.cargo/bin/bragi` (installed via `cargo install`)
+4. Download from GitHub Releases
 
-### First run
-
-```
->>> bg.parse_pdf("document.pdf")
-Downloading bragi v0.1.0 (aarch64-apple-darwin)... done.
-Downloading JRE (Eclipse Temurin 21)... done.
-Processing document.pdf... done.
-<Bragi: 94 nodes, schema v0.2.0>
-```
+The JRE resolves from `JAVA_HOME` if set, otherwise the package-local `_runtime/jre/` (the CLI downloads it there on first PDF parse).
 
 ### Config file (local mode only)
 
@@ -258,42 +216,55 @@ Processing document.pdf... done.
 graph = bg.parse_pdf("document.pdf", config="path/to/config.yaml")
 ```
 
-See the [Configuration Reference](../reference/03-config-reference.md) for config file options.
+See the [Configuration Reference](../reference/03-config-reference.md).
 
 ---
 
 ## Node Types
 
+The tree root is a `Document`; its descendants are `Section` and `Paragraph`, with the occasional `Margin` on PDFs.
+
 | Type | Description | Typical depth |
 |------|-------------|---------------|
 | `Document` | Root node (one per graph) | 0 |
 | `Section` | Heading or structural division | 1+ |
-| `Paragraph` | Merged text block | 2+ |
-| `List` | List container | 2+ |
-| `ListItem` | Individual list entry | 3+ |
-| `Table` | Detected table | 2+ |
-| `Figure` | Detected figure | 2+ |
-| `Header` | Page header | 2+ |
-| `Footer` | Page footer | 2+ |
+| `Paragraph` | Merged text block | 1+ |
+| `Margin` | Marginal / running content (PDF) | varies |
 
-Currently, PDF processing produces primarily `Document`, `Section`, and `Paragraph` nodes.
+`node_type` is a string, so you can filter on any value the parser emits. Parsing *Attention Is All You Need* produces 1 `Document`, 30 `Section`, 147 `Paragraph`, and 1 `Margin` node.
 
 ---
 
 ## Type Reference
 
-All types are plain Python dataclasses with full IDE autocomplete.
+All types are plain Python dataclasses with full IDE autocomplete. Import them from `bragi`.
 
 | Type | Description |
 |------|-------------|
-| `Bragi` | Top-level graph wrapper |
-| `DocumentNode` | A single node |
+| `Bragi` | Top-level graph wrapper — the return type of `parse_pdf` |
+| `ParseProvenance` | The (version, source, config) triple that reproduces this parse |
+| `DocumentNode` | A single node in the graph |
 | `NodeLocation` | Combined semantic + physical location |
 | `SemanticLocation` | Tree position (path, depth, breadcrumbs) |
 | `PhysicalLocation` | Page position (page, bounding box) |
 | `BoundingBox` | Position rectangle (x, y, width, height) |
-| `NodeContent` | Node text (`text` field) |
-| `DocumentInfo` | Document-level metadata |
-| `DocumentMetadata` | PDF metadata (title, author, etc.) |
-| `DocumentAnalysis` | Typographic analysis (font sizes, etc.) |
+| `NodeContent` | Node text (the `text` field) |
+| `StyleMetadata` | Per-node style projection (font, size, bold/italic, colors) |
+| `InternalRef` | A reference to a location within the same document |
+| `InternalRefTarget` | Where an internal reference points (named / page) |
+| `ExternalRef` | A reference to a location outside the document |
+| `ExternalRefTarget` | Where an external reference points (a URI) |
+| `TargetPoint` | Resolved destination point on a target page |
+| `DocumentInfo` | Document-level metadata (root id, outline, flow type) |
+| `DocumentMetadata` | Extracted fields plus per-channel namespaces |
+| `PdfMetadata` | PDF-channel metadata namespace |
+| `MdMetadata` | Markdown-channel metadata namespace (frontmatter) |
+| `DocxMetadata` | DOCX-channel metadata namespace |
+| `BookmarkData` | Document outline (PDF bookmarks) |
+| `BookmarkSection` | A single outline entry |
 | `StructuralProfile` | Graph statistics |
+| `TokenDistribution` | Per-type and overall token histograms |
+| `TokenHistogram` | One token-count distribution |
+| `HistogramBin` | One bin in a token histogram |
+| `NodeTypeDistribution` | Node-type counts and percentages |
+| `DepthDistribution` | Tree-depth statistics |

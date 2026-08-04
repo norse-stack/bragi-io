@@ -1,6 +1,6 @@
 # Docker Guide
 
-Run the Bragi processing server as a container. No Rust toolchain, no Java install — the container bundles everything.
+Run the Bragi parse server as a container — one HTTP door onto the same engine that produces a **bgraph**. The container bundles the `bragi` binary and its runtime, so there's no Rust toolchain or Java install to manage.
 
 ---
 
@@ -35,7 +35,7 @@ Once the server is running, point the SDK at it:
 ```python
 import bragi as bg
 
-bg.configure(host="localhost:8080")
+bg.configure(url="http://localhost:8080")
 graph = await bg.parse_pdf_async("document.pdf")
 
 for section in graph.sections:
@@ -49,9 +49,10 @@ This is the self-hosted tier — async processing without needing a hosted API k
 ## Parse via curl
 
 ```bash
-curl -X POST http://localhost:8080/v1/process/pdf \
+curl -X POST http://localhost:8080/v1/parse/pdf \
   -F "file=@document.pdf" \
   -o bgraph.json
+# {"success": true, "graph": { "schema_version": "1.0.0", "nodes": [ ... ] }}
 ```
 
 ### Parameters
@@ -62,6 +63,8 @@ curl -X POST http://localhost:8080/v1/process/pdf \
 | `config` | string | none | Path to a config YAML (inside the container) |
 | `output_format` | string | `"graph"` | One of: `graph`, `sequential`, `flat` |
 
+The server returns the `bgraph.json` graph. It does not emit the `bgraph.md` serialization — for that, run the CLI with `-f bgraph-md` (see the [Quickstart](./01-quickstart.md)).
+
 ---
 
 ## One-off CLI parses
@@ -70,7 +73,7 @@ You can also use the container for one-off CLI parses without starting the serve
 
 ```bash
 docker run --rm -v $(pwd):/data bragi-io \
-  bragi parse /data/document.pdf -o /data/bgraph.json
+  bragi parse -i /data/document.pdf -o /data/bgraph.json
 ```
 
 ---
@@ -102,7 +105,7 @@ docker run -d -p 8080:8080 \
 Then reference it in your API call:
 
 ```bash
-curl -X POST http://localhost:8080/v1/process/pdf \
+curl -X POST http://localhost:8080/v1/parse/pdf \
   -F "file=@document.pdf" \
   -F "config=/config/my-config.yaml"
 ```

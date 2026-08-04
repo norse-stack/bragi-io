@@ -1,44 +1,54 @@
 # Quickstart
 
-Parse your first PDF into a semantic document graph in under 60 seconds.
+Parse your first document into a **bgraph** — one structured, addressable graph of its sections, paragraphs, and content, with the coordinates to point back at the page each piece came from.
+
+The bgraph is the thing you keep. The CLI and SDK below are just how you get one.
 
 ---
 
-## What Bragi Does
+## What Bragi does
 
-Bragi transforms PDFs into structured semantic graphs. Instead of flat text extraction, you get a navigable tree of sections, paragraphs, and content — with physical coordinates that map every node to exact locations in the original PDF.
+PDF, DOCX, and Markdown all converge to the same graph, serialized two ways:
 
-**Input:** A PDF file.
-**Output:** A `bgraph.json` — a tree of typed nodes with semantic paths, physical bounding boxes, and token counts.
+- **`bgraph.md`** — canonical Markdown you can read and diff.
+- **`bgraph.json`** — the machine escape hatch: every node, bounding box, and token count.
+
+Instead of flat text, you get a navigable tree of typed nodes, each with a semantic location (its place in the tree) and, for PDFs, a physical one (page + bounding box).
 
 ---
 
 ## Install
 
-### Rust CLI
+**Rust CLI** — installs a binary named `bragi`:
 
 ```bash
 cargo install bragi-io
 ```
 
-### Python
+**Python:**
 
 ```bash
 pip install bragi-io
 ```
 
-No account needed. No API key. Runs entirely on your machine.
-
-> **First run:** The CLI automatically downloads a Java Runtime (~60MB) for PDF text extraction. It's cached for future use.
+> On first use for a PDF, the CLI fetches a Java runtime (used for PDF text extraction) and caches it. DOCX and Markdown parse in pure Rust, no runtime needed.
 
 ---
 
-## Parse a PDF
+## Parse a document
 
 ### CLI
 
+Input format is detected from the extension (`.pdf`, `.docx`, `.md`, `.bgraph.md`):
+
 ```bash
-bragi parse document.pdf -o bgraph.json
+bragi parse -i document.pdf -o document.bgraph.json
+```
+
+Want the canonical Markdown serialization instead?
+
+```bash
+bragi parse -i document.pdf -f bgraph-md -o document.bgraph.md
 ```
 
 ### Python
@@ -48,30 +58,28 @@ import bragi as bg
 
 graph = bg.parse_pdf("document.pdf")
 
-print(f"Nodes: {len(graph.nodes)}")
-print(f"Sections: {len(graph.sections)}")
+print(graph)                # <Bragi: 179 nodes, schema v1.0.0>
+print(len(graph.sections))
 
 for section in graph.sections:
     print(section.content.text)
 ```
 
-Both produce identical `bgraph.json` output.
+The CLI's default output and the SDK's graph are the same `bgraph.json`.
 
 ---
 
-## Understand the Output
+## Understand the output
 
-Here's what Bragi produces for Claude Shannon's *A Mathematical Theory of Communication* (55 pages):
+Everything below is one parse of the canonical example — *Attention Is All You Need* — with the default config. That graph is **179 nodes**: 1 document root, 30 sections, 147 paragraphs, 1 margin (10,012 tokens, tree depth 5).
 
-```
-55 pages → 3,022 text elements → 94 nodes → 1.1s
-```
-
-### The Graph
+### The graph
 
 ```json
 {
-  "schema_version": "0.2.0",
+  "schema_version": "1.0.0",
+  "bgraph_sha256": "f6d2fcf0d4b647b973d83197aefc3f7c8dd948ef7f259bb3eda2a7a8b2470299",
+  "parse_provenance": { "bragi_version": "0.5.0", "source_format": "pdf", "...": "..." },
   "nodes": [ ... ],
   "document_info": { ... },
   "structural_profile": { ... }
@@ -80,121 +88,78 @@ Here's what Bragi produces for Claude Shannon's *A Mathematical Theory of Commun
 
 | Field | Description |
 |-------|-------------|
-| `schema_version` | Output format version (currently `"0.2.0"`) |
-| `nodes` | Array of all nodes in the document tree |
-| `document_info` | Document metadata and font analysis |
-| `structural_profile` | Graph analytics — node types, token distributions, depth stats |
+| `schema_version` | The bgraph format version (`"1.0.0"`). Check it to detect shape changes. |
+| `bgraph_sha256` | An integrity hash proving this serialization round-trips back to the same graph. |
+| `parse_provenance` | The (version, source, config) triple that reproduces this parse. |
+| `nodes` | Every node in the document tree, sorted by reading order. |
+| `document_info` | Metadata *about* the document (title, outline, flow type). |
+| `structural_profile` | Node counts, token distributions, and depth stats. |
 
-### The Document Tree
+### A node
 
-The graph is a tree. The root is a `Document` node. Its children are `Section` and `Paragraph` nodes. Sections contain further paragraphs and subsections.
-
-### Node Types
-
-**Section** — a detected heading or structural division:
+The tree's root is a `Document` node; its descendants are `Section` and `Paragraph` (and, for PDFs, the occasional `Margin`). A section looks like this:
 
 ```json
 {
-  "id": "17113498-be4b-4bb5-88dd-80978ee00266",
+  "id": "7962788f-d2e7-50bc-8359-c47c4b37c03d",
   "node_type": "Section",
   "location": {
     "semantic": {
       "path": "2",
       "depth": 1,
-      "breadcrumbs": [
-        "shannon1948.dvi",
-        "A Mathematical Theory of Communication"
-      ]
+      "breadcrumbs": ["Attention Is All You Need", "Attention Is All You Need"]
     },
     "physical": {
       "page": 1,
-      "bounding_box": { "x": 181.0, "y": 127.9, "width": 265.5, "height": 8.0 }
+      "bounding_box": { "x": 211.5, "y": 149.1, "width": 188.4, "height": 16.5 }
     }
   },
-  "content": { "text": "A Mathematical Theory of Communication" },
-  "token_count": 9,
-  "parent": "f49c0604-...",
-  "children": ["d1ea207e-...", "480f520b-...", "..."]
+  "content": { "text": "Attention Is All You Need" },
+  "token_count": 6,
+  "parent": "6b149bb8-87e8-5e54-8e0f-b5fae9cba8f6",
+  "children": ["ab92b870-4886-5a62-98bf-8be145f22d82", "..."]
 }
 ```
 
-**Paragraph** — a merged, semantically coherent block of text:
+### The location model
 
-```json
-{
-  "id": "480f520b-c205-479c-896f-01d1eeb2efda",
-  "node_type": "Paragraph",
-  "location": {
-    "semantic": {
-      "path": "2.2",
-      "depth": 2,
-      "breadcrumbs": [
-        "shannon1948.dvi",
-        "A Mathematical Theory of Communication"
-      ]
-    },
-    "physical": {
-      "page": 1,
-      "bounding_box": { "x": 91.9, "y": 585.9, "width": 427.5, "height": 164.2 }
-    }
-  },
-  "content": {
-    "text": "The fundamental problem of communication is that of reproducing at one point either exactly or approximately a message selected at another point..."
-  },
-  "token_count": 206,
-  "parent": "17113498-...",
-  "children": []
-}
-```
+Every node has a **location** with two parts:
 
-### The Location Model
+- **Semantic** (always present) — `path` (hierarchical position, `"2.4.1"`), `depth`, and `breadcrumbs` (a human-readable trail).
+- **Physical** (PDFs) — `page` and `bounding_box` (`x`, `y`, `width`, `height` in PDF points).
 
-Every node has a **location** with two components:
-
-**Semantic location** (always present) — where the node sits in the document tree:
-- `path`: hierarchical position (`"2.2"` = second child of second top-level element)
-- `depth`: tree depth (`0` = document root, `1` = section, `2` = content within section)
-- `breadcrumbs`: human-readable trail (`["shannon1948.dvi", "A Mathematical Theory of Communication"]`)
-
-**Physical location** (present for PDFs) — where the content appears on the page:
-- `page`: page number (1-indexed)
-- `bounding_box`: exact coordinates (`x`, `y`, `width`, `height` in PDF points)
-
-This dual location is what makes Bragi useful for GraphRAG: a human says "page 1, the paragraph about communication" and a machine says `path: "2.2", page: 1, bbox: {x: 91.9, y: 585.9}` — both pointing at the same content, and the later can be incorperated into any application (highlights, animations, move to content, etc).
+This is the human-AI bridge: a person says "the title, page 1"; a machine says `path: "2", page: 1, bbox: {x: 211.5, y: 149.1}`. Both point at the same content, and the physical coordinate lets you ground an answer back on the original page (highlights, jump-to-content, overlays).
 
 ---
 
-## Navigating the Tree
+## The names are stable
 
-Every node has `parent` and `children` fields. To walk the tree:
+A node's id is derived from its content and its place in the tree — not from when you parsed it. Reparse after editing one paragraph and only that paragraph's id changes; every other node keeps its id. That edit-locality is what lets you cache, diff, and build on a bgraph over time.
+
+---
+
+## Navigate the tree
+
+Every node has `parent` and `children` (node ids). Walk it with plain JSON:
 
 ```python
 import json
 
-with open("graph.json") as f:
+with open("document.bgraph.json") as f:
     graph = json.load(f)
 
-# Index nodes by ID for fast lookup
 nodes = {n["id"]: n for n in graph["nodes"]}
+root = nodes[graph["document_info"]["root_id"]]
 
-# Find the root
-root = next(n for n in graph["nodes"] if n["node_type"] == "Document")
-
-# List top-level sections
 for child_id in root["children"]:
     child = nodes[child_id]
     if child["node_type"] == "Section":
-        print(f"Section: {child['content']['text']}")
-        print(f"  Path: {child['location']['semantic']['path']}")
-        print(f"  Page: {child['location']['physical']['page']}")
-        print(f"  Children: {len(child['children'])} nodes")
+        print(child["content"]["text"], "→ path", child["location"]["semantic"]["path"])
 ```
 
 Or use the Python SDK for typed access:
 
 ```python
-import bragi as bg
-
 graph = bg.parse_pdf("document.pdf")
 
 for section in graph.sections:
@@ -207,47 +172,37 @@ for section in graph.sections:
 
 ## Configuration
 
-The default config works well for most documents. For specific document types, create a YAML config that tunes section detection thresholds, spatial clustering, and size limits:
+The default config works for most documents. For a specific document type, pass a YAML config that tunes section detection, spatial clustering, and size limits:
 
 ```bash
-bragi parse contract.pdf -c my-config.yaml -o bgraph.json
+bragi parse -i contract.pdf -c my-config.yaml -o contract.bgraph.json
 ```
 
-The key insight: build one config per document category and reuse it across similar documents in that group. See the [Configuration Reference](../reference/03-config-reference.md) for all tuning parameters.
+Build one config per document category (legal contracts, papers from one journal) and reuse it across that group. See the [Configuration Reference](../reference/03-config-reference.md).
 
 ---
 
-## Docker
+## Run it as a service
 
-The Docker container runs the Bragi processing server — use it for async processing in your pipeline:
+A small server wraps the same binary, for parsing over HTTP:
 
 ```bash
-make serve
+make serve   # http://localhost:8080
 ```
 
-Then parse via the Python SDK:
+Point the SDK at it and your code doesn't change:
 
 ```python
-import bragi as bg
-
-bg.configure(host="localhost:8080")
+bg.configure(url="http://localhost:8080")
 graph = await bg.parse_pdf_async("document.pdf")
 ```
 
-The container bundles the CLI, JRE, Tika, and the FastAPI server. No Rust toolchain or Java install needed. See the [Docker Guide](./03-docker.md) for setup details.
-
-You can also run one-off CLI parses directly:
-
-```bash
-docker run --rm -v $(pwd):/data bragi-io \
-  parse /data/document.pdf -o /data/bgraph.json
-```
+See the [Docker Guide](./03-docker.md) to run the containerized server.
 
 ---
 
-## What's Next
+## What's next
 
-- **[Schema Reference](../reference/02-schema-reference.md)** — Full field-by-field documentation of `bgraph.json`
-- **[Configuration Reference](../reference/03-config-reference.md)** — Tune parsing for your document type
-- **[Python SDK Guide](./02-python-sdk.md)** — Typed access, tree navigation, rendering
-- **[Hosted API](https://bragi-io.com)** — Scale without infrastructure, pay per page
+- **[Python SDK Guide](./02-python-sdk.md)** — typed access, the three run modes, rendering
+- **[Schema Reference](../reference/02-schema-reference.md)** — the `bgraph.json` fields
+- **[Configuration Reference](../reference/03-config-reference.md)** — tune parsing for your document type
