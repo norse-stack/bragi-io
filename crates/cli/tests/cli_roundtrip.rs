@@ -141,7 +141,7 @@ fn build_synthetic_graph() -> DocumentGraph {
     graph
 }
 
-/// Load a graph from a path produced by the CLI's `-f graph` output
+/// Load a graph from a path produced by the CLI's `-f bgraph` output
 /// and canonicalize. Mirrors the round-trip-integration helper from
 /// the core crate's test file.
 fn canonicalize_saved_graph(path: &std::path::Path) -> String {

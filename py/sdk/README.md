@@ -17,14 +17,14 @@ Python 3.9+. The only runtime dependency is `httpx`. On first use, the SDK fetch
 ## A real bgraph
 
 ```python
-import bragi as bg
+import bragi
 
-graph = bg.parse_pdf("attention.pdf")
+bgraph = bragi.parse_pdf("attention.pdf")
 
-print(graph)                # <Bragi: 179 nodes, schema v1.0.0>
-print(len(graph.sections))  # 30
+print(bgraph)                # <BragiGraph: 179 nodes, schema v1.0.0>
+print(len(bgraph.sections))  # 30
 
-for section in graph.sections:
+for section in bgraph.sections:
     print(section.content.text)
     print(section.location.physical.page)
 ```
@@ -32,7 +32,7 @@ for section in graph.sections:
 Parsing *Attention Is All You Need* yields **179 nodes**. Every node is typed, with IDE autocomplete:
 
 ```python
-node = graph.sections[0]
+node = bgraph.sections[0]
 
 node.content.text                    # "Attention Is All You Need"
 node.token_count                     # 6
@@ -50,15 +50,15 @@ The SDK is one interface over one pure function; where the parse *runs* is a one
 
 ```python
 # 1. Local (default) — runs the bragi binary on your machine
-graph = bg.parse_pdf("paper.pdf")
+bgraph = bragi.parse_pdf("paper.pdf")
 
 # 2. Self-hosted — point at your own server (see the Docker guide)
-bg.configure(url="http://localhost:8080")
-graph = await bg.parse_pdf_async("paper.pdf")
+bragi.configure(url="http://localhost:8080")
+bgraph = await bragi.parse_pdf_async("paper.pdf")
 
 # 3. Hosted — point at the managed API
-bg.configure(api_key="...")
-graph = await bg.parse_pdf_async("paper.pdf")
+bragi.configure(api_key="...")
+bgraph = await bragi.parse_pdf_async("paper.pdf")
 ```
 
 Same input, same graph, whichever door you pick.
@@ -66,26 +66,26 @@ Same input, same graph, whichever door you pick.
 ## Working with the graph
 
 ```python
-graph.nodes                 # list[DocumentNode] — every node
-graph.sections              # Section nodes
-graph.paragraphs            # Paragraph nodes
-graph.root                  # the Document root
-graph.document_info         # metadata about the document
-graph.structural_profile    # node counts, token + depth distributions
-graph.schema_version        # "1.0.0"
+bgraph.nodes                 # list[DocumentNode] — every node
+bgraph.sections              # Section nodes
+bgraph.paragraphs            # Paragraph nodes
+bgraph.root                  # the Document root
+bgraph.document_info         # metadata about the document
+bgraph.structural_profile    # node counts, token + depth distributions
+bgraph.schema_version        # "1.0.0"
 
-graph.get_node("7962788f-d2e7-50bc-8359-c47c4b37c03d")   # by id
-graph.nodes_by_page(1)                                    # all nodes on a page
-graph.to_dict()                                           # the raw bgraph.json dict
+bgraph.get_node("7962788f-d2e7-50bc-8359-c47c4b37c03d")   # by id
+bgraph.nodes_by_page(1)                                    # all nodes on a page
+bgraph.to_dict()                                           # the raw bgraph.json dict
 ```
 
 Navigate the tree and render text:
 
 ```python
-parent = node.get_parent(graph)
-children = node.get_children(graph)
+parent = node.get_parent(bgraph)
+children = node.get_children(bgraph)
 
-print(section.render(graph, breadcrumbs=True))
+print(section.render(bgraph, breadcrumbs=True))
 # [Attention Is All You Need > Attention Is All You Need]
 # ...the section's text, and its descendants...
 ```
@@ -106,7 +106,7 @@ from bragi.errors import (
 )
 
 try:
-    graph = bg.parse_pdf("document.pdf")
+    bgraph = bragi.parse_pdf("document.pdf")
 except BragiProcessingError as e:
     print(f"parse failed: {e}")
 ```

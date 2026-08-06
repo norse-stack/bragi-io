@@ -1,12 +1,20 @@
 """FastAPI server wrapping the bragi binary.
 
-Provides a self-hosted API compatible with the hosted endpoint structure
-at api.bragi.io. No auth, no billing — just document parsing.
+Self-hosted parse API matching the hosted endpoint contract at
+`api.bragi-io.com`: a **raw request body** in, the **official response
+envelope** out. No auth, no billing — just document parsing.
 
-Response contract (matches the Python SDK's remote-mode client,
-`bragi.client._handle_response`):
+Request/response contract (matches the hosted `/v1/parse/pdf` and the Python
+SDK's remote-mode client, `bragi.client._handle_response`):
+  * body    → the raw PDF bytes (`--data-binary @doc.pdf`), NOT multipart.
+  * ?format= → `json` (default, returns the graph) or `md`/`bgraph-md`/`bgraph`
+               (returns the canonical bgraph.md text in `bgraph_md`).
   * success → 200 `{"success": true, "graph": <SortedDocumentGraph>}`
-  * error   → 4xx/5xx `{"error": {"message": "<detail>"}}`
+              or   `{"success": true, "bgraph_md": "<markdown>"}`
+  * error   → 4xx/5xx `{"success": false, "error": {"code": "...", "message": "..."}}`
+
+The hosted response also carries `billing` and `pipeline_diagnostics`; those are
+hosted-only (this server has no billing) and are omitted here.
 """
 
 from __future__ import annotations
@@ -17,96 +25,96 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from fastapi import FastAPI, File, Query, UploadFile
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 
 app = FastAPI(
-    title="Bragi IO — Self-Hosted",
+    title="Bragi API — Self-Hosted",
     description="Local document parsing API powered by bragi",
-    version="0.1.1",
+    version="0.2.0",
 )
 
 CLI_PATH = os.environ.get("BRAGI_CLI_PATH", "/app/bin/bragi")
 JAR_PATH = os.environ.get("BRAGI_JAR_PATH", "/app/bin/blazing-tika-jni.jar")
 DEFAULT_CONFIG_PATH = os.environ.get("BRAGI_CONFIG_PATH")
 
+# Mirrors the hosted API's `wants_markdown()`: these `?format=` values return the
+# canonical bgraph.md text in `bgraph_md`; anything else (incl. `json`) returns
+# the graph JSON in `graph`.
+_MARKDOWN_FORMATS = {"md", "bgraph-md", "bgraph"}
 
-def _error(status_code: int, message: str) -> JSONResponse:
-    """Error envelope the SDK client reads (`body["error"]["message"]`)."""
-    return JSONResponse(status_code=status_code, content={"error": {"message": message}})
+
+def _error(status_code: int, code: str, message: str) -> JSONResponse:
+    """Official error envelope: `{"success": false, "error": {code, message}}`."""
+    return JSONResponse(
+        status_code=status_code,
+        content={"success": False, "error": {"code": code, "message": message}},
+    )
 
 
 @app.get("/health")
 async def health() -> dict:
-    return {"status": "ok"}
+    return {"name": "Bragi API — Self-Hosted", "status": "healthy", "version": app.version}
 
 
 @app.post("/v1/parse/pdf")
 async def parse_pdf(
-    file: UploadFile = File(...),
-    config: str | None = Query(None, description="Path to config YAML"),
-    output_format: str = Query("graph", description="graph, sequential, or flat"),
+    request: Request,
+    format: str | None = Query(None, description="json (default) | md | bgraph-md | bgraph"),
 ) -> JSONResponse:
-    # Validate file type
-    if file.content_type and file.content_type != "application/pdf":
-        if not (file.filename and file.filename.lower().endswith(".pdf")):
-            return _error(400, f"Expected a PDF file, got: {file.content_type}")
+    # Raw request body — matches the hosted API (`pdf_data: Bytes`), not multipart.
+    pdf_bytes = await request.body()
+    if not pdf_bytes:
+        return _error(400, "bad_request", "No PDF data provided")
 
-    # Validate output format
-    valid_formats = {"graph", "sequential", "flat"}
-    if output_format not in valid_formats:
-        return _error(
-            400,
-            f"Invalid output_format '{output_format}'. Must be one of: {', '.join(sorted(valid_formats))}",
-        )
+    want_md = (format or "json") in _MARKDOWN_FORMATS
 
     tmp_dir = None
     try:
         tmp_dir = tempfile.mkdtemp(prefix="bragi_")
         input_path = Path(tmp_dir) / "input.pdf"
-        output_path = Path(tmp_dir) / "output.json"
+        input_path.write_bytes(pdf_bytes)
 
-        # Write uploaded PDF to temp file
-        content = await file.read()
-        input_path.write_bytes(content)
+        if want_md:
+            out_format, output_path = "bgraph-md", Path(tmp_dir) / "output.bgraph.md"
+        else:
+            out_format, output_path = "bgraph", Path(tmp_dir) / "output.json"
 
-        # Build CLI command
         cmd = [
             CLI_PATH,
             "parse",
             "-i", str(input_path),
             "--jar-path", JAR_PATH,
-            "-f", output_format,
+            "-f", out_format,
             "-o", str(output_path),
         ]
-        effective_config = config or DEFAULT_CONFIG_PATH
-        if effective_config:
-            cmd.extend(["--config", effective_config])
+        if DEFAULT_CONFIG_PATH:
+            cmd.extend(["--config", DEFAULT_CONFIG_PATH])
 
-        # Run CLI
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=300,
-        )
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
 
         if result.returncode != 0:
-            return _error(500, f"CLI processing failed: {result.stderr.strip() or result.stdout.strip()}")
+            return _error(
+                500,
+                "processing_error",
+                f"CLI processing failed: {result.stderr.strip() or result.stdout.strip()}",
+            )
 
-        # Read output
         if not output_path.exists():
-            return _error(500, "CLI completed but no output file was produced")
+            return _error(500, "processing_error", "CLI completed but no output file was produced")
 
-        output_data = json.loads(output_path.read_text())
-        return JSONResponse(content={"success": True, "graph": output_data})
+        if want_md:
+            return JSONResponse(content={"success": True, "bgraph_md": output_path.read_text()})
+
+        graph = json.loads(output_path.read_text())
+        return JSONResponse(content={"success": True, "graph": graph})
 
     except subprocess.TimeoutExpired:
-        return _error(500, "Processing timed out after 300 seconds")
-    except Exception as exc:
-        return _error(500, f"Unexpected error: {exc}")
+        return _error(500, "processing_error", "Processing timed out after 300 seconds")
+    except Exception as exc:  # noqa: BLE001 — surface any unexpected failure as a 500
+        return _error(500, "processing_error", f"Unexpected error: {exc}")
     finally:
-        # Clean up temp files
         if tmp_dir:
             import shutil
+
             shutil.rmtree(tmp_dir, ignore_errors=True)

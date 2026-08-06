@@ -9,14 +9,14 @@ from pathlib import Path
 
 from bragi._download import find_or_download_cli, get_jre_dir
 from bragi.errors import BragiProcessingError
-from bragi.types import Bragi
+from bragi.types import BragiGraph
 
 
 def _local_parse_pdf(
     path: str,
     *,
     config_path: str | None = None,
-) -> Bragi:
+) -> BragiGraph:
     """Parse a PDF using the bragi binary.
 
     Args:
@@ -24,7 +24,7 @@ def _local_parse_pdf(
         config_path: Optional path to a config YAML file.
 
     Returns:
-        A :class:`Bragi` with fully typed nodes.
+        A :class:`BragiGraph` with fully typed nodes.
 
     Raises:
         BragiProcessingError: If the CLI exits with an error.
@@ -46,7 +46,7 @@ def _local_parse_pdf(
             "parse",
             "-i", str(pdf_path),
             "--jre-path", str(jre_dir),
-            "-f", "graph",
+            "-f", "bgraph",
             "-o", str(output_path),
         ]
 
@@ -78,4 +78,4 @@ def _local_parse_pdf(
         print("done.")
 
         raw = json.loads(output_path.read_text(encoding="utf-8"))
-        return Bragi.from_dict(raw)
+        return BragiGraph.from_dict(raw)

@@ -2,17 +2,17 @@
 
 Usage::
 
-    import bragi as bg
+    import bragi
 
     # Local mode (no account needed)
-    graph = bg.parse_pdf("document.pdf")
+    bgraph = bragi.parse_pdf("document.pdf")
 
     # API mode
-    bg.configure(api_key="blaze_prod_XXX...")
-    graph = bg.parse_pdf("document.pdf")
+    bragi.configure(api_key="bragi_prod_XXX...")
+    bgraph = bragi.parse_pdf("document.pdf")
 
     # Async mode (self-hosted or API)
-    graph = await bg.parse_pdf_async("document.pdf")
+    bgraph = await bragi.parse_pdf_async("document.pdf")
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from bragi.errors import (
     BragiProcessingError,
 )
 from bragi.types import (
-    Bragi,
+    BragiGraph,
     BookmarkData,
     BookmarkSection,
     BoundingBox,
@@ -61,7 +61,7 @@ __all__ = [
     "parse_pdf",
     "parse_pdf_async",
     # Top-level type
-    "Bragi",
+    "BragiGraph",
     "ParseProvenance",
     # Node types
     "DocumentNode",
@@ -115,7 +115,7 @@ def parse_pdf(
     path: str,
     *,
     config: str | None = None,
-) -> Bragi:
+) -> BragiGraph:
     """Parse a PDF and return a typed document graph.
 
     Uses the configured mode:
@@ -127,7 +127,7 @@ def parse_pdf(
         config: Path to a config YAML file (local mode only).
 
     Returns:
-        A :class:`Bragi` with fully typed nodes.
+        A :class:`BragiGraph` with fully typed nodes.
 
     Raises:
         BragiAuthError: If the API key is invalid (API mode).
@@ -148,7 +148,7 @@ def parse_pdf(
 
 async def parse_pdf_async(
     path: str,
-) -> Bragi:
+) -> BragiGraph:
     """Parse a PDF asynchronously via the API.
 
     Requires an API key to be configured via :func:`configure`.
@@ -157,7 +157,7 @@ async def parse_pdf_async(
         path: Path to a PDF file.
 
     Returns:
-        A :class:`Bragi` with fully typed nodes.
+        A :class:`BragiGraph` with fully typed nodes.
 
     Raises:
         BragiAuthError: If the API key is invalid.
@@ -168,7 +168,7 @@ async def parse_pdf_async(
     cfg = get_config()
     if not cfg.is_http_mode:
         raise BragiError(
-            "parse_pdf_async requires a host or API key. Call bg.configure(host=...) or bg.configure(api_key=...) first."
+            "parse_pdf_async requires a url or API key. Call bragi.configure(url=...) or bragi.configure(api_key=...) first."
         )
     from bragi.client import _async_parse_pdf
 

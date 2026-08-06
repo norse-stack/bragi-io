@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
-_DEFAULT_URL = "https://api.bragi.io"
+_DEFAULT_URL = "https://api.bragi-io.com"
 
 
 @dataclass
@@ -49,7 +49,7 @@ def configure(
 
     Args:
         api_key: API key for HTTP mode. If set, enables API mode.
-        url: API base URL. Defaults to ``https://api.bragi.io``.
+        url: API base URL. Defaults to ``https://api.bragi-io.com``.
     """
     if api_key is not None:
         _global_config.api_key = api_key

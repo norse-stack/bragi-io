@@ -247,13 +247,13 @@ class DocumentNode:
 
     # -- Tree navigation helpers --
 
-    def get_parent(self, graph: "Bragi") -> Optional["DocumentNode"]:
+    def get_parent(self, graph: "BragiGraph") -> Optional["DocumentNode"]:
         """Return the parent node, or ``None`` for the root."""
         if self.parent is None:
             return None
         return graph.get_node(self.parent)
 
-    def get_children(self, graph: "Bragi") -> List["DocumentNode"]:
+    def get_children(self, graph: "BragiGraph") -> List["DocumentNode"]:
         """Return resolved child nodes in text order."""
         return [graph.get_node(cid) for cid in self.children]
 
@@ -261,7 +261,7 @@ class DocumentNode:
 
     def render(
         self,
-        graph: "Bragi",
+        graph: "BragiGraph",
         *,
         breadcrumbs: bool = False,
         node_types: bool = False,
@@ -269,7 +269,7 @@ class DocumentNode:
         """Render this node and all descendants as human-readable text.
 
         Args:
-            graph: The parent ``Bragi`` (needed for child lookup).
+            graph: The parent ``BragiGraph`` (needed for child lookup).
             breadcrumbs: Show breadcrumb trail on section/document nodes.
             node_types: Show ``[Type]`` prefix on each node.
         """
@@ -280,7 +280,7 @@ class DocumentNode:
     def _render_into(
         self,
         parts: List[str],
-        graph: "Bragi",
+        graph: "BragiGraph",
         *,
         breadcrumbs: bool,
         node_types: bool,
@@ -657,12 +657,12 @@ class ParseProvenance:
 
 
 # ---------------------------------------------------------------------------
-# Bragi — top-level return type
+# BragiGraph — top-level return type
 # ---------------------------------------------------------------------------
 
 
 @dataclass
-class Bragi:
+class BragiGraph:
     """Top-level wrapper for a parsed document graph.
 
     This is the return type for :func:`bragi.parse_pdf` and
@@ -686,7 +686,7 @@ class Bragi:
             self._index = {node.id: node for node in self.nodes}
 
     def __repr__(self) -> str:
-        return f"<Bragi: {len(self.nodes)} nodes, schema v{self.schema_version}>"
+        return f"<BragiGraph: {len(self.nodes)} nodes, schema v{self.schema_version}>"
 
     # -- Filtered accessors --
 
@@ -754,8 +754,8 @@ class Bragi:
     # -- Construction --
 
     @classmethod
-    def from_dict(cls, d: Dict[str, Any]) -> "Bragi":
-        """Construct a ``Bragi`` from a raw dictionary (parsed JSON).
+    def from_dict(cls, d: Dict[str, Any]) -> "BragiGraph":
+        """Construct a ``BragiGraph`` from a raw dictionary (parsed JSON).
 
         The dictionary should have the ``SortedDocumentGraph`` shape:
         ``schema_version``, ``nodes``, ``document_info``, ``structural_profile``,

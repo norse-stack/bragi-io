@@ -16,7 +16,7 @@ from bragi.errors import (
     BragiError,
     BragiProcessingError,
 )
-from bragi.types import Bragi
+from bragi.types import BragiGraph
 
 _FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -55,7 +55,7 @@ class TestHandleResponse:
         body = _success_body()
         resp = _make_response(200, body)
         graph = _handle_response(resp)
-        assert isinstance(graph, Bragi)
+        assert isinstance(graph, BragiGraph)
         assert graph.schema_version == "1.0.0"
         assert len(graph.nodes) == 179
 
@@ -112,7 +112,7 @@ class TestSyncParsePdf:
     """Test _sync_parse_pdf with mocked httpx.Client."""
 
     def test_file_not_found(self) -> None:
-        cfg = _Config(api_key="blaze_prod_test", url="https://api.bragi.io")
+        cfg = _Config(api_key="bragi_prod_test", url="https://api.bragi-io.com")
         with pytest.raises(FileNotFoundError, match="PDF not found"):
             _sync_parse_pdf("/nonexistent/file.pdf", cfg)
 
@@ -131,10 +131,10 @@ class TestSyncParsePdf:
         mock_client.post.return_value = mock_response
         mock_client_cls.return_value = mock_client
 
-        cfg = _Config(api_key="blaze_prod_test", url="https://api.bragi.io")
+        cfg = _Config(api_key="bragi_prod_test", url="https://api.bragi-io.com")
         graph = _sync_parse_pdf(str(pdf), cfg)
 
-        assert isinstance(graph, Bragi)
+        assert isinstance(graph, BragiGraph)
         mock_client.post.assert_called_once()
         call_kwargs = mock_client.post.call_args
         assert "/v1/parse/pdf" in call_kwargs[0][0] or "/v1/parse/pdf" in str(call_kwargs)
@@ -145,7 +145,7 @@ class TestAsyncParsePdf:
 
     def test_file_not_found(self) -> None:
         import asyncio
-        cfg = _Config(api_key="blaze_prod_test", url="https://api.bragi.io")
+        cfg = _Config(api_key="bragi_prod_test", url="https://api.bragi-io.com")
         with pytest.raises(FileNotFoundError, match="PDF not found"):
             asyncio.get_event_loop().run_until_complete(
                 _async_parse_pdf("/nonexistent/file.pdf", cfg)

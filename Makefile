@@ -211,10 +211,10 @@ sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fix
 	@# it does not survive a clone or a directory move. Create it, don't assume it.
 	@mkdir -p $(PY_FIXTURES)
 	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
-	./$(CLI_BIN) parse -i $(GOLDEN_PDF) -f graph --include-style-info \
+	./$(CLI_BIN) parse -i $(GOLDEN_PDF) -f bgraph --include-style-info \
 		-c $(GOLDEN_CONFIG) -o $(PY_FIXTURES)/attention_graph.json \
 		--cache-dir $(GOLDEN_CACHE) --fresh-from c2
-	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-md/source.md -f graph \
+	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-md/source.md -f bgraph \
 		-o $(PY_FIXTURES)/demo_md_graph.json
 	@echo "✅ Python fixtures regenerated under $(PY_FIXTURES)/"
 

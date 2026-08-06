@@ -13,14 +13,14 @@ pip install bragi-io
 ## Quick Start
 
 ```python
-import bragi as bg
+import bragi
 
-graph = bg.parse_pdf("attention.pdf")
+bgraph = bragi.parse_pdf("attention.pdf")
 
-print(graph)                # <Bragi: 179 nodes, schema v1.0.0>
-print(len(graph.sections))  # 30
+print(bgraph)                # <BragiGraph: 179 nodes, schema v1.0.0>
+print(len(bgraph.sections))  # 30
 
-for section in graph.sections:
+for section in bgraph.sections:
     print(section.content.text)
 ```
 
@@ -37,7 +37,7 @@ The SDK is one interface over one pure function — where the parse *runs* is a 
 Runs the `bragi` binary via subprocess. Synchronous — blocks until the parse is done.
 
 ```python
-graph = bg.parse_pdf("document.pdf")
+bgraph = bragi.parse_pdf("document.pdf")
 ```
 
 ### Self-hosted
@@ -45,8 +45,8 @@ graph = bg.parse_pdf("document.pdf")
 Point the SDK at your own server (see the [Docker Guide](./03-docker.md)). Pass the server's base URL — including the scheme:
 
 ```python
-bg.configure(url="http://localhost:8080")
-graph = await bg.parse_pdf_async("document.pdf")
+bragi.configure(url="http://localhost:8080")
+bgraph = await bragi.parse_pdf_async("document.pdf")
 ```
 
 ### Hosted
@@ -54,44 +54,44 @@ graph = await bg.parse_pdf_async("document.pdf")
 Point at the managed API by setting a key:
 
 ```python
-bg.configure(api_key="...")
-graph = await bg.parse_pdf_async("document.pdf")
+bragi.configure(api_key="...")
+bgraph = await bragi.parse_pdf_async("document.pdf")
 ```
 
 `parse_pdf_async` requires a configured `url` or `api_key`; without one it raises. Same input, same graph, whichever mode you use.
 
 ---
 
-## The Bragi object
+## The BragiGraph object
 
-Every `parse_pdf` call returns a `Bragi` — the top-level wrapper.
+Every `parse_pdf` call returns a `BragiGraph` — the top-level wrapper.
 
 ```python
-graph = bg.parse_pdf("document.pdf")
+bgraph = bragi.parse_pdf("document.pdf")
 
-graph.nodes                    # list[DocumentNode] — all nodes
-graph.sections                 # Section nodes only
-graph.paragraphs               # Paragraph nodes only
-graph.root                     # the Document root
-graph.document_info            # DocumentInfo — metadata about the document
-graph.structural_profile       # StructuralProfile — graph statistics
-graph.schema_version           # "1.0.0"
-graph.bgraph_sha256            # the round-trip integrity hash
-graph.parse_provenance         # ParseProvenance — version, source, config
+bgraph.nodes                    # list[DocumentNode] — all nodes
+bgraph.sections                 # Section nodes only
+bgraph.paragraphs               # Paragraph nodes only
+bgraph.root                     # the Document root
+bgraph.document_info            # DocumentInfo — metadata about the document
+bgraph.structural_profile       # StructuralProfile — graph statistics
+bgraph.schema_version           # "1.0.0"
+bgraph.bgraph_sha256            # the round-trip integrity hash
+bgraph.parse_provenance         # ParseProvenance — version, source, config
 ```
 
 ### Lookup helpers
 
 ```python
-node = graph.get_node("7962788f-d2e7-50bc-8359-c47c4b37c03d")   # by id
-page_nodes = graph.nodes_by_page(1)                             # all nodes on a page
+node = bgraph.get_node("7962788f-d2e7-50bc-8359-c47c4b37c03d")   # by id
+page_nodes = bgraph.nodes_by_page(1)                             # all nodes on a page
 ```
 
 ### Serialization
 
 ```python
-graph.to_dict()    # the raw bgraph.json dict
-graph.to_json()    # JSON string
+bgraph.to_dict()    # the raw bgraph.json dict
+bgraph.to_json()    # JSON string
 ```
 
 ---
@@ -101,7 +101,7 @@ graph.to_json()    # JSON string
 Each node is a `DocumentNode` with typed fields:
 
 ```python
-node = graph.sections[0]
+node = bgraph.sections[0]
 
 node.id                        # str (UUID) — content-derived, stable
 node.node_type                 # str — "Document", "Section", "Paragraph", ...
@@ -125,8 +125,8 @@ node.children                  # list[str] — child ids
 ### Tree navigation
 
 ```python
-parent = node.get_parent(graph)      # DocumentNode | None
-children = node.get_children(graph)  # list[DocumentNode]
+parent = node.get_parent(bgraph)      # DocumentNode | None
+children = node.get_children(bgraph)  # list[DocumentNode]
 ```
 
 ---
@@ -138,14 +138,14 @@ children = node.get_children(graph)  # list[DocumentNode]
 ### Plain
 
 ```python
-section = graph.sections[0]
-print(section.render(graph))
+section = bgraph.sections[0]
+print(section.render(bgraph))
 ```
 
 ### With breadcrumbs
 
 ```python
-print(section.render(graph, breadcrumbs=True))
+print(section.render(bgraph, breadcrumbs=True))
 ```
 
 ```
@@ -157,7 +157,7 @@ print(section.render(graph, breadcrumbs=True))
 ### With node types
 
 ```python
-print(section.render(graph, node_types=True))
+print(section.render(bgraph, node_types=True))
 ```
 
 ```
@@ -169,7 +169,7 @@ print(section.render(graph, node_types=True))
 ### Full document
 
 ```python
-print(graph.render())
+print(bgraph.render())
 ```
 
 ---
@@ -186,7 +186,7 @@ from bragi.errors import (
 )
 
 try:
-    graph = bg.parse_pdf("document.pdf")
+    bgraph = bragi.parse_pdf("document.pdf")
 except BragiNotFoundError:
     print("bragi not found — it should auto-download on first run")
 except BragiProcessingError as e:
@@ -213,7 +213,7 @@ The JRE resolves from `JAVA_HOME` if set, otherwise the package-local `_runtime/
 ### Config file (local mode only)
 
 ```python
-graph = bg.parse_pdf("document.pdf", config="path/to/config.yaml")
+bgraph = bragi.parse_pdf("document.pdf", config="path/to/config.yaml")
 ```
 
 See the [Configuration Reference](../reference/03-config-reference.md).
@@ -241,7 +241,7 @@ All types are plain Python dataclasses with full IDE autocomplete. Import them f
 
 | Type | Description |
 |------|-------------|
-| `Bragi` | Top-level graph wrapper — the return type of `parse_pdf` |
+| `BragiGraph` | Top-level graph wrapper — the return type of `parse_pdf` |
 | `ParseProvenance` | The (version, source, config) triple that reproduces this parse |
 | `DocumentNode` | A single node in the graph |
 | `NodeLocation` | Combined semantic + physical location |

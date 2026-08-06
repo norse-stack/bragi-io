@@ -36,8 +36,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://bragi.io"
-Documentation = "https://bragi.io/docs"
+Homepage = "https://bragi-io.com"
+Documentation = "https://bragi-io.com/docs"
 Repository = "https://github.com/norse-stack/bragi-io"
 
 [tool.setuptools.packages.find]

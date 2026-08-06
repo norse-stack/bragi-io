@@ -11,6 +11,8 @@ Two convergences meet on that one picture, and both are real:
 - **Many inputs, one graph.** PDF, DOCX, and Markdown all land in the same bgraph.
 - **Many doors, one graph.** The CLI, the Rust and Python SDKs, and a self-hosted server are front doors onto the same pure function: bytes in, bgraph out. Where the parse runs is a swap, not a rewrite.
 
+**Want to see what a bgraph can do?** [Try the live demo](https://bragi-io.com/app/) — drop in a PDF and explore the graph it produces.
+
 ---
 
 ## A real bgraph
@@ -77,7 +79,7 @@ A bgraph is worth saving because its pieces keep their names. A node's id is der
 
 Edit one paragraph, run `bragi parse` again: only the edited paragraph gets a new id. Every other section and paragraph keeps its id byte-for-byte. That edit-locality is what lets another tool hold a reference to a node and trust it still points at the same thing.
 
-The same graph is **portable** (a `bgraph.md` written by one version reads back in another, ids intact) and **self-verifiable** (it carries a `bgraph_sha256` that proves the serialization round-trips). That's what makes a bgraph something you can build on, not a receipt you read once and throw away.
+The same graph aims to be **portable** (a `bgraph.md` written by one version reads back in another, ids intact) and **self-verifiable** (it carries a `bgraph_sha256` that proves the serialization round-trips). These are hard promises and we're still early — so rather than ask for your trust, we make the guarantee *checkable*: every graph carries a `schema_version`, and any structural change in the parser moves it, so drift is something you can *see* coming, not something that surprises you. If a new parser version changes the output in a way you don't want, pin the previous one and nothing moves under you. That's what makes a bgraph something you can build on, not a receipt you read once and throw away.
 
 ---
 
@@ -110,13 +112,13 @@ bragi parse -i document.pdf -o document.bgraph.json
 **Python** — the SDK returns a fully typed graph:
 
 ```python
-import bragi as bg
+import bragi
 
-graph = bg.parse_pdf("document.pdf")
+bgraph = bragi.parse_pdf("document.pdf")
 
-print(f"{len(graph.nodes)} nodes, {len(graph.sections)} sections")
+print(f"{len(bgraph.nodes)} nodes, {len(bgraph.sections)} sections")
 
-for section in graph.sections:
+for section in bgraph.sections:
     print(section.content.text)
     print(section.location.physical.page)
 ```
@@ -127,7 +129,7 @@ for section in graph.sections:
 use bragi_io_core::{DocumentProcessor, ParsingConfig};
 
 let processor = DocumentProcessor::new(ParsingConfig::default());
-let graph = processor.process_pdf("document.pdf")?;
+let bgraph = processor.process_pdf("document.pdf")?;
 ```
 
 ---
@@ -138,7 +140,7 @@ let graph = processor.process_pdf("document.pdf")?;
 
 | `-f` value | What it emits |
 |------------|---------------|
-| `graph` *(default)* | the `bgraph.json` serialization — the full graph |
+| `bgraph` *(default)* | the `bgraph.json` serialization — the full graph |
 | `bgraph-md` | the `bgraph.md` serialization — canonical Markdown with node fences |
 | `sequential`, `flat`, `markdown` | flatter projections — ordered JSON segments, JSON text chunks, or plain Markdown |
 
@@ -153,20 +155,21 @@ A small FastAPI server wraps the same binary, for parsing over HTTP:
 ```bash
 make serve      # http://localhost:8080
 ```
-
 ```bash
-curl -X POST http://localhost:8080/v1/parse/pdf -F "file=@attention.pdf"
+curl -X POST http://localhost:8080/v1/parse/pdf --data-binary @attention.pdf
 # {"success": true, "graph": { "schema_version": "1.0.0", "nodes": [ ... ] }}
 ```
 
 Point the Python SDK at it and your parsing code doesn't change:
 
 ```python
-bg.configure(url="http://localhost:8080")
-graph = await bg.parse_pdf_async("document.pdf")
+bragi.configure(url="http://localhost:8080")
+bgraph = await bragi.parse_pdf_async("document.pdf")
 ```
 
 The server ships in a container that bundles the binary and its runtime — see the [Docker guide](docs/guides/03-docker.md).
+
+**Scaling or automating a GraphRAG pipeline?** The hosted API runs this same parse behind an API key — same bgraph out, nothing changes in your code but the endpoint. See the [full product lineup](https://bragi-io.com).
 
 ---
 

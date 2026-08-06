@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from bragi.types import Bragi
+from bragi.types import BragiGraph
 
 _FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -25,6 +25,6 @@ def attention_raw() -> dict:
 
 
 @pytest.fixture
-def attention_graph(attention_raw: dict) -> Bragi:
-    """Load the attention graph as a fully typed Bragi."""
-    return Bragi.from_dict(attention_raw)
+def attention_graph(attention_raw: dict) -> BragiGraph:
+    """Load the attention graph as a fully typed BragiGraph."""
+    return BragiGraph.from_dict(attention_raw)

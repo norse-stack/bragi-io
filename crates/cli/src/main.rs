@@ -72,7 +72,7 @@ struct ParseArgs {
     #[arg(short, long)]
     config: Option<String>,
 
-    /// Output format: `graph` (default JSON), `sequential`, `flat`,
+    /// Output format: `bgraph` (default JSON), `sequential`, `flat`,
     /// `markdown`, or `bgraph-md`.
     ///
     /// - `markdown` (B6) emits plain markdown via the generic-markdown
@@ -80,7 +80,7 @@ struct ParseArgs {
     /// - `bgraph-md` (was `markdown` in B5) emits the bgraph.md
     ///   round-trip artifact with embedded fences. Inverse of
     ///   bgraph.md input.
-    #[arg(short = 'f', long, default_value = "graph")]
+    #[arg(short = 'f', long, default_value = "bgraph")]
     output_format: String,
 
     /// Show available config options and exit.
@@ -539,7 +539,7 @@ fn run_parse_docx(args: ParseArgs) -> Result<()> {
 
 /// Shared emit/output tail for the markdown and DOCX channels: log the
 /// node count, resolve the output path by `-f`, and write via
-/// `save_graph` (graph / sequential / flat / markdown / bgraph-md).
+/// `save_graph` (bgraph / sequential / flat / markdown / bgraph-md).
 ///
 /// Factored out of `run_parse_markdown` so the DOCX path emits through
 /// the identical logic — every input parses to the channel-agnostic
@@ -736,7 +736,7 @@ fn resolve_output_path(args: &ParseArgs) -> String {
     // Output-suffix table (B6):
     // - `-f markdown` (generic) → `.md`
     // - `-f bgraph-md` → `.bgraph.md`
-    // - everything else (graph/sequential/flat) → `_bragi.json`
+    // - everything else (bgraph/sequential/flat) → `_bragi.json`
     match args.output_format.as_str() {
         "markdown" => return format!("{input_name}.md"),
         "bgraph-md" => return format!("{input_name}.bgraph.md"),
@@ -827,7 +827,7 @@ fn show_help() {
     println!("  --config <path>         Load custom config file (PDF only)");
     println!("  --input <path>          Input file (PDF, .docx, .bgraph.md, or .md)");
     println!("  --output <path>         Output file path (auto-generated if not specified)");
-    println!("  --output-format <fmt>   Output format: graph, sequential, flat, or markdown");
+    println!("  --output-format <fmt>   Output format: bgraph, sequential, flat, markdown, or bgraph-md");
     println!("  --accept-drift          Accept hash-drifted bgraph.md input (returns derivative)");
     println!("  --minimal-parse         Enable minimal parse mode (PDF only)");
     println!("  --jre-path <path>       Path to JRE directory (default: auto-download)");
@@ -840,7 +840,7 @@ fn show_help() {
     println!("  --skip-cache            Alias for --fresh-from c0");
 
     println!("\n📄 Output Formats (parse):");
-    println!("  graph       - Full graph structure with nodes and relationships (default)");
+    println!("  bgraph      - Full graph structure with nodes and relationships (default)");
     println!("  sequential  - Ordered segments with level info (good for RAG + hierarchy)");
     println!("  flat        - Simple array of text chunks (minimal format)");
     println!("  markdown    - Plain markdown (generic) — B6, schema 0.7.0+");
@@ -869,7 +869,7 @@ fn show_help() {
     println!("  bragi parse -i document.docx -f markdown -o document.md");
     println!("  bragi parse -i document.pdf -f bgraph-md -o document.bgraph.md");
     println!("  bragi parse -i document.md -f markdown -o roundtrip.md");
-    println!("  bragi parse -i document.md -f graph -o document.json");
+    println!("  bragi parse -i document.md -f bgraph -o document.json");
     println!("  bragi parse -i document.bgraph.md -o document.json");
     println!("  bragi parse -i document.bgraph.md --accept-drift -o derived.json");
     println!(
@@ -945,14 +945,14 @@ fn save_graph(
             graph.save_with_format(output_path, "flat", Some(provenance))?;
             println!("💾 Flat format saved to: {}", output_path);
         }
-        "graph" => {
-            graph.save_with_format(output_path, "graph", Some(provenance))?;
-            println!("💾 Graph saved to: {}", output_path);
+        "bgraph" => {
+            graph.save_with_format(output_path, "bgraph", Some(provenance))?;
+            println!("💾 bgraph saved to: {}", output_path);
         }
         other => {
-            println!("⚠️  Unknown output format '{other}', using default graph format");
-            graph.save_with_format(output_path, "graph", Some(provenance))?;
-            println!("💾 Graph saved to: {}", output_path);
+            println!("⚠️  Unknown output format '{other}', using default bgraph format");
+            graph.save_with_format(output_path, "bgraph", Some(provenance))?;
+            println!("💾 bgraph saved to: {}", output_path);
         }
     }
     Ok(())

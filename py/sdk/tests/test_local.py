@@ -10,7 +10,7 @@ import pytest
 
 from bragi.errors import BragiProcessingError, BragiNotFoundError
 from bragi.local import _local_parse_pdf
-from bragi.types import Bragi
+from bragi.types import BragiGraph
 
 _FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -63,7 +63,7 @@ class TestLocalParsePdf:
 
         graph = _local_parse_pdf(str(pdf))
 
-        assert isinstance(graph, Bragi)
+        assert isinstance(graph, BragiGraph)
         assert graph.schema_version == "1.0.0"
         assert len(graph.nodes) == 179
         mock_run.assert_called_once()

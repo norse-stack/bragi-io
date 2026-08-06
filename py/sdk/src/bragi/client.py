@@ -1,4 +1,4 @@
-"""HTTP client for the Bragi API (sync + async)."""
+"""HTTP client for the BragiGraph API (sync + async)."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from bragi.errors import (
     BragiError,
     BragiProcessingError,
 )
-from bragi.types import Bragi
+from bragi.types import BragiGraph
 
 if TYPE_CHECKING:
     from bragi._config import _Config
@@ -29,8 +29,8 @@ def _build_headers(cfg: "_Config") -> dict[str, str]:
     return {}
 
 
-def _handle_response(response: httpx.Response) -> Bragi:
-    """Parse an API response into a Bragi, raising on errors."""
+def _handle_response(response: httpx.Response) -> BragiGraph:
+    """Parse an API response into a BragiGraph, raising on errors."""
     if response.status_code == 401:
         body = response.json()
         msg = body.get("error", {}).get("message", "Unauthorized")
@@ -58,10 +58,10 @@ def _handle_response(response: httpx.Response) -> Bragi:
         msg = error_info.get("message", "Unknown error") if isinstance(error_info, dict) else str(error_info)
         raise BragiProcessingError(msg)
 
-    return Bragi.from_dict(body["graph"])
+    return BragiGraph.from_dict(body["graph"])
 
 
-def _sync_parse_pdf(path: str, cfg: "_Config") -> Bragi:
+def _sync_parse_pdf(path: str, cfg: "_Config") -> BragiGraph:
     """Send a PDF to the API using httpx sync client."""
     pdf_path = Path(path)
     if not pdf_path.exists():
@@ -70,15 +70,15 @@ def _sync_parse_pdf(path: str, cfg: "_Config") -> Bragi:
     url = cfg.resolved_url.rstrip("/") + _PARSE_PATH
     headers = _build_headers(cfg)
 
+    # Raw request body — the hosted API reads `pdf_data: Bytes`, not multipart.
+    post_headers = {**headers, "Content-Type": "application/pdf"}
     with httpx.Client(timeout=_TIMEOUT) as client:
-        with open(pdf_path, "rb") as f:
-            files = {"file": (pdf_path.name, f, "application/pdf")}
-            response = client.post(url, headers=headers, files=files)
+        response = client.post(url, headers=post_headers, content=pdf_path.read_bytes())
 
     return _handle_response(response)
 
 
-async def _async_parse_pdf(path: str, cfg: "_Config") -> Bragi:
+async def _async_parse_pdf(path: str, cfg: "_Config") -> BragiGraph:
     """Send a PDF to the API using httpx async client."""
     pdf_path = Path(path)
     if not pdf_path.exists():
@@ -87,9 +87,9 @@ async def _async_parse_pdf(path: str, cfg: "_Config") -> Bragi:
     url = cfg.resolved_url.rstrip("/") + _PARSE_PATH
     headers = _build_headers(cfg)
 
+    # Raw request body — the hosted API reads `pdf_data: Bytes`, not multipart.
+    post_headers = {**headers, "Content-Type": "application/pdf"}
     async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
-        with open(pdf_path, "rb") as f:
-            files = {"file": (pdf_path.name, f, "application/pdf")}
-            response = await client.post(url, headers=headers, files=files)
+        response = await client.post(url, headers=post_headers, content=pdf_path.read_bytes())
 
     return _handle_response(response)

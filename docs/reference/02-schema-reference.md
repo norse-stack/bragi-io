@@ -2,7 +2,7 @@
 
 Complete field-by-field documentation of the Bragi output format (`bgraph.json`).
 
-**Schema version:** `0.2.0`
+**Schema version:** `1.0.0`
 **Source of truth:** [`types.rs`](../../crates/core/src/types.rs)
 
 All examples are from processing Claude Shannon's *A Mathematical Theory of Communication* (55 pages).
@@ -15,7 +15,7 @@ The root object of the `bgraph.json` output.
 
 ```json
 {
-  "schema_version": "0.2.0",
+  "schema_version": "1.0.0",
   "nodes": [ ... ],
   "document_info": { ... },
   "structural_profile": { ... }
@@ -24,7 +24,7 @@ The root object of the `bgraph.json` output.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `schema_version` | string | Output format version. Currently `"0.2.0"`. Check this to detect schema changes. |
+| `schema_version` | string | Output format version. Currently `"1.0.0"`. Check this to detect schema changes. |
 | `nodes` | array | All nodes in the document tree, sorted by `text_order`. |
 | `document_info` | object | Document-level metadata and analysis. Not a node — information *about* the document. |
 | `structural_profile` | object | Statistical properties of the graph (node counts, token distributions, depth). |
@@ -377,7 +377,7 @@ page_3_nodes = [
 
 ## Schema Versioning
 
-The `schema_version` field (currently `"0.2.0"`) follows semver:
+The `schema_version` field (currently `"1.0.0"`) follows semver:
 
 - **Major** (X.0.0): Breaking changes to existing fields
 - **Minor** (0.X.0): New fields added (backwards compatible)

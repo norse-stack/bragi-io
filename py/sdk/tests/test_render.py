@@ -7,7 +7,7 @@ and the real attention graph (for full-document render checks).
 from __future__ import annotations
 
 from bragi.types import (
-    Bragi,
+    BragiGraph,
     BoundingBox,
     DocumentInfo,
     DocumentMetadata,
@@ -20,7 +20,7 @@ from bragi.types import (
 )
 
 
-def _make_mini_graph() -> Bragi:
+def _make_mini_graph() -> BragiGraph:
     """Build a small graph: Document -> Section -> 2 Paragraphs.
 
     Mirrors the Shannon paper's structure for testing render output.
@@ -121,7 +121,7 @@ def _make_mini_graph() -> Bragi:
     nodes = [doc_node, section_node, para1, para2]
     raw = {"schema_version": "1.0.0", "nodes": [], "document_info": {}, "structural_profile": {}}
 
-    return Bragi(
+    return BragiGraph(
         schema_version="1.0.0",
         nodes=nodes,
         document_info=DocumentInfo(
@@ -257,7 +257,7 @@ class TestRenderBoth:
 class TestFullDocumentRender:
     """Test graph.render() on the full attention fixture."""
 
-    def test_full_render_produces_text(self, attention_graph: Bragi) -> None:
+    def test_full_render_produces_text(self, attention_graph: BragiGraph) -> None:
         output = attention_graph.render()
         assert len(output) > 1000  # Should be substantial
         assert "Attention" in output
@@ -267,23 +267,23 @@ class TestFullDocumentRender:
         print(output[:500])
         print("--- end ---\n")
 
-    def test_full_render_no_triple_newlines(self, attention_graph: Bragi) -> None:
+    def test_full_render_no_triple_newlines(self, attention_graph: BragiGraph) -> None:
         output = attention_graph.render()
         assert "\n\n\n" not in output
 
-    def test_full_render_with_breadcrumbs(self, attention_graph: Bragi) -> None:
+    def test_full_render_with_breadcrumbs(self, attention_graph: BragiGraph) -> None:
         plain = attention_graph.render()
         output = attention_graph.render(breadcrumbs=True)
         # Breadcrumbs wrap structural headers in [trail] brackets.
         assert "[" in output
         assert output != plain
 
-    def test_full_render_with_node_types(self, attention_graph: Bragi) -> None:
+    def test_full_render_with_node_types(self, attention_graph: BragiGraph) -> None:
         output = attention_graph.render(node_types=True)
         assert "[Section]" in output
         assert "[Paragraph]" in output
 
-    def test_document_node_render(self, attention_graph: Bragi) -> None:
+    def test_document_node_render(self, attention_graph: BragiGraph) -> None:
         """Document root render should produce the same as graph.render()."""
         root_output = attention_graph.root.render(attention_graph)
         graph_output = attention_graph.render()

@@ -54,14 +54,14 @@ bragi parse -i document.pdf -f bgraph-md -o document.bgraph.md
 ### Python
 
 ```python
-import bragi as bg
+import bragi
 
-graph = bg.parse_pdf("document.pdf")
+bgraph = bragi.parse_pdf("document.pdf")
 
-print(graph)                # <Bragi: 179 nodes, schema v1.0.0>
-print(len(graph.sections))
+print(bgraph)                # <BragiGraph: 179 nodes, schema v1.0.0>
+print(len(bgraph.sections))
 
-for section in graph.sections:
+for section in bgraph.sections:
     print(section.content.text)
 ```
 
@@ -146,10 +146,10 @@ Every node has `parent` and `children` (node ids). Walk it with plain JSON:
 import json
 
 with open("document.bgraph.json") as f:
-    graph = json.load(f)
+    bgraph = json.load(f)
 
-nodes = {n["id"]: n for n in graph["nodes"]}
-root = nodes[graph["document_info"]["root_id"]]
+nodes = {n["id"]: n for n in bgraph["nodes"]}
+root = nodes[bgraph["document_info"]["root_id"]]
 
 for child_id in root["children"]:
     child = nodes[child_id]
@@ -160,12 +160,12 @@ for child_id in root["children"]:
 Or use the Python SDK for typed access:
 
 ```python
-graph = bg.parse_pdf("document.pdf")
+bgraph = bragi.parse_pdf("document.pdf")
 
-for section in graph.sections:
+for section in bgraph.sections:
     print(section.content.text)
     print(section.location.semantic.breadcrumbs)
-    print(section.render(graph))
+    print(section.render(bgraph))
 ```
 
 ---
@@ -193,8 +193,8 @@ make serve   # http://localhost:8080
 Point the SDK at it and your code doesn't change:
 
 ```python
-bg.configure(url="http://localhost:8080")
-graph = await bg.parse_pdf_async("document.pdf")
+bragi.configure(url="http://localhost:8080")
+bgraph = await bragi.parse_pdf_async("document.pdf")
 ```
 
 See the [Docker Guide](./03-docker.md) to run the containerized server.
