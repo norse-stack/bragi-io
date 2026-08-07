@@ -144,6 +144,8 @@ let bgraph = processor.process_pdf("document.pdf")?;
 | `bgraph-md` | the `bgraph.md` serialization — canonical Markdown with node fences |
 | `sequential`, `flat`, `markdown` | flatter projections — ordered JSON segments, JSON text chunks, or plain Markdown |
 
+`markdown` (plain Markdown) only applies to reflow documents — on a PDF that carries page-anchored nodes (headers, footers, margins) it errors; use `bgraph-md` for PDFs.
+
 `bragi strip` turns a `bgraph.md` back into plain Markdown (fences removed, metadata optionally lifted to frontmatter). Run `bragi parse --help` for the full flag surface.
 
 ---

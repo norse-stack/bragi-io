@@ -79,9 +79,11 @@ bragi strip -i document.bgraph.md -o document.md
 
 | Value | Emits |
 |-------|-------|
-| `graph` *(default)* | the `bgraph.json` graph serialization |
+| `bgraph` *(default)* | the `bgraph.json` graph serialization |
 | `bgraph-md` | the `bgraph.md` canonical Markdown serialization |
 | `sequential`, `flat`, `markdown` | flatter projections — ordered JSON segments, JSON text chunks, or plain Markdown |
+
+`markdown` (plain Markdown) is the inverse of Markdown *input* — it only applies to reflow documents. On a PDF that carries page-anchored nodes (headers, footers, margins) it errors; use `bgraph-md` for PDFs.
 
 Run `bragi parse --help` for every flag (config, caching, JRE path, style info, and more).
 

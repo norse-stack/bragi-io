@@ -206,7 +206,7 @@ Useful for RAG pipelines where chunk size matters. Set `max_size` to your embedd
 Pass a YAML config file to the CLI:
 
 ```bash
-bragi parse document.pdf -c my-config.yaml -o bgraph.json
+bragi parse -i document.pdf -c my-config.yaml -o bgraph.json
 ```
 
 Build one config per document category (e.g., all your legal contracts, or all academic papers from a specific journal) and reuse it across that group. The default config works well for general-purpose parsing — custom configs are for when you need to tune specific thresholds.

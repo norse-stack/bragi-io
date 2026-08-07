@@ -16,6 +16,9 @@ The root object of the `bgraph.json` output.
 ```json
 {
   "schema_version": "1.0.0",
+  "bgraph_sha256": "f6d2fcf0…",
+  "created_at": "1970-01-01T00:00:00Z",
+  "parse_provenance": { ... },
   "nodes": [ ... ],
   "document_info": { ... },
   "structural_profile": { ... }
@@ -25,9 +28,34 @@ The root object of the `bgraph.json` output.
 | Field | Type | Description |
 |-------|------|-------------|
 | `schema_version` | string | Output format version. Currently `"1.0.0"`. Check this to detect schema changes. |
+| `bgraph_sha256` | string (hex) | SHA-256 content address of the canonical graph. Identical inputs produce an identical hash; `created_at` is excluded so the address stays stable. |
+| `created_at` | string (ISO 8601) | When the graph was generated. A side-effect field — **not** part of `bgraph_sha256`. |
+| `parse_provenance` | object | How the graph was produced. See [ParseProvenance](#parseprovenance). |
 | `nodes` | array | All nodes in the document tree, sorted by `text_order`. |
-| `document_info` | object | Document-level metadata and analysis. Not a node — information *about* the document. |
+| `document_info` | object | Document-level metadata and structure. Not a node — information *about* the document. |
 | `structural_profile` | object | Statistical properties of the graph (node counts, token distributions, depth). |
+
+---
+
+## ParseProvenance
+
+How the graph was produced — the inputs that determine it.
+
+```json
+{
+  "bragi_version": "0.5.0",
+  "source_format": "pdf",
+  "source_sha256": "bdfaa68d…",
+  "config_hash": "6daf2782…"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `bragi_version` | string | Version of Bragi that produced this graph. |
+| `source_format` | string | Source format: `"pdf"`, `"md"`, or `"docx"`. |
+| `source_sha256` | string (hex) | SHA-256 of the source document bytes. |
+| `config_hash` | string (hex) | SHA-256 of the effective parsing config. |
 
 ---
 
@@ -54,7 +82,7 @@ Every element in the `nodes` array is a `DocumentNode`.
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string (UUID) | Unique identifier for this node. |
-| `node_type` | string | One of: `"Document"`, `"Section"`, `"Paragraph"`, `"List"`, `"ListItem"`, `"Table"`, `"Figure"`, `"Header"`, `"Footer"`. |
+| `node_type` | string | One of: `"Document"`, `"Section"`, `"Paragraph"`, `"Margin"`, `"List"`, `"ListItem"`, `"Table"`, `"Figure"`, `"Header"`, `"Footer"`. |
 | `location` | object | Where this node exists — both in the tree and on the page. See [NodeLocation](#nodelocation). |
 | `text_order` | integer? | Sequential reading order (0-indexed). `null` for the Document root. |
 | `content` | object | The node's text content. See [NodeContent](#nodecontent). |
@@ -69,6 +97,7 @@ Every element in the `nodes` array is a `DocumentNode`.
 | `Document` | Root node. One per graph. | 0 | Yes — sections and top-level paragraphs |
 | `Section` | Detected heading or structural division. | 1+ | Yes — paragraphs and nested sections |
 | `Paragraph` | Merged, semantically coherent text block. | 2+ | No (leaf) |
+| `Margin` | Page-anchored marginal text (page numbers, running heads) captured off the body. | 2+ | No (leaf) |
 | `List` | Container for list items. | 2+ | Yes — ListItem children |
 | `ListItem` | Individual list entry. | 3+ | No (leaf) |
 | `Table` | Detected table structure. | 2+ | Varies |
@@ -76,7 +105,7 @@ Every element in the `nodes` array is a `DocumentNode`.
 | `Header` | Page header (repeated content). | 2+ | No (leaf) |
 | `Footer` | Page footer (repeated content). | 2+ | No (leaf) |
 
-Currently, PDF processing primarily produces `Document`, `Section`, and `Paragraph` nodes. Other types are defined in the schema for future format support.
+Currently, PDF processing primarily produces `Document`, `Section`, `Paragraph`, and `Margin` nodes. The remaining types are defined in the schema for future format support.
 
 ---
 
@@ -158,8 +187,10 @@ Document-level metadata. Not a node in the tree — information *about* the docu
 {
   "document_info": {
     "root_id": "f49c0604-3794-41aa-a7d3-20e4a194a7eb",
+    "kind": "document",
     "document_metadata": { ... },
-    "document_analysis": { ... }
+    "outline_data": { ... },
+    "flow_type": "Fixed"
   }
 }
 ```
@@ -167,60 +198,60 @@ Document-level metadata. Not a node in the tree — information *about* the docu
 | Field | Type | Description |
 |-------|------|-------------|
 | `root_id` | string (UUID) | References the `Document` node in the `nodes` array — the tree root. |
-| `document_metadata` | object | Metadata extracted from the source format. |
-| `document_analysis` | object | Statistical analysis computed from text elements. |
+| `kind` | string | The graph kind. Currently `"document"`. |
+| `document_metadata` | object | Metadata extracted from the source format. See [DocumentMetadata](#documentmetadata). |
+| `outline_data` | object? | The document outline — detected sections / PDF bookmarks. |
+| `flow_type` | string | `"Fixed"` (PDF — has physical layout) or `"Free"` (Markdown, DOCX — reflows). Read the flow type from here. |
 
 ### DocumentMetadata
 
-Extracted from the PDF's XMP/metadata stream. All fields are pass-through — Bragi doesn't infer or modify metadata.
+Universal fields sit at the top; format-specific metadata lives in a channel namespace (`pdf`, `md`, or `docx`) matching the source. At most one namespace is present, and it is absent entirely when the source carried no format-specific metadata. All fields are pass-through — Bragi doesn't infer or modify them.
 
 ```json
 {
   "title": "shannon1948.dvi",
   "author": null,
-  "language": null,
-  "page_count": 55,
-  "publisher": null,
-  "creator_tool": "dvipsk 5.58f Copyright 1986, 1994 Radical Eye Software",
-  "producer": "Acrobat Distiller Command 3.01 for Solaris 2.3 and later (SPARC)",
-  "pdf_version": "1.2",
-  "created": "1998-07-16T10:14:40Z",
-  "modified": null,
   "description": null,
-  "encrypted": false,
-  "has_marked_content": false
+  "language": null,
+  "created": "1998-07-16T10:14:40Z",
+  "pdf": {
+    "version": "1.2",
+    "producer": "Acrobat Distiller Command 3.01 for Solaris 2.3 and later (SPARC)",
+    "creator_tool": "dvipsk 5.58f Copyright 1986, 1994 Radical Eye Software",
+    "publisher": null,
+    "page_count": 55,
+    "encrypted": false,
+    "has_marked_content": false,
+    "modified": null,
+    "extras": { "pdf:hasXMP": "false", "...": "..." }
+  }
 }
 ```
 
+**Universal fields:**
+
 | Field | Type | Description |
 |-------|------|-------------|
-| `title` | string? | Document title from metadata. May be a filename if no title is set. |
+| `title` | string? | Document title. May be a filename if no title is set. |
 | `author` | string? | Document author. |
+| `description` | string? | Document description. |
 | `language` | string? | Language tag (e.g., `"en"`, `"de"`). |
-| `page_count` | integer | Number of pages. Always present (0 if unknown). |
-| `publisher` | string? | From `xmp:dc:publisher`. |
-| `creator_tool` | string? | The tool that created the document (from `xmp:CreatorTool`). |
-| `producer` | string? | The PDF producer (from `pdf:producer`). |
-| `pdf_version` | string? | PDF specification version (e.g., `"1.2"`, `"1.7"`). |
 | `created` | string? | Creation timestamp (ISO 8601). |
-| `modified` | string? | Last modification timestamp (ISO 8601). |
-| `description` | string? | Document description from metadata. |
+| `pdf` / `md` / `docx` | object? | The channel namespace matching the source. At most one is present; absent when the source has no format-specific metadata. |
+
+**`pdf` namespace:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `version` | string? | PDF specification version (e.g., `"1.2"`, `"1.7"`). |
+| `producer` | string? | The PDF producer. |
+| `creator_tool` | string? | The tool that created the document. |
+| `publisher` | string? | Publisher, if present. |
+| `page_count` | integer? | Number of pages. |
 | `encrypted` | boolean? | Whether the PDF is encrypted. |
 | `has_marked_content` | boolean? | Whether the PDF has tagged/marked content (accessibility structure). |
-
-### DocumentAnalysis
-
-Computed from the raw text elements during preprocessing. Useful for understanding the document's typographic structure.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `font_size_counts` | object | Histogram of font sizes → element count. Keys are size strings (e.g., `"10.0"`). |
-| `font_family_counts` | object | Histogram of font families → element count. |
-| `bold_counts` | [int, int] | Tuple: `[bold_elements, non_bold_elements]`. |
-| `italic_counts` | [int, int] | Tuple: `[italic_elements, non_italic_elements]`. |
-| `most_common_font_size` | float | The dominant font size (likely body text). |
-| `most_common_font_family` | string | The dominant font family. |
-| `all_font_sizes` | float[] | All font sizes found in the document, sorted. |
+| `modified` | string? | Last modification timestamp (ISO 8601). |
+| `extras` | object | Raw pass-through of remaining Tika metadata keys (string → string). |
 
 ---
 
@@ -231,9 +262,7 @@ Statistical properties of the document graph. Deterministic — computed mechani
 ```json
 {
   "structural_profile": {
-    "created_at": "2026-03-18T19:47:00Z",
     "document_type": "Generic",
-    "flow_type": "Fixed",
     "total_nodes": 94,
     "total_tokens": 35647,
     "token_distribution": { ... },
@@ -245,14 +274,14 @@ Statistical properties of the document graph. Deterministic — computed mechani
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `created_at` | string (ISO 8601) | When the graph was generated. |
 | `document_type` | string | Currently defaults to `"Generic"` for all documents. |
-| `flow_type` | string | `"Fixed"` (PDF — has physical layout) or `"Free"` (Markdown, DOCX — reflows). |
 | `total_nodes` | integer | Total nodes in the graph. |
 | `total_tokens` | integer | Sum of all node token counts. |
 | `token_distribution` | object | Token count histograms. |
 | `node_type_distribution` | object | Node type counts and percentages. |
 | `depth_distribution` | object | Tree depth statistics. |
+
+> `created_at` is a top-level field (see [Top-Level](#top-level-sorteddocumentgraph)); `flow_type` lives in [`document_info`](#documentinfo).
 
 ### NodeTypeDistribution
 

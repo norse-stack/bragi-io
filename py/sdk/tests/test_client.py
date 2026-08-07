@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import httpx
 import pytest
 
 from bragi._config import _Config
@@ -150,3 +151,60 @@ class TestAsyncParsePdf:
             asyncio.get_event_loop().run_until_complete(
                 _async_parse_pdf("/nonexistent/file.pdf", cfg)
             )
+
+
+class TestRawBodyContract:
+    """Guard the raw-body upload contract (the 2026-08-06 hash-corruption fix).
+
+    The hosted API reads the request body as raw bytes (``pdf_data: Bytes``).
+    Posting multipart/form-data (``files=``) still returns 200 — Tika tolerates
+    the envelope — but wraps the PDF in a boundary, corrupting
+    ``source_sha256``/``bgraph_sha256`` (the multipart upload produced
+    ``6b0c957a…`` instead of the golden ``f6d2fcf0…``). These tests capture the
+    real serialized request via ``httpx.MockTransport`` and assert the exact PDF
+    bytes are sent as ``application/pdf``, so a silent regression to ``files=``
+    goes red instead of quietly mis-hashing.
+    """
+
+    @staticmethod
+    def _capturing_transport(captured: dict) -> httpx.MockTransport:
+        def handler(request: httpx.Request) -> httpx.Response:
+            captured["content_type"] = request.headers.get("content-type")
+            captured["body"] = request.content
+            return httpx.Response(200, json=_success_body())
+
+        return httpx.MockTransport(handler)
+
+    def test_sync_posts_raw_pdf_bytes(self, tmp_path: Path) -> None:
+        pdf = tmp_path / "test.pdf"
+        pdf_bytes = b"%PDF-1.4 raw-body contract"
+        pdf.write_bytes(pdf_bytes)
+
+        captured: dict = {}
+        client = httpx.Client(transport=self._capturing_transport(captured))
+        cfg = _Config(api_key="bragi_prod_test", url="https://api.bragi-io.com")
+        with patch("bragi.client.httpx.Client", MagicMock(return_value=client)):
+            graph = _sync_parse_pdf(str(pdf), cfg)
+
+        assert isinstance(graph, BragiGraph)
+        assert captured["content_type"] == "application/pdf"
+        assert captured["body"] == pdf_bytes  # exact bytes — no multipart boundary
+
+    def test_async_posts_raw_pdf_bytes(self, tmp_path: Path) -> None:
+        import asyncio
+
+        pdf = tmp_path / "test.pdf"
+        pdf_bytes = b"%PDF-1.4 raw-body contract async"
+        pdf.write_bytes(pdf_bytes)
+
+        captured: dict = {}
+        client = httpx.AsyncClient(transport=self._capturing_transport(captured))
+        cfg = _Config(api_key="bragi_prod_test", url="https://api.bragi-io.com")
+        with patch("bragi.client.httpx.AsyncClient", MagicMock(return_value=client)):
+            graph = asyncio.get_event_loop().run_until_complete(
+                _async_parse_pdf(str(pdf), cfg)
+            )
+
+        assert isinstance(graph, BragiGraph)
+        assert captured["content_type"] == "application/pdf"
+        assert captured["body"] == pdf_bytes
