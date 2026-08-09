@@ -1,48 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 320" width="900" height="320" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif" role="img" aria-label="pdf, docx and md converge through Bragi into one bgraph, serialized as bgraph.md and bgraph.json">
+  <defs>
+    <!-- the "blazingly fast" orange->gold flame, matching the site-title gradient -->
+    <linearGradient id="bragiFlame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f97316"/>
+      <stop offset="1" stop-color="#fbbf24"/>
+    </linearGradient>
+  </defs>
   <!-- self-contained card so it reads on any page background (light or dark) -->
-  <rect x="1" y="1" width="898" height="318" rx="16" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="1" y="1" width="898" height="318" rx="16" fill="#18181b" stroke="#3f3f46" stroke-width="2"/>
 
-  <text x="450" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="#0f172a">The format is the product</text>
-  <text x="450" y="66" text-anchor="middle" font-size="13" fill="#475569">many inputs converge to one graph &#183; two serializations of the same thing</text>
+  <text x="450" y="42" text-anchor="middle" font-size="19" font-weight="700" fill="#e4e4e7">The format is the product</text>
+  <text x="450" y="66" text-anchor="middle" font-size="13" fill="#a1a1aa">many inputs converge to one graph &#183; two serializations of the same thing</text>
 
   <!-- inputs -->
   <g font-size="14" font-weight="600">
-    <rect x="40"  y="104" width="120" height="42" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5"/>
-    <text x="100" y="130" text-anchor="middle" fill="#3730a3">PDF</text>
-    <rect x="40"  y="154" width="120" height="42" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5"/>
-    <text x="100" y="180" text-anchor="middle" fill="#3730a3">DOCX</text>
-    <rect x="40"  y="204" width="120" height="42" rx="10" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.5"/>
-    <text x="100" y="230" text-anchor="middle" fill="#3730a3">Markdown</text>
+    <rect x="40"  y="104" width="120" height="42" rx="10" fill="#27272a" stroke="#3f3f46" stroke-width="1.5"/>
+    <text x="100" y="130" text-anchor="middle" fill="#d4d4d8">PDF</text>
+    <rect x="40"  y="154" width="120" height="42" rx="10" fill="#27272a" stroke="#3f3f46" stroke-width="1.5"/>
+    <text x="100" y="180" text-anchor="middle" fill="#d4d4d8">DOCX</text>
+    <rect x="40"  y="204" width="120" height="42" rx="10" fill="#27272a" stroke="#3f3f46" stroke-width="1.5"/>
+    <text x="100" y="230" text-anchor="middle" fill="#d4d4d8">Markdown</text>
   </g>
 
   <!-- converging arrows into Bragi -->
-  <g stroke="#94a3b8" stroke-width="2" fill="none">
+  <g stroke="#71717a" stroke-width="2" fill="none">
     <path d="M164 125 C 240 125, 260 168, 336 172"/>
     <path d="M164 175 H 336"/>
     <path d="M164 225 C 240 225, 260 182, 336 178"/>
   </g>
-  <polygon points="336,175 324,169 324,181" fill="#94a3b8"/>
+  <polygon points="336,175 324,169 324,181" fill="#71717a"/>
 
   <!-- Bragi engine -->
-  <rect x="344" y="128" width="150" height="94" rx="14" fill="#4f46e5"/>
-  <text x="419" y="170" text-anchor="middle" font-size="24" font-weight="800" fill="#ffffff">Bragi</text>
-  <text x="419" y="194" text-anchor="middle" font-size="12.5" fill="#c7d2fe">parse &#183; deterministic</text>
+  <rect x="344" y="128" width="150" height="94" rx="14" fill="url(#bragiFlame)"/>
+  <text x="419" y="170" text-anchor="middle" font-size="24" font-weight="800" fill="#18181b">Bragi</text>
+  <text x="419" y="194" text-anchor="middle" font-size="12.5" fill="#7c2d12">parse &#183; deterministic</text>
 
   <!-- arrow out -->
-  <path d="M494 175 H 604" stroke="#94a3b8" stroke-width="2" fill="none"/>
-  <polygon points="604,175 592,169 592,181" fill="#94a3b8"/>
+  <path d="M494 175 H 604" stroke="#71717a" stroke-width="2" fill="none"/>
+  <polygon points="604,175 592,169 592,181" fill="#71717a"/>
 
   <!-- outputs -->
   <g>
-    <rect x="612" y="112" width="248" height="54" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1.5"/>
-    <text x="632" y="138" font-size="15" font-weight="700" fill="#065f46">bgraph.md</text>
-    <text x="632" y="156" font-size="11.5" fill="#047857">canonical &#183; you can read and diff it</text>
+    <rect x="612" y="112" width="248" height="54" rx="10" fill="#27272a" stroke="#3f3f46" stroke-width="1.5"/>
+    <text x="632" y="138" font-size="15" font-weight="700" fill="#86efac">bgraph.md</text>
+    <text x="632" y="156" font-size="11.5" fill="#a1a1aa">canonical &#183; you can read and diff it</text>
 
-    <rect x="612" y="184" width="248" height="54" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
-    <text x="632" y="210" font-size="15" font-weight="700" fill="#1e3a8a">bgraph.json</text>
-    <text x="632" y="228" font-size="11.5" fill="#1d4ed8">the machine escape hatch &#183; every field</text>
+    <rect x="612" y="184" width="248" height="54" rx="10" fill="#27272a" stroke="#3f3f46" stroke-width="1.5"/>
+    <text x="632" y="210" font-size="15" font-weight="700" fill="#93c5fd">bgraph.json</text>
+    <text x="632" y="228" font-size="11.5" fill="#a1a1aa">the machine escape hatch &#183; every field</text>
   </g>
 
-  <text x="736" y="270" text-anchor="middle" font-size="12" fill="#64748b">one graph, emitted two ways &#8212; pick your door</text>
-  <text x="267" y="270" text-anchor="middle" font-size="12" fill="#64748b">cli &#183; rust / python sdk &#183; self-hosted api &#8212; same graph, any door</text>
+  <text x="736" y="270" text-anchor="middle" font-size="12" fill="#71717a">one graph, emitted two ways &#8212; pick your door</text>
+  <text x="267" y="270" text-anchor="middle" font-size="12" fill="#71717a">cli &#183; rust / python sdk &#183; self-hosted api &#8212; same graph, any door</text>
 </svg>
