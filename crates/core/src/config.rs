@@ -13,7 +13,15 @@ fn default_min_alpha_ratio() -> f32 {
     0.5
 }
 
+// CR-96: container-level `#[serde(default)]`. A partial config (only the
+// keys the user wants to override) must deserialize, with every omitted key
+// falling back to `ParsingConfig::default()`. Without this, a YAML omitting
+// any non-defaulted field (e.g. `spatial_clustering`) fails with `missing
+// field`, and the CLI's fallback path silently discards the user's tuning.
+// No golden impact: a full config (or no `-c`) provides every key, so the
+// defaults never fire and the resolved struct is identical.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
 pub struct ParsingConfig {
     pub document_type: DocumentType,
     #[serde(default)]
@@ -480,6 +488,7 @@ impl Default for TableDetectionConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `pipeline:` block deserializes.
 pub struct PipelineConfig {
     /// List of rules to run in order
     pub rules: Vec<RuleConfig>,
@@ -516,6 +525,7 @@ impl Default for PipelineConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `section_and_hierarchy:` block deserializes.
 pub struct SectionAndHierarchyConfig {
     /// Font size analysis parameters
     /// Percentage above median for large headers (0.0-1.0)
@@ -553,6 +563,7 @@ pub struct SectionAndHierarchyConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `pattern_detection:` block deserializes.
 pub struct PatternDetectionConfig {
     /// Whether pattern-based detection is enabled
     pub enabled: bool,
@@ -598,6 +609,7 @@ impl Default for SectionAndHierarchyConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `spatial_clustering:` block deserializes.
 pub struct SpatialClusteringConfig {
     /// Enable spatial clustering (if false, falls back to old method)
     pub enabled: bool,
@@ -622,11 +634,45 @@ pub struct SpatialClusteringConfig {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+// CR-96: deliberately NO `#[serde(default)]`. Omitting the whole `sections:` /
+// `paragraphs:` block is fine — the parent `SpatialClusteringConfig` default fills
+// it — but a *partial* sub-map (one bound without the other) is nonsense: a min
+// with no max, or vice versa, has no sensible default. So it fails loudly with a
+// serde "missing field" error rather than silently guessing the omitted bound, and
+// the CLI surfaces that with a pointer to the Configuration Reference.
 pub struct ElementClusteringConfig {
     /// Minimum segment size in characters (segments smaller than this get merged)
     pub min_segment_size: usize,
     /// Maximum segment size in characters (segments larger than this get split if possible)
     pub max_segment_size: usize,
+}
+
+// CR-96: `SpatialClusteringConfig` previously had no `Default` impl — its field
+// values lived only inline in `ParsingConfig::default()`. Container-level
+// `#[serde(default)]` needs a `Default`, so those inline values were lifted into a
+// real impl. `ParsingConfig::default()` now delegates to it (see below), keeping a
+// single source of truth for these defaults. (`ElementClusteringConfig`
+// deliberately has none — a partial sub-map must fail, not default; see its struct.)
+impl Default for SpatialClusteringConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            enable_paragraph_merging: true,
+            enable_spatial_adjacency: false,
+            min_line_height: 8.0,
+            vertical_gap_threshold_multiplier: 0.8,
+            horizontal_alignment_tolerance: 10.0,
+            line_grouping_tolerance: 0.3,
+            sections: ElementClusteringConfig {
+                min_segment_size: 20,
+                max_segment_size: 300,
+            },
+            paragraphs: ElementClusteringConfig {
+                min_segment_size: 100,
+                max_segment_size: 8000,
+            },
+        }
+    }
 }
 
 // Default value functions for list detection
@@ -1004,6 +1050,7 @@ impl Default for SizeEnforcerConfig {
 /// exclusion regex) as a backup. Isolation is leaf-based, consulting the
 /// `Placement.region_label` set by `analytics::reading_order::tag_and_resort`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `section_detection_v2:` block deserializes.
 pub struct SectionDetectionV2Config {
     /// Y-coordinate tolerance (points) for grouping bboxes onto the same
     /// visual line. Two elements within `|Δy| < this` in the same Region
@@ -1114,6 +1161,7 @@ pub struct InclusionPattern {
 /// Per-invariant gating: every sanity-check invariant has both a check mode
 /// (always-on diagnostic emission) and a correct mode (config-gated rewrite).
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial invariant-toggle block deserializes.
 pub struct InvariantToggle {
     pub check: bool,
     pub correct: bool,
@@ -1132,6 +1180,7 @@ impl Default for InvariantToggle {
 /// Has the same check/correct toggles as `InvariantToggle` plus a tolerance
 /// multiplier applied to the title's bbox.height.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial block deserializes.
 pub struct SectionHeightInvariantConfig {
     pub check: bool,
     pub correct: bool,
@@ -1154,6 +1203,7 @@ impl Default for SectionHeightInvariantConfig {
 
 /// CR-68 — Per-invariant config for Section/Paragraph overlap-demote.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial block deserializes.
 pub struct SectionParagraphOverlapInvariantConfig {
     pub check: bool,
     pub correct: bool,
@@ -1186,6 +1236,7 @@ impl Default for SectionParagraphOverlapInvariantConfig {
 
 /// CR-69 — Per-invariant config for the geometry-only overlap-COUNT demote.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial block deserializes.
 pub struct SectionOverlapCountInvariantConfig {
     pub check: bool,
     pub correct: bool,
@@ -1229,6 +1280,7 @@ impl Default for SectionOverlapCountInvariantConfig {
 /// these on (with the old demoters off) to observe the flagged set without
 /// mutating the graph.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default)] // CR-96: partial `section_detectors:` block deserializes.
 pub struct SectionDetectorsConfig {
     /// Run the CR-65 height-bounded-by-title predicate as a flag detector.
     pub height_flag: bool,
@@ -1252,6 +1304,7 @@ pub struct SectionDetectorsConfig {
 /// run the prune step, the master mutate switch is off, and the debug artifact
 /// is not emitted.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default)] // CR-96: partial `section_prune:` block deserializes.
 pub struct SectionPruneConfig {
     /// Master gate for the prune step running at all.
     pub enabled: bool,
@@ -1273,6 +1326,7 @@ pub struct SectionPruneConfig {
 /// sections are treated as content — they no longer open a level, and their
 /// orphaned children re-attach to the enclosing section.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `topology_rebalance:` block deserializes.
 pub struct TopologyRebalanceConfig {
     pub check: bool,
     pub correct: bool,
@@ -1318,6 +1372,7 @@ impl Default for TopologyRebalanceConfig {
 /// it shapes the level signal the stack replay consumes. When `correct` is
 /// false, the rebalance behaves exactly as it does without this rule.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `numbering_restart:` block deserializes.
 pub struct NumberingRestartConfig {
     pub check: bool,
     pub correct: bool,
@@ -1336,6 +1391,7 @@ impl Default for NumberingRestartConfig {
 /// Future invariants (childless pruning, repetition filter, etc.) will appear
 /// here as additional fields.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default)] // CR-96: partial `invariants:` block deserializes.
 pub struct GraphSanityInvariants {
     /// `node.depth = parent.depth + 1` for every non-root node.
     /// Correction strategy: BFS from root, recompute depth.
@@ -1400,6 +1456,7 @@ pub struct GraphSanityInvariants {
 /// Runs after graph build to enforce structural invariants on the assembled
 /// graph. Each invariant has check + correct gating.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)] // CR-96: partial `graph_sanity:` block deserializes.
 pub struct GraphSanityConfig {
     pub enabled: bool,
     pub invariants: GraphSanityInvariants,
@@ -1717,18 +1774,13 @@ impl ParsingConfig {
     pub fn to_yaml(&self) -> Result<String> {
         Ok(serde_yaml::to_string(self)?)
     }
-
-    /// Load config with fallback to default
-    pub fn load_with_fallback(path: Option<&str>) -> Self {
-        match path {
-            Some(p) => Self::load_from_file(p).unwrap_or_else(|_| {
-                eprintln!("⚠️  Failed to load config from {}, using defaults", p);
-                Self::default()
-            }),
-            None => Self::default(),
-        }
-    }
 }
+// CR-96: `load_with_fallback` was removed. It mapped any load error (missing
+// file, malformed YAML, unknown keys) to `Self::default()`, and its only caller
+// — the CLI's `-c` path — then printed "Loaded config from …" over the top of
+// that silent substitution. An explicitly-requested-but-unloadable config must
+// hard-fail, so the CLI now calls `load_from_file` directly and propagates the
+// error (see `run_parse_pdf`). The no-`-c` case still uses defaults silently.
 
 impl Default for ParsingConfig {
     fn default() -> Self {
@@ -1736,23 +1788,9 @@ impl Default for ParsingConfig {
         Self {
             document_type: DocumentType::Generic,
             section_and_hierarchy: SectionAndHierarchyConfig::default(),
-            spatial_clustering: SpatialClusteringConfig {
-                enabled: true,
-                enable_paragraph_merging: true,
-                enable_spatial_adjacency: false,
-                min_line_height: 8.0,
-                vertical_gap_threshold_multiplier: 0.8,
-                horizontal_alignment_tolerance: 10.0,
-                line_grouping_tolerance: 0.3,
-                sections: ElementClusteringConfig {
-                    min_segment_size: 20,
-                    max_segment_size: 300,
-                },
-                paragraphs: ElementClusteringConfig {
-                    min_segment_size: 100,
-                    max_segment_size: 8000,
-                },
-            },
+            // CR-96: single source of truth — the inline defaults were lifted
+            // into `SpatialClusteringConfig::default()`.
+            spatial_clustering: SpatialClusteringConfig::default(),
             section_patterns: vec![],
             include_raw_tika: false,
             include_style_info: false, // CR-86: null-style default edition
@@ -1766,5 +1804,197 @@ impl Default for ParsingConfig {
             graph_sanity: GraphSanityConfig::default(),
             dump_analytics: true,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    //! CR-96 — the partial-config contract.
+    //!
+    //! The Configuration Reference teaches users to write down *only* the keys
+    //! they want to change. Before CR-96, any YAML omitting a non-defaulted
+    //! section (notably `spatial_clustering`) failed serde deserialization with
+    //! `missing field`, and the CLI silently swallowed that into defaults while
+    //! reporting success. These tests pin the contract so that grep-invisible
+    //! regression can't return: a config carrying *any subset* of keys must
+    //! deserialize, applying the given overrides and filling every omitted key
+    //! from `Default`.
+    use super::*;
+
+    /// The historical trigger: a config that omits `spatial_clustering` (and
+    /// almost everything else) must still deserialize. Pre-CR-96 this failed
+    /// with `missing field \`spatial_clustering\``.
+    #[test]
+    fn partial_config_omitting_spatial_clustering_deserializes() {
+        let yaml = "minimal_parse: true\n";
+        let cfg: ParsingConfig =
+            serde_yaml::from_str(yaml).expect("partial config must deserialize");
+        assert!(cfg.minimal_parse, "the one provided override must apply");
+        // Omitted section falls back to its Default.
+        assert!(
+            cfg.spatial_clustering.enabled,
+            "omitted spatial_clustering must fall back to Default (enabled=true)"
+        );
+        assert_eq!(cfg.document_type, DocumentType::Generic);
+    }
+
+    /// A single one-level-deep override (the CR's headline verification case)
+    /// must apply while its siblings keep their defaults.
+    #[test]
+    fn partial_section_and_hierarchy_single_override_applies() {
+        let yaml = "\
+section_and_hierarchy:
+  large_header_threshold: 0.95
+";
+        let cfg: ParsingConfig =
+            serde_yaml::from_str(yaml).expect("partial nested block must deserialize");
+        assert_eq!(
+            cfg.section_and_hierarchy.large_header_threshold, 0.95,
+            "the provided override must apply"
+        );
+        // Sibling keys inside the same partial block keep their defaults.
+        let d = SectionAndHierarchyConfig::default();
+        assert_eq!(
+            cfg.section_and_hierarchy.medium_header_threshold, d.medium_header_threshold,
+            "omitted sibling must keep its default"
+        );
+        assert_eq!(cfg.section_and_hierarchy.max_depth, d.max_depth);
+    }
+
+    /// A partial `spatial_clustering` block with a single flag override.
+    #[test]
+    fn partial_spatial_clustering_single_override_applies() {
+        let yaml = "\
+spatial_clustering:
+  enabled: false
+";
+        let cfg: ParsingConfig =
+            serde_yaml::from_str(yaml).expect("partial spatial_clustering must deserialize");
+        assert!(!cfg.spatial_clustering.enabled, "override must apply");
+        // Omitted siblings keep their defaults.
+        let d = SpatialClusteringConfig::default();
+        assert!(cfg.spatial_clustering.enable_paragraph_merging);
+        assert_eq!(cfg.spatial_clustering.min_line_height, d.min_line_height);
+        assert_eq!(
+            cfg.spatial_clustering.sections.max_segment_size,
+            d.sections.max_segment_size,
+            "omitted nested sub-map must keep its default"
+        );
+    }
+
+    /// A deeply-nested partial override (graph_sanity → invariants →
+    /// topology_rebalance → one field) must deserialize and apply, with every
+    /// intervening and sibling key defaulted.
+    #[test]
+    fn deeply_nested_partial_override_applies() {
+        let yaml = "\
+graph_sanity:
+  invariants:
+    topology_rebalance:
+      max_section_depth: 9
+";
+        let cfg: ParsingConfig =
+            serde_yaml::from_str(yaml).expect("deeply nested partial must deserialize");
+        assert_eq!(
+            cfg.graph_sanity.invariants.topology_rebalance.max_section_depth, 9,
+            "deep override must apply"
+        );
+        // Sibling field in the same deep struct keeps its default.
+        let d = TopologyRebalanceConfig::default();
+        assert_eq!(
+            cfg.graph_sanity.invariants.topology_rebalance.max_total_depth,
+            d.max_total_depth
+        );
+        // A sibling invariant not mentioned at all keeps its default.
+        assert!(cfg.graph_sanity.enabled);
+        assert!(cfg.graph_sanity.invariants.depth_consistency.check);
+    }
+
+    /// An empty config (`{}`) is the limiting case of "partial": every key
+    /// omitted. It must deserialize to exactly the defaults.
+    #[test]
+    fn empty_config_deserializes_to_defaults() {
+        let cfg: ParsingConfig =
+            serde_yaml::from_str("{}").expect("empty config must deserialize to defaults");
+        assert_eq!(cfg.document_type, DocumentType::Generic);
+        assert!(!cfg.minimal_parse);
+        assert!(cfg.spatial_clustering.enabled);
+        assert_eq!(
+            cfg.section_and_hierarchy.large_header_threshold,
+            SectionAndHierarchyConfig::default().large_header_threshold
+        );
+    }
+
+    /// `minimal_parse: true` (the doc's headline example) must deserialize on
+    /// its own and set the flag — the config is *read*, not discarded.
+    #[test]
+    fn minimal_parse_partial_config_sets_flag() {
+        let cfg: ParsingConfig =
+            serde_yaml::from_str("minimal_parse: true\n").expect("must deserialize");
+        assert!(cfg.minimal_parse);
+    }
+
+    /// Malformed YAML must be a deserialization *error* — the loader has no
+    /// business turning garbage into defaults (that is the CR-96 lie the CLI
+    /// used to tell). `load_from_file` propagates this; the CLI hard-fails on it.
+    #[test]
+    fn malformed_yaml_is_an_error_not_a_silent_default() {
+        let result: std::result::Result<ParsingConfig, _> =
+            serde_yaml::from_str("minimal_parse: true\n  bad_indent: [unterminated\n");
+        assert!(result.is_err(), "malformed YAML must fail, not fall back");
+    }
+
+    /// CR-96: omitting a whole clustering block is fine (parent default fills it),
+    /// but a *partial* `sections:` / `paragraphs:` sub-map — one size bound without
+    /// the other — is nonsense and must fail loudly, never silently default the
+    /// missing bound. `ElementClusteringConfig` carries no `#[serde(default)]`, so
+    /// serde rejects it with a "missing field" error.
+    #[test]
+    fn partial_element_clustering_submap_is_an_error() {
+        // Whole block omitted: OK — falls back to the parent default.
+        let ok: ParsingConfig = serde_yaml::from_str(
+            "spatial_clustering:\n  enabled: true\n",
+        )
+        .expect("omitting sections/paragraphs entirely must deserialize");
+        assert_eq!(ok.spatial_clustering.sections.max_segment_size, 300);
+        assert_eq!(ok.spatial_clustering.paragraphs.max_segment_size, 8000);
+
+        // Partial sub-map (min without max): hard error, no silent default.
+        let bad: std::result::Result<ParsingConfig, _> = serde_yaml::from_str(
+            "spatial_clustering:\n  sections:\n    min_segment_size: 5\n",
+        );
+        assert!(
+            bad.is_err(),
+            "a partial sections sub-map (min without max) must fail, not default the omitted bound"
+        );
+    }
+
+    /// A full, materialized config (what `to_yaml` freezes into a golden
+    /// edition) still round-trips: serialize the default → deserialize → the
+    /// key fields match. Container `#[serde(default)]` must not perturb the
+    /// full-config path (golden stability).
+    #[test]
+    fn full_config_roundtrips_unchanged() {
+        let original = ParsingConfig::default();
+        let yaml = original.to_yaml().expect("serialize");
+        let reparsed: ParsingConfig = serde_yaml::from_str(&yaml).expect("re-parse full config");
+        assert_eq!(reparsed.document_type, original.document_type);
+        assert_eq!(reparsed.minimal_parse, original.minimal_parse);
+        assert_eq!(
+            reparsed.spatial_clustering.enabled,
+            original.spatial_clustering.enabled
+        );
+        assert_eq!(
+            reparsed.spatial_clustering.paragraphs.max_segment_size,
+            original.spatial_clustering.paragraphs.max_segment_size
+        );
+        assert_eq!(
+            reparsed.section_and_hierarchy.large_header_threshold,
+            original.section_and_hierarchy.large_header_threshold
+        );
+        assert_eq!(
+            reparsed.graph_sanity.invariants.topology_rebalance.max_section_depth,
+            original.graph_sanity.invariants.topology_rebalance.max_section_depth
+        );
     }
 }

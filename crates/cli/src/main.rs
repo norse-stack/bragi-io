@@ -350,12 +350,23 @@ fn run_parse(args: ParseArgs) -> Result<()> {
 // =========================================================================
 
 fn run_parse_pdf(args: ParseArgs, cache_dir: String) -> Result<()> {
-    // Create processor with resolved cache dir
-    let mut processor = create_processor(&args, &cache_dir)?;
-
-    // Load config: user-specified file > embedded default > ParsingConfig::default()
+    // Load config FIRST — before spinning up the JVM — so an explicitly-requested
+    // but unloadable `-c` fails loud and fast.
+    //
+    // CR-96: when `-c` is passed, the file MUST load. A missing, malformed, or
+    // still-unknown-keys config is a HARD failure: we do NOT fall back to
+    // defaults and we do NOT print "Loaded config from". The error propagates
+    // out of `main`, which prints it to stderr and exits non-zero. Only the
+    // no-`-c` case falls back to the embedded/compiled defaults silently and
+    // succeeds.
     let mut config = if let Some(config_path) = &args.config {
-        let c = ParsingConfig::load_with_fallback(Some(config_path));
+        let c = ParsingConfig::load_from_file(config_path).map_err(|e| {
+            anyhow!(
+                "failed to load config from {config_path}: {e}\n\n\
+                 Check your config against the Configuration Reference: \
+                 https://docs.bragi-io.com/reference/config-reference/"
+            )
+        })?;
         println!("📋 Loaded config from: {}", config_path);
         c
     } else {
@@ -370,6 +381,9 @@ fn run_parse_pdf(args: ParseArgs, cache_dir: String) -> Result<()> {
             }
         }
     };
+
+    // Create processor with resolved cache dir
+    let mut processor = create_processor(&args, &cache_dir)?;
 
     // Apply CLI overrides to config
     if args.minimal_parse {
