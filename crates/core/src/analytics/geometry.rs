@@ -137,10 +137,13 @@ pub struct GeometryDiagnostic {
 pub struct GeometryStatsConfig {
     /// Number of pages to load into the analysis window. Pages are taken
     /// as a linear span from the start of the document (pages [0, N)),
-    /// not random sample. Default: 10. Validated on the 6-PDF corpus;
-    /// "first 10" is the regime where the column-divider X-projection
-    /// signal is cleanest (gpt2's full-document projection has full-width
-    /// spanners that dilute the gutter past detection threshold).
+    /// not random sample. Default: 20 (was 10, widened 2026-08-23: on long
+    /// books the first 10 pages are all front matter, so running heads were
+    /// never observed — see lab experiment 2026-08-23-demo-docs-config-pick).
+    /// A start-anchored short window remains deliberate: the column-divider
+    /// X-projection signal is cleanest early (gpt2's full-document projection
+    /// has full-width spanners that dilute the gutter past detection
+    /// threshold).
     pub page_analysis_count: usize,
 
     /// Minimum sustained-gap length (in pt rows) for the header walk and
@@ -221,7 +224,7 @@ pub struct GeometryStatsConfig {
 impl Default for GeometryStatsConfig {
     fn default() -> Self {
         Self {
-            page_analysis_count: 10,
+            page_analysis_count: 20,
             min_gap_rows: 15,
             min_gap_cols: 35,
             max_footer_extent: 50,
