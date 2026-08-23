@@ -182,6 +182,11 @@ section_detection_v2:
     - { pattern: "(?i)^article\\s+\\d+[a-z]?\\s*$",                       require_bold: true, require_isolation: true }
     - { pattern: "(?i)^section\\s+\\d+[a-z]?\\s*$",                       require_bold: true, require_isolation: true }
     - { pattern: "(?i)^appendix\\s+[A-Z\\d]+\\s*$",                       require_bold: true, require_isolation: true }
+    # demo-v2 (2026-08-23): protective re-promotions for the trailing-page-number
+    # exclusion below — keyword headings that legitimately end in a number.
+    - { pattern: "(?i)^part\\s+[IVXLCDM\\d]+\\s*$",                          require_bold: true, require_isolation: true }
+    - { pattern: "(?i)^schedule\\s+\\d+\\s*$",                              require_bold: true, require_isolation: true }
+    - { pattern: "(?i)^annex\\s+[IVX\\d]+\\s*$",                            require_bold: true, require_isolation: true }
 
   # Maximum text length (characters) for an inclusion-pattern match to promote.
   # Defence in depth alongside the shape-anchored patterns above — caps any
@@ -198,6 +203,13 @@ section_detection_v2:
     - "^Table\\s+[A-Z0-9]"
     - "^\\d+\\.?\\d*$" # bare numbers / decimals like "0.1", "4.92"
     - "^[\\d\\s\\.]+$" # rows of numbers (table data)
+    # demo-v2 (2026-08-23): page furniture. Trailing page number kills TOC lines
+    # and folio-bearing running heads; lowercase roman kills front-matter folios.
+    # Keyword headings ending in digits are re-promoted by the inclusion patterns
+    # above (inclusion runs after exclusion). Tmp global default until CR-97's
+    # per-doc picking lands — experiment: lab/experiments/2026-08-23-demo-docs-config-pick.
+    - ".+\\s\\d{1,3}$"
+    - "^[ivxlcdm]{1,6}$"
 
   # Tiebreaker keywords (CR-27): identify the structural "tier" of a section.
   # Consulted only when font-size delta vs. previous section is within tolerance
