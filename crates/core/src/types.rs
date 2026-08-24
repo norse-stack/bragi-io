@@ -775,6 +775,8 @@ pub struct DocumentMetadata {
     pub md: Option<MdMetadata>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub docx: Option<DocxMetadata>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ocr: Option<OcrMetadata>,
 }
 
 /// PDF-channel metadata: strong-convention typed fields + `extras`
@@ -833,6 +835,7 @@ pub enum ChannelMetadata {
     Pdf(PdfMetadata),
     Md(MdMetadata),
     Docx(DocxMetadata),
+    Ocr(OcrMetadata),
     // Future: Html(HtmlMetadata), Epub(EpubMetadata), …
 }
 
@@ -853,6 +856,31 @@ pub struct DocxMetadata {
     pub last_modified_by: Option<String>,
     pub revision: Option<String>,
     pub modified: Option<String>,
+    #[serde(default)]
+    pub extras: BTreeMap<String, serde_json::Value>,
+}
+
+/// OCR-channel metadata (S1): what the Mistral OCR-4 payload knows about
+/// its own run. The OCR JSON carries **no source-native document
+/// metadata** — canonical fields (`title`/`author`/…) stay `None` by
+/// design (09-metadata-first-class: synthesizing a title from the first
+/// heading would be a body-side fallback; S2 grafts canonical fields
+/// from the native arm).
+///
+/// `BTreeMap` extras for the same determinism reason as the other
+/// channel namespaces (cache-stable `bgraph_sha256`).
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct OcrMetadata {
+    /// Top-level `model` — the OCR model id (e.g. `mistral-ocr-4-0`).
+    pub model: Option<String>,
+    /// `usage_info.pages_processed`.
+    pub pages_processed: Option<u32>,
+    /// `usage_info.doc_size_bytes` — the *source document* (input PDF /
+    /// image) size as reported by the OCR run, not the JSON's own size.
+    pub doc_size_bytes: Option<u64>,
+    /// `pages[].dimensions.dpi` of the first page carrying dimensions —
+    /// the raster resolution the pixel bboxes were reported at.
+    pub dpi: Option<u32>,
     #[serde(default)]
     pub extras: BTreeMap<String, serde_json::Value>,
 }

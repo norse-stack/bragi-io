@@ -219,4 +219,13 @@ pub enum ParseError {
     /// since both project to the same `ParseResult`.)
     #[error("malformed docx: {0}")]
     MalformedDocx(String),
+
+    /// The input could not be read as a Mistral OCR-4 JSON payload: not
+    /// valid JSON, or JSON that does not carry the OCR document shape
+    /// (`pages[]` with `blocks[]`). Carries a human-facing detail.
+    /// (OCR S1 — the OCR channel shares this `ParseError` enum with the
+    /// markdown/DOCX channels since all project to the same
+    /// `ParseResult`.)
+    #[error("malformed ocr json: {0}")]
+    MalformedOcr(String),
 }
