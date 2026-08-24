@@ -1178,7 +1178,10 @@ fn first_number_offset(
 /// Then rewrite each node's `parent`, `children` (ordered by `text_order`), and
 /// `location.semantic.depth`. The Document root stays at depth 0 and parents the
 /// top-level nodes. `check`-only mode records the report but writes nothing.
-fn rebalance_topology(
+/// `pub(crate)` for CR-97 WP1: `threshold_tail::apply_threshold_tail`
+/// re-runs the rebalance standalone over a cloned graph, mirroring
+/// `apply()`'s invocation exactly. Not part of the public surface.
+pub(crate) fn rebalance_topology(
     graph: &mut DocumentGraph,
     cfg: &TopologyRebalanceConfig,
     nr: &NumberingRestartConfig,
