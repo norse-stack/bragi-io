@@ -210,6 +210,7 @@ const VALID_NODE_TYPES: &[&str] = &[
     "list",
     "blockquote",
     "table",
+    "equation",
 ];
 
 /// clap value-parser for `--node-types`. Rejects unknown tags and the

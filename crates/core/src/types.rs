@@ -1169,6 +1169,13 @@ pub enum SemanticElementType {
     List,
     Blockquote,
     Table,
+    /// Schema 1.1.0 (OCR S1): display-math block produced by the OCR
+    /// channel. Body is the verbatim LaTeX as delivered by the source
+    /// (`$$…$$` including `\tag{n}`, or `\[ … \]`) — non-inline body,
+    /// treated like [`Self::CodeBlock`] (no inline parser, no
+    /// canonicalization). No other channel produces it today; the PDF
+    /// channel renders equations to prose Paragraphs (DT-05).
+    Equation,
     /// Orphan variant reserved for the future stream-topology design slice.
     ///
     /// CR-49 added the variant + wire-format support; CR-59 retracted the
@@ -1208,7 +1215,9 @@ impl SemanticElementType {
     pub fn body_is_markdown_inline(self) -> bool {
         match self {
             Self::Section | Self::Paragraph | Self::Header | Self::Footer | Self::Margin => true,
-            Self::CodeBlock | Self::List | Self::Blockquote | Self::Table => false,
+            Self::CodeBlock | Self::List | Self::Blockquote | Self::Table | Self::Equation => {
+                false
+            }
             Self::Message => panic!(
                 "SemanticElementType::Message::body_is_markdown_inline called — \
                  Message is the orphan sentinel (CR-59); no wire-format domain. \
@@ -1550,6 +1559,7 @@ mod semantic_tree_element_validate_tests {
         assert!(!SemanticElementType::List.body_is_markdown_inline());
         assert!(!SemanticElementType::Blockquote.body_is_markdown_inline());
         assert!(!SemanticElementType::Table.body_is_markdown_inline());
+        assert!(!SemanticElementType::Equation.body_is_markdown_inline());
     }
 
     #[test]
@@ -1564,6 +1574,7 @@ mod semantic_tree_element_validate_tests {
             SemanticElementType::List,
             SemanticElementType::Blockquote,
             SemanticElementType::Table,
+            SemanticElementType::Equation,
         ] {
             assert!(
                 t.requires_non_empty_body(),

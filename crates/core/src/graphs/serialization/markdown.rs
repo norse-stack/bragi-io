@@ -222,6 +222,7 @@ fn node_type_to_fence_tag(node_type: &str) -> &'static str {
         "List" => "list",
         "Blockquote" => "block-quote", // F-11 (v2.1.0+; was: blockquote)
         "Table" => "table",
+        "Equation" => "equation", // Schema 1.1.0 (OCR S1): display-math block.
         // CR-59 (v2.1.0+): the `Message` variant was added by CR-49 as a
         // wire-format precursor to the future stream-topology design slice
         // but had no in-memory carrier path in tree-topology channels.

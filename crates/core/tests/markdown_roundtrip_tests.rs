@@ -568,18 +568,18 @@ fn doc_level_json(md: &str) -> serde_json::Value {
 }
 
 #[test]
-fn block_c_emit_stamps_1_0_0_in_both_serializations() {
-    // C.1: the reset. Both serializations advertise the honest inaugural
-    // edition `1.0.0`.
+fn block_c_emit_stamps_current_schema_in_both_serializations() {
+    // C.1 (updated for the 1.1.0 additive bump, OCR S1): both
+    // serializations advertise the current `1.x` edition.
     let graph = build_synthetic_graph(vec![("Section", "S", 1, 0)], Some("Doc"), None);
     let md = emit_markdown(&graph, &synthetic_provenance());
     let md_schema = doc_level_json(&md)["schema"].as_str().unwrap().to_string();
-    assert_eq!(md_schema, "1.0.0", "md doc-level `schema` must be 1.0.0");
+    assert_eq!(md_schema, "1.1.0", "md doc-level `schema` must be 1.1.0");
 
     let sorted = graph.to_sorted_graph(Some(&synthetic_provenance()));
     assert_eq!(
-        sorted.schema_version, "1.0.0",
-        "json `schema_version` must be 1.0.0"
+        sorted.schema_version, "1.1.0",
+        "json `schema_version` must be 1.1.0"
     );
 }
 
@@ -592,8 +592,10 @@ fn block_c_1x_roundtrips_verified_non_1x_rejected() {
     let result = parse_markdown(&md, ParseOptions::default()).expect("1.x parses");
     assert!(matches!(result.identity, ParseIdentity::Verified));
 
+    let current = format!("\"schema\":\"{}\"", bragi_io_core::BGRAPH_FORMAT_VERSION);
+    assert!(md.contains(&current), "emitted md stamps the current schema");
     for retired in ["0.9.0", "2.0.0", "5.0.0"] {
-        let tampered = md.replacen("\"schema\":\"1.0.0\"", &format!("\"schema\":\"{retired}\""), 1);
+        let tampered = md.replacen(&current, &format!("\"schema\":\"{retired}\""), 1);
         let result = parse_markdown(&tampered, ParseOptions { accept_drift: true });
         assert!(
             matches!(result, Err(ParseError::UnsupportedSchema(_))),

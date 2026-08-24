@@ -43,7 +43,7 @@ class TestBragiDeserialization:
     """Deserialize the real attention fixture and verify all typed fields."""
 
     def test_top_level_fields(self, attention_graph: BragiGraph) -> None:
-        assert attention_graph.schema_version == "1.0.0"
+        assert attention_graph.schema_version == "1.1.0"
         assert len(attention_graph.nodes) > 0
         assert isinstance(attention_graph.document_info, DocumentInfo)
         assert isinstance(attention_graph.structural_profile, StructuralProfile)
@@ -65,7 +65,7 @@ class TestBragiDeserialization:
         r = repr(attention_graph)
         assert "BragiGraph" in r
         assert "nodes" in r
-        assert "v1.0.0" in r
+        assert "v1.1.0" in r
 
     def test_node_count(self, attention_graph: BragiGraph) -> None:
         # attention.pdf golden fixture has 179 nodes.
@@ -265,7 +265,7 @@ class TestBragiDeserialization:
     def test_to_json(self, attention_graph: BragiGraph) -> None:
         j = attention_graph.to_json()
         parsed = json.loads(j)
-        assert parsed["schema_version"] == "1.0.0"
+        assert parsed["schema_version"] == "1.1.0"
         assert len(parsed["nodes"]) == 179
 
 

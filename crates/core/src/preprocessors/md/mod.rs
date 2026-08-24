@@ -161,7 +161,13 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// string and the json envelope's new `bgraph_sha256` field; the
 /// `bgraph_sha256` *value* is unchanged (the reset is a renumber, not a
 /// canonical-form change).
-pub const BGRAPH_FORMAT_VERSION: &str = "1.0.0";
+///
+/// **1.1.0 (OCR S1).** Additive minor bump: the `Equation` node variant
+/// (fence tag `bgraph-equation`) joins the schema — display-math blocks
+/// produced by the OCR channel, non-inline body like CodeBlock. The read
+/// path already accepts all `1.x`, so `1.0.0` artifacts remain readable
+/// unchanged; only newly-emitted artifacts stamp `1.1.0`.
+pub const BGRAPH_FORMAT_VERSION: &str = "1.1.0";
 
 /// Parse a markdown string into a `DocumentGraph`.
 ///
