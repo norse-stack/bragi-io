@@ -135,10 +135,11 @@ golden-generate: build-cli
 ## them are tracked in CR-91 (DRAFT).
 GOLDEN_1_0_0 := crates/core/test_fixtures/golden/1.0.0
 golden-generate-docs: build-cli
-	@echo "📄 Regenerating the docx + md channel goldens (JVM-free)..."
+	@echo "📄 Regenerating the docx + md + ocr channel goldens (JVM-free)..."
 	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-docx/source.docx -f bgraph-md -o $(GOLDEN_1_0_0)/demo-docx/document.bgraph.md
 	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-md/source.md -f bgraph-md -o $(GOLDEN_1_0_0)/demo-md/document.bgraph.md
-	@echo "✅ docx + md goldens regenerated under $(GOLDEN_1_0_0)/{demo-docx,demo-md}/"
+	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-ocr/source.json -f bgraph-md -o $(GOLDEN_1_0_0)/demo-ocr/document.bgraph.md
+	@echo "✅ docx + md + ocr goldens regenerated under $(GOLDEN_1_0_0)/{demo-docx,demo-md,demo-ocr}/"
 
 golden-generate-all: golden-generate golden-generate-docs ## Re-bless the entire 1.0.0 golden family (PDF + docx + md)
 

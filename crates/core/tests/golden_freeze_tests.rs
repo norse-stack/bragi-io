@@ -40,6 +40,7 @@ use bragi_io_core::graphs::serialization::markdown::emit_markdown;
 use bragi_io_core::graphs::serialization::version::FormatVersion;
 use bragi_io_core::preprocessors::docx::parse_docx;
 use bragi_io_core::preprocessors::md::{parse_markdown, ParseIdentity, ParseOptions};
+use bragi_io_core::preprocessors::ocr::parse_ocr;
 use bragi_io_core::preprocessors::Preprocessor;
 use bragi_io_core::processor::DocumentProcessor;
 use bragi_io_core::storage::{CacheDefaults, FileStorage, FreshFrom};
@@ -352,6 +353,7 @@ fn golden_freeze_attention_roundtrips_verified() {
 enum LightChannel {
     Md,
     Docx,
+    Ocr,
 }
 
 impl LightChannel {
@@ -359,6 +361,7 @@ impl LightChannel {
         match self {
             LightChannel::Md => "demo-md",
             LightChannel::Docx => "demo-docx",
+            LightChannel::Ocr => "demo-ocr",
         }
     }
 
@@ -366,6 +369,7 @@ impl LightChannel {
         match self {
             LightChannel::Md => "source.md",
             LightChannel::Docx => "source.docx",
+            LightChannel::Ocr => "source.json",
         }
     }
 }
@@ -399,6 +403,13 @@ fn regenerate_light(ch: LightChannel) -> (DocumentGraph, ParseProvenance) {
                 std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
             let result =
                 parse_docx(&bytes, ParseOptions::default()).expect("demo-docx source parses");
+            (result.graph, result.provenance)
+        }
+        LightChannel::Ocr => {
+            let bytes =
+                std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
+            let result =
+                parse_ocr(&bytes, ParseOptions::default()).expect("demo-ocr source parses");
             (result.graph, result.provenance)
         }
     }
@@ -503,6 +514,16 @@ fn golden_freeze_demo_docx_reproduces_bgraph_md() {
 #[test]
 fn golden_freeze_demo_docx_roundtrips_verified() {
     check_light_roundtrips(LightChannel::Docx);
+}
+
+#[test]
+fn golden_freeze_demo_ocr_reproduces_bgraph_md() {
+    check_light_reproduces(LightChannel::Ocr);
+}
+
+#[test]
+fn golden_freeze_demo_ocr_roundtrips_verified() {
+    check_light_roundtrips(LightChannel::Ocr);
 }
 
 // =========================================================================
@@ -702,6 +723,17 @@ fn golden_freeze_demo_docx_json_wire() {
         &provenance,
         &light_golden_json_path(LightChannel::Docx),
         "demo-docx",
+    );
+}
+
+#[test]
+fn golden_freeze_demo_ocr_json_wire() {
+    let (graph, provenance) = regenerate_light(LightChannel::Ocr);
+    check_json_wire(
+        &graph,
+        &provenance,
+        &light_golden_json_path(LightChannel::Ocr),
+        "demo-ocr",
     );
 }
 
