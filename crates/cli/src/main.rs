@@ -43,6 +43,7 @@ enum Command {
     /// markdown).
     ///
     /// Input formats: `.pdf` (PDF channel), `.docx` (OOXML channel),
+    /// `.json` (OCR channel — Mistral OCR-4 payload, content-sniffed),
     /// and `.bgraph.md` / `.md` (markdown channel — bgraph.md
     /// round-trip artifact or generic markdown, lib auto-detects).
     /// Format detection is by extension first; content-sniff for
@@ -64,7 +65,7 @@ enum Command {
 
 #[derive(ClapArgs)]
 struct ParseArgs {
-    /// Path to the input file (PDF, .docx, .bgraph.md, or .md).
+    /// Path to the input file (PDF, .docx, OCR .json, .bgraph.md, or .md).
     #[arg(short, long, default_value = "../sample_pdfs/sample3.pdf")]
     input: String,
 
@@ -332,12 +333,14 @@ fn run_parse(args: ParseArgs) -> Result<()> {
         InputFormat::Markdown { content } => run_parse_markdown(args, content),
         InputFormat::Pdf => run_parse_pdf(args, cache_dir),
         InputFormat::Docx => run_parse_docx(args),
+        InputFormat::Ocr { bytes } => run_parse_ocr(args, bytes),
         InputFormat::Unknown => Err(anyhow!(
             "❌ Input format not recognized: {}\n\
              \n\
              Supported formats:\n\
              \t.pdf            — PDF documents (full parsing pipeline)\n\
              \t.docx           — Word documents (OOXML channel)\n\
+             \t.json           — Mistral OCR-4 payload (OCR channel, content-sniffed)\n\
              \t.bgraph.md      — Bragi markdown round-trip artifact\n\
              \t.md, .markdown  — Generic markdown\n",
             args.input
@@ -644,6 +647,29 @@ fn run_strip_step(content: &str, mode: bragi_io_core::preprocessors::md::StripMo
 }
 
 // =========================================================================
+// OCR channel (S1)
+// =========================================================================
+
+fn run_parse_ocr(args: ParseArgs, bytes: Vec<u8>) -> Result<()> {
+    use bragi_io_core::preprocessors::md::ParseOptions;
+    use bragi_io_core::preprocessors::ocr::parse_ocr;
+
+    println!("📄 Parsing OCR JSON: {}", args.input);
+
+    // `ParseOptions` is shared with the markdown channel; `accept_drift`
+    // is meaningless for OCR (no embedded `bgraph_sha256` to verify),
+    // but we thread the build's compile-time strictness through for API
+    // symmetry (Block C.3 — no runtime toggle), mirroring the DOCX arm.
+    let opts = ParseOptions {
+        accept_drift: strict_accept_drift(),
+    };
+    let result =
+        parse_ocr(&bytes, opts).map_err(|e| anyhow!("\n❌ OCR parse failed: {e}\n"))?;
+
+    emit_parsed_graph(&args, result.graph, result.provenance)
+}
+
+// =========================================================================
 // Helpers
 // =========================================================================
 
@@ -664,6 +690,11 @@ enum InputFormat {
     /// `parse_docx` takes the raw zip bytes), so this variant carries
     /// no payload — extension detection alone selects it.
     Docx,
+    /// Mistral OCR-4 JSON payload (OCR channel, S1). Selection needs a
+    /// content sniff (`is_ocr_json`) — `.json` alone is ambiguous (a
+    /// `bgraph.json` is also `.json`; the sniff guarantees the two never
+    /// cross-match) — so the read bytes are carried to avoid a re-read.
+    Ocr { bytes: Vec<u8> },
     /// Unknown extension and content does not look like markdown.
     Unknown,
 }
@@ -704,12 +735,31 @@ fn detect_input_format(path: &Path) -> Result<InputFormat> {
             // distinction needed.
             Ok(InputFormat::Markdown { content })
         }
+        Some("json") => {
+            // `.json` is ambiguous: a Mistral OCR-4 payload (the OCR
+            // channel's input) vs a `bgraph.json` or arbitrary JSON.
+            // `is_ocr_json` sniffs for the OCR document shape (top-level
+            // `pages[]` whose entries carry `markdown`/`blocks`) — a
+            // bgraph.json has no `pages` key, so the two never
+            // cross-match. Non-OCR json is Unknown (a clear error beats
+            // silently mis-routing).
+            let bytes = std::fs::read(path)
+                .map_err(|e| anyhow!("failed to read {}: {e}", path.display()))?;
+            if bragi_io_core::preprocessors::ocr::is_ocr_json(&bytes) {
+                Ok(InputFormat::Ocr { bytes })
+            } else {
+                Ok(InputFormat::Unknown)
+            }
+        }
         _ => {
             // Unknown extension — content sniff. If the file isn't valid
             // UTF-8 (likely binary), bail to Unknown rather than reading
             // an arbitrary-size binary into memory just to detect it.
             let bytes = std::fs::read(path)
                 .map_err(|e| anyhow!("failed to read {}: {e}", path.display()))?;
+            if bragi_io_core::preprocessors::ocr::is_ocr_json(&bytes) {
+                return Ok(InputFormat::Ocr { bytes });
+            }
             let Ok(content) = String::from_utf8(bytes) else {
                 return Ok(InputFormat::Unknown);
             };
@@ -840,7 +890,7 @@ fn show_help() {
 
     println!("\n📋 `parse` options:");
     println!("  --config <path>         Load custom config file (PDF only)");
-    println!("  --input <path>          Input file (PDF, .docx, .bgraph.md, or .md)");
+    println!("  --input <path>          Input file (PDF, .docx, OCR .json, .bgraph.md, or .md)");
     println!("  --output <path>         Output file path (auto-generated if not specified)");
     println!("  --output-format <fmt>   Output format: bgraph, sequential, flat, markdown, or bgraph-md");
     println!("  --accept-drift          Accept hash-drifted bgraph.md input (returns derivative)");
@@ -864,6 +914,7 @@ fn show_help() {
     println!("\n📥 Input Formats (parse, auto-detected):");
     println!("  .pdf                    PDF channel (full pipeline)");
     println!("  .docx                   Word/OOXML channel (S10 Track C)");
+    println!("  .json                   Mistral OCR-4 payload (OCR channel, content-sniffed)");
     println!("  .bgraph.md              bgraph.md round-trip artifact");
     println!("  .md / .markdown         Generic markdown (B6)");
 
@@ -881,6 +932,7 @@ fn show_help() {
     println!("\n📝 Usage Examples:");
     println!("  bragi parse -i document.pdf");
     println!("  bragi parse -i document.docx");
+    println!("  bragi parse -i mist.json -f bgraph-md -o document.bgraph.md");
     println!("  bragi parse -i document.docx -f markdown -o document.md");
     println!("  bragi parse -i document.pdf -f bgraph-md -o document.bgraph.md");
     println!("  bragi parse -i document.md -f markdown -o roundtrip.md");
