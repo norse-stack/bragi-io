@@ -1,9 +1,9 @@
 ```bgraph
-{"schema":"1.1.0","kind":"document","bragi_version":"0.5.0","source":{"format":"ocr","sha256":"818fa0c521fec6d424fae41f412ecfdaa1c486d5a9db24ae87db0091b0b0b94e"},"flow_type":"Fixed","config_hash":"none","bgraph_sha256":"69fa626c1cac24ca60acc45fa3e4005ba4c4837930cd5f36c313d2303a3282c5"}
+{"schema":"1.1.0","kind":"document","bragi_version":"0.5.0","source":{"format":"ocr","sha256":"818fa0c521fec6d424fae41f412ecfdaa1c486d5a9db24ae87db0091b0b0b94e"},"flow_type":"Fixed","config_hash":"none","bgraph_sha256":"52f061ac71e707a3bc373622f23c0ec09958b8466ec173ae9e506e2fdebdd95e"}
 ```
 
 ```bgraph-metadata
-{"title":"Attention Is All You Need","author":null,"description":null,"language":null,"created":null,"ocr":{"model":"mistral-ocr-4-0","pages_processed":15,"doc_size_bytes":2215244,"dpi":93,"extras":{}}}
+{"title":"Attention Is All You Need","author":null,"description":null,"language":null,"created":"2024-04-10T21:11:43Z","pdf":{"version":"1.5","producer":"pdfTeX-1.40.25","creator_tool":"LaTeX with hyperref","publisher":null,"page_count":15,"encrypted":false,"has_marked_content":false,"modified":"2024-04-10T21:11:43Z","extras":{"Content-Type":"application/pdf","X-TIKA:versionCount":"0","access_permission:assemble_document":"true","access_permission:can_modify":"true","access_permission:can_print":"true","access_permission:can_print_faithful":"true","access_permission:extract_content":"true","access_permission:extract_for_accessibility":"true","access_permission:fill_in_form":"true","access_permission:modify_annotations":"true","dc:format":"application/pdf; version=1.5","pdf:docinfo:created":"2024-04-10T21:11:43Z","pdf:docinfo:creator_tool":"LaTeX with hyperref","pdf:docinfo:custom:PTEX.Fullbanner":"This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) kpathsea version 6.3.5","pdf:docinfo:modified":"2024-04-10T21:11:43Z","pdf:docinfo:producer":"pdfTeX-1.40.25","pdf:docinfo:trapped":"False","pdf:eofOffsets":"2215244","pdf:hasCollection":"false","pdf:hasXFA":"false","pdf:hasXMP":"false","pdf:incrementalUpdateCount":"0"}},"ocr":{"model":"mistral-ocr-4-0","pages_processed":15,"doc_size_bytes":2215244,"dpi":93,"companion_pdf_sha256":"bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697","extras":{}}}
 ```
 
 ```bgraph-outline

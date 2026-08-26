@@ -228,4 +228,14 @@ pub enum ParseError {
     /// `ParseResult`.)
     #[error("malformed ocr json: {0}")]
     MalformedOcr(String),
+
+    /// The OCR graft's companion PDF could not serve native metadata:
+    /// the bytes are empty, or the PDF → XHTML extraction (Tika) failed.
+    /// The caller asked for the graft, so this is an error — never a
+    /// silent single-arm fallback. A PDF that extracts fine but carries
+    /// no metadata is NOT this error (the graft degrades gracefully but
+    /// explicitly: `pdf` slot present with whatever was extracted).
+    /// (OCR S2 — `preprocessors::ocr::parse_ocr_with_pdf`.)
+    #[error("companion pdf: {0}")]
+    CompanionPdf(String),
 }

@@ -526,6 +526,231 @@ fn golden_freeze_demo_ocr_roundtrips_verified() {
     check_light_roundtrips(LightChannel::Ocr);
 }
 
+// =========================================================================
+// OCR S2 — the grafted golden (demo-ocr + companion PDF).
+//
+// The premium path: `parse_ocr_with_pdf` over `demo-ocr/source.json` and the
+// attention PDF — the real attention twin (one source PDF behind both the
+// OCR payload and the native golden). Frozen as a SECOND pair in the
+// demo-ocr family (`document.graft.bgraph.md` / `.json`); the single-arm
+// pair above stays byte-identical (`companion_pdf_sha256` serializes
+// absent-when-None, so the graft changes nothing it wasn't asked to).
+//
+// JVM-free by the attention pattern (committed-cache replay): the wrapper's
+// PDF → XHTML hop replays Tika's *committed* C1 XHTML for the companion's
+// sha (`snapshots/c1-xhtml/<sha256(pdf)>.xhtml` — the same cache tier the
+// attention freeze replays at C2), so the full graft composition —
+// parse_ocr → seam extraction → pure merge — runs for real with no JVM.
+// The real-Tika lane for this seam is `make jvm-smoke` (which asserts a
+// fresh JNI graft parse reproduces this frozen pair), mirroring how the
+// attention golden splits hermetic replay from the JVM gate.
+// =========================================================================
+
+/// Replays the committed C1 XHTML for a PDF instead of invoking Tika.
+/// Panics loudly if the committed tier is absent (the graft golden must
+/// never silently depend on a live JVM) or if the body-side XHTML parse
+/// is ever reached (the graft is metadata-only — no graph build).
+struct C1XhtmlReplayPreprocessor;
+
+impl Preprocessor for C1XhtmlReplayPreprocessor {
+    fn parse_pdf_to_markup_language(&self, pdf_bytes: &[u8]) -> anyhow::Result<String> {
+        let sha = bragi_io_core::preprocessors::ocr::companion_sha256(pdf_bytes);
+        let path = cache_dir().join(format!("c1-xhtml/{sha}.xhtml"));
+        Ok(std::fs::read_to_string(&path).unwrap_or_else(|e| {
+            panic!(
+                "Committed C1 XHTML missing at {} ({e}) — the graft golden replays Tika's \
+                 committed output and must never invoke a live JVM. Rebuild the attention \
+                 family (which owns the C1 tier) with `make golden-generate`.",
+                path.display()
+            )
+        }))
+    }
+
+    fn parse_markup_to_preprocessor_output(
+        &self,
+        _markup: &str,
+    ) -> anyhow::Result<PreprocessorOutput> {
+        panic!(
+            "The body-side XHTML parse was invoked by the metadata graft — the graft is \
+             extraction-only (no graph build) and must never reach this step."
+        );
+    }
+
+    fn name(&self) -> &str {
+        "c1-xhtml-replay-graft-stub"
+    }
+
+    fn supports_file_type(&self, _path: &Path) -> bool {
+        true
+    }
+}
+
+/// The companion PDF — same bytes as `golden/1.0.0/attention/attention.pdf`
+/// (the twin pairing is the point: Tika's committed C1 XHTML is keyed by
+/// this file's sha).
+fn graft_companion_pdf_path() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("test_fixtures/pdfs/attention-is-all-you-need.pdf")
+}
+
+fn graft_golden_md_path() -> PathBuf {
+    light_dir(LightChannel::Ocr).join("document.graft.bgraph.md")
+}
+
+fn graft_golden_json_path() -> PathBuf {
+    light_dir(LightChannel::Ocr).join("document.graft.bgraph.json")
+}
+
+/// The grafted parse, JVM-free: the real `parse_ocr_with_pdf` composition
+/// with the committed-C1 replay standing in for Tika.
+fn regenerate_ocr_graft() -> (DocumentGraph, ParseProvenance) {
+    let source = light_dir(LightChannel::Ocr).join(LightChannel::Ocr.source_name());
+    let ocr_bytes =
+        std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
+    let pdf_path = graft_companion_pdf_path();
+    let pdf_bytes =
+        std::fs::read(&pdf_path).unwrap_or_else(|e| panic!("read {}: {e}", pdf_path.display()));
+    let result = bragi_io_core::preprocessors::ocr::parse_ocr_with_pdf(
+        &ocr_bytes,
+        &pdf_bytes,
+        ParseOptions::default(),
+        &C1XhtmlReplayPreprocessor,
+    )
+    .expect("grafted demo-ocr parse succeeds");
+    (result.graph, result.provenance)
+}
+
+fn regenerate_ocr_graft_bgraph_md() -> String {
+    let (graph, provenance) = regenerate_ocr_graft();
+    emit_markdown(&graph, &provenance)
+}
+
+/// Test A analog for the grafted pair — byte-identity, bless-writable.
+#[test]
+fn golden_freeze_demo_ocr_graft_reproduces_bgraph_md() {
+    let regenerated = regenerate_ocr_graft_bgraph_md();
+    let path = graft_golden_md_path();
+
+    if bless_enabled() {
+        std::fs::write(&path, &regenerated).expect("write frozen graft golden bgraph.md");
+        eprintln!(
+            "✅ BLESS_GOLDEN: re-froze {} ({} bytes)",
+            path.display(),
+            regenerated.len()
+        );
+        return;
+    }
+
+    let frozen = std::fs::read_to_string(&path).unwrap_or_else(|e| {
+        panic!(
+            "Missing frozen graft golden bgraph.md at {}: {e}.\n\
+             Generate it JVM-free with:\n  \
+             BLESS_GOLDEN=1 cargo test -p bragi-io-core --test golden_freeze_tests",
+            path.display()
+        )
+    });
+
+    if regenerated != frozen {
+        let max = regenerated.len().min(frozen.len());
+        let first_diff = (0..max)
+            .find(|&i| regenerated.as_bytes()[i] != frozen.as_bytes()[i])
+            .unwrap_or(max);
+        let start = first_diff.saturating_sub(80);
+        let end_r = (first_diff + 120).min(regenerated.len());
+        let end_f = (first_diff + 120).min(frozen.len());
+        panic!(
+            "Golden freeze mismatch (demo-ocr graft): HEAD no longer reproduces the frozen \
+             document.graft.bgraph.md.\n\
+             First divergence at byte {first_diff} (regenerated={} bytes, frozen={} bytes).\n\
+             --- frozen window ---\n{}\n--- regenerated window ---\n{}\n\
+             \nIf this legitimately moves the output, re-freeze:\n  \
+             BLESS_GOLDEN=1 cargo test -p bragi-io-core --test golden_freeze_tests",
+            regenerated.len(),
+            frozen.len(),
+            &frozen[start..end_f],
+            &regenerated[start..end_r],
+        );
+    }
+}
+
+/// Test B analog — the frozen grafted md self-verifies.
+#[test]
+fn golden_freeze_demo_ocr_graft_roundtrips_verified() {
+    let md = if bless_enabled() {
+        regenerate_ocr_graft_bgraph_md()
+    } else {
+        let path = graft_golden_md_path();
+        std::fs::read_to_string(&path).unwrap_or_else(|e| {
+            panic!("Missing frozen graft golden bgraph.md at {}: {e}.", path.display())
+        })
+    };
+    let result =
+        parse_markdown(&md, ParseOptions::default()).expect("frozen graft golden parses cleanly");
+    assert!(
+        matches!(result.identity, ParseIdentity::Verified),
+        "frozen demo-ocr graft golden must self-verify; got {:?}",
+        result.identity
+    );
+}
+
+/// JSON wire for the grafted pair — same freeze/verify/parity/contract arms
+/// as every other channel.
+#[test]
+fn golden_freeze_demo_ocr_graft_json_wire() {
+    let (graph, provenance) = regenerate_ocr_graft();
+    check_json_wire(&graph, &provenance, &graft_golden_json_path(), "demo-ocr-graft");
+}
+
+/// The S2 exit criterion, pinned on the frozen artifact: canonical fields
+/// not all-null, both namespaces present, the companion linkage set — and
+/// the single-arm invariants (provenance, `ocr:` run facts) untouched.
+///
+/// Attention's PDF container carries no `dc:title`; the title below is the
+/// channel's body-side inference (first Section element — the PDF
+/// pipeline's rule, replicated per the S2 review decision). A container
+/// that does carry `dc:title` would override it via the graft's
+/// `native.or(ocr)` precedence.
+#[test]
+fn golden_freeze_demo_ocr_graft_metadata_reads_true() {
+    let (graph, provenance) = regenerate_ocr_graft();
+    let md = &graph.document_info.document_metadata;
+
+    // Canonical: container facts + body-side inferred title.
+    assert_eq!(md.created.as_deref(), Some("2024-04-10T21:11:43Z"));
+    assert_eq!(
+        md.title.as_deref(),
+        Some("Attention Is All You Need"),
+        "body-side inferred title (container has no dc:title)"
+    );
+    assert!(md.author.is_none());
+
+    // Both namespaces present.
+    let pdf = md.pdf.as_ref().expect("pdf namespace grafted");
+    assert_eq!(pdf.page_count, Some(15));
+    assert_eq!(pdf.producer.as_deref(), Some("pdfTeX-1.40.25"));
+    assert_eq!(pdf.creator_tool.as_deref(), Some("LaTeX with hyperref"));
+    let ocr = md.ocr.as_ref().expect("ocr namespace kept");
+    assert_eq!(ocr.model.as_deref(), Some("mistral-ocr-4-0"));
+    assert_eq!(ocr.pages_processed, Some(15));
+
+    // Companion linkage = sha256 of the companion PDF bytes.
+    let pdf_bytes = std::fs::read(graft_companion_pdf_path()).expect("companion pdf");
+    assert_eq!(
+        ocr.companion_pdf_sha256.as_deref(),
+        Some(bragi_io_core::preprocessors::ocr::companion_sha256(&pdf_bytes).as_str())
+    );
+
+    // Provenance unchanged — the PDF is a companion, not a second source.
+    assert_eq!(provenance.source_format, "ocr");
+    assert_eq!(provenance.config_hash, "none");
+    let ocr_bytes = std::fs::read(light_dir(LightChannel::Ocr).join("source.json")).unwrap();
+    assert_eq!(
+        provenance.source_sha256,
+        bragi_io_core::preprocessors::ocr::companion_sha256(&ocr_bytes),
+        "source_sha256 stays the mist.json bytes"
+    );
+}
+
 /// CR-98: the frozen attention outline reads TRUE — asserted, not
 /// eyeballed. Chapters 1–7 at depth 1, `x.y` at 2, `x.y.z` at 3,
 /// Abstract/References at 1; the leading document title keeps its S1
