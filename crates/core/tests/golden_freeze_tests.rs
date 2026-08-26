@@ -705,17 +705,23 @@ fn golden_freeze_demo_ocr_graft_json_wire() {
 /// not all-null, both namespaces present, the companion linkage set — and
 /// the single-arm invariants (provenance, `ocr:` run facts) untouched.
 ///
-/// Attention's PDF container carries no `dc:title`, so the grafted title is
-/// honestly `None` (the native golden's title is body-side inference, out
-/// of the extraction-layer graft's reach); `created` carries the criterion.
+/// Attention's PDF container carries no `dc:title`; the title below is the
+/// channel's body-side inference (first Section element — the PDF
+/// pipeline's rule, replicated per the S2 review decision). A container
+/// that does carry `dc:title` would override it via the graft's
+/// `native.or(ocr)` precedence.
 #[test]
 fn golden_freeze_demo_ocr_graft_metadata_reads_true() {
     let (graph, provenance) = regenerate_ocr_graft();
     let md = &graph.document_info.document_metadata;
 
-    // Canonical: what the container knows.
+    // Canonical: container facts + body-side inferred title.
     assert_eq!(md.created.as_deref(), Some("2024-04-10T21:11:43Z"));
-    assert!(md.title.is_none(), "no dc:title in attention's container");
+    assert_eq!(
+        md.title.as_deref(),
+        Some("Attention Is All You Need"),
+        "body-side inferred title (container has no dc:title)"
+    );
     assert!(md.author.is_none());
 
     // Both namespaces present.

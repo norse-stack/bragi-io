@@ -333,7 +333,9 @@ mod tests {
         graft_native_metadata(&mut result, native, sha.clone());
 
         let md = &result.graph.document_info.document_metadata;
-        assert!(md.title.is_none());
+        // Body-side inferred title (PDF-pipeline rule, post-S2-review)
+        // survives a metadata-less graft: native None never erases it.
+        assert_eq!(md.title.as_deref(), Some("Attention Is All You Need"));
         assert!(md.created.is_none());
         // `pdf` slot present with whatever was extracted (here: nothing).
         let pdf = md.pdf.as_ref().expect("pdf slot present even when empty");

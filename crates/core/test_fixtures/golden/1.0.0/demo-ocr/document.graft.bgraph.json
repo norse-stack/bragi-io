@@ -1,6 +1,6 @@
 {
   "schema_version": "1.1.0",
-  "bgraph_sha256": "cae79c4189db1847e574afe60d2a41a59c60636014a6d0fa09741f382a7cef42",
+  "bgraph_sha256": "52f061ac71e707a3bc373622f23c0ec09958b8466ec173ae9e506e2fdebdd95e",
   "created_at": "1970-01-01T00:00:00Z",
   "parse_provenance": {
     "bragi_version": "0.5.0",
@@ -16,7 +16,9 @@
         "semantic": {
           "path": "",
           "depth": 0,
-          "breadcrumbs": []
+          "breadcrumbs": [
+            "Attention Is All You Need"
+          ]
         },
         "physical": null
       },
@@ -50,7 +52,9 @@
         "semantic": {
           "path": "1",
           "depth": 1,
-          "breadcrumbs": []
+          "breadcrumbs": [
+            "Attention Is All You Need"
+          ]
         },
         "physical": {
           "page": 1,
@@ -78,7 +82,9 @@
         "semantic": {
           "path": "2",
           "depth": 1,
-          "breadcrumbs": []
+          "breadcrumbs": [
+            "Attention Is All You Need"
+          ]
         },
         "physical": {
           "page": 1,
@@ -107,6 +113,7 @@
           "path": "3",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -146,6 +153,7 @@
           "path": "3.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -176,6 +184,7 @@
           "path": "3.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -206,6 +215,7 @@
           "path": "3.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -236,6 +246,7 @@
           "path": "3.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -266,6 +277,7 @@
           "path": "3.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -296,6 +308,7 @@
           "path": "3.6",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -326,6 +339,7 @@
           "path": "3.7",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -356,6 +370,7 @@
           "path": "3.8",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Is All You Need"
           ]
         },
@@ -386,6 +401,7 @@
           "path": "4",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -422,6 +438,7 @@
           "path": "4.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -452,6 +469,7 @@
           "path": "4.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -482,6 +500,7 @@
           "path": "4.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -512,6 +531,7 @@
           "path": "4.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -542,6 +562,7 @@
           "path": "4.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -572,6 +593,7 @@
           "path": "5",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "1 Introduction"
           ]
         },
@@ -607,6 +629,7 @@
           "path": "5.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "1 Introduction"
           ]
         },
@@ -637,6 +660,7 @@
           "path": "5.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "1 Introduction"
           ]
         },
@@ -667,6 +691,7 @@
           "path": "5.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "1 Introduction"
           ]
         },
@@ -697,6 +722,7 @@
           "path": "5.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "1 Introduction"
           ]
         },
@@ -727,6 +753,7 @@
           "path": "6",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "2 Background"
           ]
         },
@@ -762,6 +789,7 @@
           "path": "6.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "2 Background"
           ]
         },
@@ -792,6 +820,7 @@
           "path": "6.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "2 Background"
           ]
         },
@@ -822,6 +851,7 @@
           "path": "6.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "2 Background"
           ]
         },
@@ -852,6 +882,7 @@
           "path": "6.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "2 Background"
           ]
         },
@@ -882,6 +913,7 @@
           "path": "7",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture"
           ]
         },
@@ -922,6 +954,7 @@
           "path": "7.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture"
           ]
         },
@@ -952,6 +985,7 @@
           "path": "7.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture"
           ]
         },
@@ -982,6 +1016,7 @@
           "path": "7.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture"
           ]
         },
@@ -1012,6 +1047,7 @@
           "path": "7.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture"
           ]
         },
@@ -1042,6 +1078,7 @@
           "path": "7.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.1 Encoder and Decoder Stacks"
           ]
@@ -1076,6 +1113,7 @@
           "path": "7.5.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.1 Encoder and Decoder Stacks"
           ]
@@ -1107,6 +1145,7 @@
           "path": "7.5.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.1 Encoder and Decoder Stacks"
           ]
@@ -1138,6 +1177,7 @@
           "path": "7.6",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention"
           ]
@@ -1179,6 +1219,7 @@
           "path": "7.6.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention"
           ]
@@ -1210,6 +1251,7 @@
           "path": "7.6.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention"
           ]
@@ -1241,6 +1283,7 @@
           "path": "7.6.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention"
           ]
@@ -1272,6 +1315,7 @@
           "path": "7.6.4",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention"
           ]
@@ -1303,6 +1347,7 @@
           "path": "7.6.5",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention"
           ]
@@ -1334,6 +1379,7 @@
           "path": "7.6.6",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention"
           ]
@@ -1365,6 +1411,7 @@
           "path": "7.6.7",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
@@ -1403,6 +1450,7 @@
           "path": "7.6.7.1",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
@@ -1435,6 +1483,7 @@
           "path": "7.6.7.2",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
@@ -1467,6 +1516,7 @@
           "path": "7.6.7.3",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
@@ -1499,6 +1549,7 @@
           "path": "7.6.7.4",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
@@ -1531,6 +1582,7 @@
           "path": "7.6.7.5",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
@@ -1563,6 +1615,7 @@
           "path": "7.6.8",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1604,6 +1657,7 @@
           "path": "7.6.8.1",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1636,6 +1690,7 @@
           "path": "7.6.8.2",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1668,6 +1723,7 @@
           "path": "7.6.8.3",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1700,6 +1756,7 @@
           "path": "7.6.8.4",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1732,6 +1789,7 @@
           "path": "7.6.8.5",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1764,6 +1822,7 @@
           "path": "7.6.8.6",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1796,6 +1855,7 @@
           "path": "7.6.8.7",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1828,6 +1888,7 @@
           "path": "7.6.8.8",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.2 Multi-Head Attention"
@@ -1860,6 +1921,7 @@
           "path": "7.6.9",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.3 Applications of Attention in our Model"
@@ -1895,6 +1957,7 @@
           "path": "7.6.9.1",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.3 Applications of Attention in our Model"
@@ -1927,6 +1990,7 @@
           "path": "7.6.9.2",
           "depth": 4,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.2 Attention",
             "3.2.3 Applications of Attention in our Model"
@@ -1959,6 +2023,7 @@
           "path": "7.7",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.3 Position-wise Feed-Forward Networks"
           ]
@@ -1994,6 +2059,7 @@
           "path": "7.7.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.3 Position-wise Feed-Forward Networks"
           ]
@@ -2025,6 +2091,7 @@
           "path": "7.7.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.3 Position-wise Feed-Forward Networks"
           ]
@@ -2056,6 +2123,7 @@
           "path": "7.7.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.3 Position-wise Feed-Forward Networks"
           ]
@@ -2087,6 +2155,7 @@
           "path": "7.8",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.4 Embeddings and Softmax"
           ]
@@ -2123,6 +2192,7 @@
           "path": "7.8.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.4 Embeddings and Softmax"
           ]
@@ -2154,6 +2224,7 @@
           "path": "7.8.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.4 Embeddings and Softmax"
           ]
@@ -2185,6 +2256,7 @@
           "path": "7.8.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.4 Embeddings and Softmax"
           ]
@@ -2216,6 +2288,7 @@
           "path": "7.8.4",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.4 Embeddings and Softmax"
           ]
@@ -2247,6 +2320,7 @@
           "path": "7.9",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.5 Positional Encoding"
           ]
@@ -2285,6 +2359,7 @@
           "path": "7.9.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.5 Positional Encoding"
           ]
@@ -2316,6 +2391,7 @@
           "path": "7.9.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.5 Positional Encoding"
           ]
@@ -2347,6 +2423,7 @@
           "path": "7.9.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.5 Positional Encoding"
           ]
@@ -2378,6 +2455,7 @@
           "path": "7.9.4",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.5 Positional Encoding"
           ]
@@ -2409,6 +2487,7 @@
           "path": "7.9.5",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.5 Positional Encoding"
           ]
@@ -2440,6 +2519,7 @@
           "path": "7.9.6",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "3 Model Architecture",
             "3.5 Positional Encoding"
           ]
@@ -2471,6 +2551,7 @@
           "path": "8",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2510,6 +2591,7 @@
           "path": "8.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2540,6 +2622,7 @@
           "path": "8.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2570,6 +2653,7 @@
           "path": "8.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2600,6 +2684,7 @@
           "path": "8.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2630,6 +2715,7 @@
           "path": "8.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2660,6 +2746,7 @@
           "path": "8.6",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2690,6 +2777,7 @@
           "path": "8.7",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2720,6 +2808,7 @@
           "path": "8.8",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "4 Why Self-Attention"
           ]
         },
@@ -2750,6 +2839,7 @@
           "path": "9",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training"
           ]
         },
@@ -2786,6 +2876,7 @@
           "path": "9.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training"
           ]
         },
@@ -2816,6 +2907,7 @@
           "path": "9.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.1 Training Data and Batching"
           ]
@@ -2849,6 +2941,7 @@
           "path": "9.2.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.1 Training Data and Batching"
           ]
@@ -2880,6 +2973,7 @@
           "path": "9.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.2 Hardware and Schedule"
           ]
@@ -2913,6 +3007,7 @@
           "path": "9.3.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.2 Hardware and Schedule"
           ]
@@ -2944,6 +3039,7 @@
           "path": "9.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -2979,6 +3075,7 @@
           "path": "9.4.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -3010,6 +3107,7 @@
           "path": "9.4.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -3041,6 +3139,7 @@
           "path": "9.4.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -3072,6 +3171,7 @@
           "path": "9.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3110,6 +3210,7 @@
           "path": "9.5.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3141,6 +3242,7 @@
           "path": "9.5.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3172,6 +3274,7 @@
           "path": "9.5.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3203,6 +3306,7 @@
           "path": "9.5.4",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3234,6 +3338,7 @@
           "path": "9.5.5",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3265,6 +3370,7 @@
           "path": "9.5.6",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3296,6 +3402,7 @@
           "path": "10",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results"
           ]
         },
@@ -3330,6 +3437,7 @@
           "path": "10.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3366,6 +3474,7 @@
           "path": "10.1.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3397,6 +3506,7 @@
           "path": "10.1.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3428,6 +3538,7 @@
           "path": "10.1.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3459,6 +3570,7 @@
           "path": "10.1.4",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3490,6 +3602,7 @@
           "path": "10.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3530,6 +3643,7 @@
           "path": "10.2.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3561,6 +3675,7 @@
           "path": "10.2.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3592,6 +3707,7 @@
           "path": "10.2.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3623,6 +3739,7 @@
           "path": "10.2.4",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3654,6 +3771,7 @@
           "path": "10.2.5",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3685,6 +3803,7 @@
           "path": "10.2.6",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3716,6 +3835,7 @@
           "path": "10.2.7",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3747,6 +3867,7 @@
           "path": "10.2.8",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3778,6 +3899,7 @@
           "path": "10.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -3819,6 +3941,7 @@
           "path": "10.3.1",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -3850,6 +3973,7 @@
           "path": "10.3.2",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -3881,6 +4005,7 @@
           "path": "10.3.3",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -3912,6 +4037,7 @@
           "path": "10.3.4",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -3943,6 +4069,7 @@
           "path": "10.3.5",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -3974,6 +4101,7 @@
           "path": "10.3.6",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4005,6 +4133,7 @@
           "path": "10.3.7",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4036,6 +4165,7 @@
           "path": "10.3.8",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4067,6 +4197,7 @@
           "path": "10.3.9",
           "depth": 3,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4098,6 +4229,7 @@
           "path": "11",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "7 Conclusion"
           ]
         },
@@ -4134,6 +4266,7 @@
           "path": "11.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "7 Conclusion"
           ]
         },
@@ -4164,6 +4297,7 @@
           "path": "11.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "7 Conclusion"
           ]
         },
@@ -4194,6 +4328,7 @@
           "path": "11.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "7 Conclusion"
           ]
         },
@@ -4224,6 +4359,7 @@
           "path": "11.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "7 Conclusion"
           ]
         },
@@ -4254,6 +4390,7 @@
           "path": "11.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "7 Conclusion"
           ]
         },
@@ -4284,6 +4421,7 @@
           "path": "12",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4324,6 +4462,7 @@
           "path": "12.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4354,6 +4493,7 @@
           "path": "12.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4384,6 +4524,7 @@
           "path": "12.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4414,6 +4555,7 @@
           "path": "12.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4444,6 +4586,7 @@
           "path": "12.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4474,6 +4617,7 @@
           "path": "12.6",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4504,6 +4648,7 @@
           "path": "12.7",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4534,6 +4679,7 @@
           "path": "12.8",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4564,6 +4710,7 @@
           "path": "12.9",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "References"
           ]
         },
@@ -4594,6 +4741,7 @@
           "path": "13",
           "depth": 1,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Visualizations"
           ]
         },
@@ -4631,6 +4779,7 @@
           "path": "13.1",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Visualizations"
           ]
         },
@@ -4661,6 +4810,7 @@
           "path": "13.2",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Visualizations"
           ]
         },
@@ -4691,6 +4841,7 @@
           "path": "13.3",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Visualizations"
           ]
         },
@@ -4721,6 +4872,7 @@
           "path": "13.4",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Visualizations"
           ]
         },
@@ -4751,6 +4903,7 @@
           "path": "13.5",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Visualizations"
           ]
         },
@@ -4781,6 +4934,7 @@
           "path": "13.6",
           "depth": 2,
           "breadcrumbs": [
+            "Attention Is All You Need",
             "Attention Visualizations"
           ]
         },
@@ -4808,7 +4962,7 @@
     "root_id": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
     "kind": "document",
     "document_metadata": {
-      "title": null,
+      "title": "Attention Is All You Need",
       "author": null,
       "description": null,
       "language": null,

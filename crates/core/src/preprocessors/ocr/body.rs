@@ -128,8 +128,9 @@ pub fn parse_ocr(bytes: &[u8], _opts: ParseOptions) -> Result<ParseResult, Parse
     graph.document_info.flow_type = FlowType::Fixed;
     graph.document_info.outline_data = build_outline(&projection.outline);
 
-    //    Metadata: canonical fields all-None by design (S2 grafts them
-    //    from the native arm); the `ocr:` namespace carries the run facts.
+    //    Metadata: source-native canonical fields are all-None (the OCR
+    //    payload has no container metadata; S2 grafts the native arm's);
+    //    the `ocr:` namespace carries the run facts.
     let extractor = super::OcrMetadataExtractor::new(
         doc.model.clone(),
         doc.usage_info.as_ref().and_then(|u| u.pages_processed),
@@ -138,6 +139,20 @@ pub fn parse_ocr(bytes: &[u8], _opts: ParseOptions) -> Result<ParseResult, Parse
     );
     graph.document_info.document_metadata =
         crate::preprocessors::metadata::extract_document_metadata(&extractor, &());
+    //    Body-side title inference — the PDF pipeline's exact rule
+    //    (`processor.rs` / `infer_title`: first Section element's text,
+    //    honored only when source-native extraction returned None).
+    //    Replicated per the S2 review decision (small duplication
+    //    accepted; the channels may naturally deviate). A grafted native
+    //    `dc:title` still wins: the S2 graft merges `native.or(ocr)`,
+    //    so source-native beats body-inference, mirroring the PDF order.
+    if graph.document_info.document_metadata.title.is_none() {
+        graph.document_info.document_metadata.title = projection
+            .outline
+            .first()
+            .map(|(t, _)| t.trim().to_string())
+            .filter(|t| !t.is_empty());
+    }
 
     // 6. Canonical post-build sequence (mirrors the DOCX/MD paths).
     graph.compute_breadcrumbs();
