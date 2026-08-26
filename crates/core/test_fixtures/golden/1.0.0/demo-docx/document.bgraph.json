@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "bgraph_sha256": "4769de3840d492ec30780e5c1660f4dbd4d84a502ab87adf1be7e8df35eeb25b",
   "created_at": "1970-01-01T00:00:00Z",
   "parse_provenance": {

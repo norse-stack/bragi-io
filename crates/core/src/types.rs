@@ -775,6 +775,8 @@ pub struct DocumentMetadata {
     pub md: Option<MdMetadata>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub docx: Option<DocxMetadata>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ocr: Option<OcrMetadata>,
 }
 
 /// PDF-channel metadata: strong-convention typed fields + `extras`
@@ -833,6 +835,7 @@ pub enum ChannelMetadata {
     Pdf(PdfMetadata),
     Md(MdMetadata),
     Docx(DocxMetadata),
+    Ocr(OcrMetadata),
     // Future: Html(HtmlMetadata), Epub(EpubMetadata), …
 }
 
@@ -853,6 +856,31 @@ pub struct DocxMetadata {
     pub last_modified_by: Option<String>,
     pub revision: Option<String>,
     pub modified: Option<String>,
+    #[serde(default)]
+    pub extras: BTreeMap<String, serde_json::Value>,
+}
+
+/// OCR-channel metadata (S1): what the Mistral OCR-4 payload knows about
+/// its own run. The OCR JSON carries **no source-native document
+/// metadata** — canonical fields (`title`/`author`/…) stay `None` by
+/// design (09-metadata-first-class: synthesizing a title from the first
+/// heading would be a body-side fallback; S2 grafts canonical fields
+/// from the native arm).
+///
+/// `BTreeMap` extras for the same determinism reason as the other
+/// channel namespaces (cache-stable `bgraph_sha256`).
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct OcrMetadata {
+    /// Top-level `model` — the OCR model id (e.g. `mistral-ocr-4-0`).
+    pub model: Option<String>,
+    /// `usage_info.pages_processed`.
+    pub pages_processed: Option<u32>,
+    /// `usage_info.doc_size_bytes` — the *source document* (input PDF /
+    /// image) size as reported by the OCR run, not the JSON's own size.
+    pub doc_size_bytes: Option<u64>,
+    /// `pages[].dimensions.dpi` of the first page carrying dimensions —
+    /// the raster resolution the pixel bboxes were reported at.
+    pub dpi: Option<u32>,
     #[serde(default)]
     pub extras: BTreeMap<String, serde_json::Value>,
 }
@@ -1169,6 +1197,13 @@ pub enum SemanticElementType {
     List,
     Blockquote,
     Table,
+    /// Schema 1.1.0 (OCR S1): display-math block produced by the OCR
+    /// channel. Body is the verbatim LaTeX as delivered by the source
+    /// (`$$…$$` including `\tag{n}`, or `\[ … \]`) — non-inline body,
+    /// treated like [`Self::CodeBlock`] (no inline parser, no
+    /// canonicalization). No other channel produces it today; the PDF
+    /// channel renders equations to prose Paragraphs (DT-05).
+    Equation,
     /// Orphan variant reserved for the future stream-topology design slice.
     ///
     /// CR-49 added the variant + wire-format support; CR-59 retracted the
@@ -1208,7 +1243,9 @@ impl SemanticElementType {
     pub fn body_is_markdown_inline(self) -> bool {
         match self {
             Self::Section | Self::Paragraph | Self::Header | Self::Footer | Self::Margin => true,
-            Self::CodeBlock | Self::List | Self::Blockquote | Self::Table => false,
+            Self::CodeBlock | Self::List | Self::Blockquote | Self::Table | Self::Equation => {
+                false
+            }
             Self::Message => panic!(
                 "SemanticElementType::Message::body_is_markdown_inline called — \
                  Message is the orphan sentinel (CR-59); no wire-format domain. \
@@ -1550,6 +1587,7 @@ mod semantic_tree_element_validate_tests {
         assert!(!SemanticElementType::List.body_is_markdown_inline());
         assert!(!SemanticElementType::Blockquote.body_is_markdown_inline());
         assert!(!SemanticElementType::Table.body_is_markdown_inline());
+        assert!(!SemanticElementType::Equation.body_is_markdown_inline());
     }
 
     #[test]
@@ -1564,6 +1602,7 @@ mod semantic_tree_element_validate_tests {
             SemanticElementType::List,
             SemanticElementType::Blockquote,
             SemanticElementType::Table,
+            SemanticElementType::Equation,
         ] {
             assert!(
                 t.requires_non_empty_body(),

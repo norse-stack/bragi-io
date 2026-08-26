@@ -580,6 +580,8 @@ pub fn node_type_for(t: SemanticElementType) -> &'static str {
         SemanticElementType::List => "List",
         SemanticElementType::Blockquote => "Blockquote",
         SemanticElementType::Table => "Table",
+        // Schema 1.1.0 (OCR S1): display-math block, OCR channel only.
+        SemanticElementType::Equation => "Equation",
         // CR-59: `Message` is an orphan variant with no in-memory
         // production path (see `SemanticElementType::Message` doc
         // comment). Reaching this arm means some new code path

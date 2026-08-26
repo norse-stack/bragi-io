@@ -57,7 +57,8 @@ impl FormatVersion {
     /// The schema string stamped into the artifact for this version
     /// (the bgraph.md doc-level `schema` field / the json wrapper's
     /// `schema_version`). For [`FormatVersion::V1_0`] this is exactly
-    /// [`BGRAPH_FORMAT_VERSION`] (`"1.0.0"`) — keeping the enum and the
+    /// [`BGRAPH_FORMAT_VERSION`] (currently `"1.1.0"`; additive minor
+    /// bumps move the const, not the enum arm) — keeping the enum and the
     /// const in sync so the byte-identical-emit contract holds.
     pub fn schema_str(self) -> &'static str {
         match self {
@@ -130,7 +131,7 @@ mod tests {
     fn current_is_v1_0_and_stamps_the_const() {
         assert_eq!(FormatVersion::CURRENT, FormatVersion::V1_0);
         assert_eq!(FormatVersion::CURRENT.schema_str(), BGRAPH_FORMAT_VERSION);
-        assert_eq!(FormatVersion::CURRENT.schema_str(), "1.0.0");
+        assert_eq!(FormatVersion::CURRENT.schema_str(), "1.1.0");
     }
 
     #[test]

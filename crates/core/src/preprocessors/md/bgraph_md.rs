@@ -148,7 +148,7 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
                     }
                     "bgraph-paragraph" | "bgraph-header" | "bgraph-footer" | "bgraph-margin"
                     | "bgraph-code-block" | "bgraph-list" | "bgraph-block-quote"
-                    | "bgraph-table" => {
+                    | "bgraph-table" | "bgraph-equation" => {
                         // v2.1.0+ single convention: body-outside for
                         // every content variant (including H/F/M; CR-48
                         // / Amendment H) and kebab-case for multi-word
@@ -425,7 +425,8 @@ fn scan_segments(input: &str) -> Result<Vec<Segment>, ParseError> {
 /// Recognized tags (v2.1.0+ / CR-57): `bgraph`, `bgraph-metadata`,
 /// `bgraph-outline`, `bgraph-section`, `bgraph-paragraph`,
 /// `bgraph-header`, `bgraph-footer`, `bgraph-margin`, `bgraph-code-block`,
-/// `bgraph-list`, `bgraph-block-quote`, `bgraph-table`. Any other
+/// `bgraph-list`, `bgraph-block-quote`, `bgraph-table`,
+/// `bgraph-equation` (schema 1.1.0, OCR S1). Any other
 /// ` ```bgraph* ` line-start is rejected by the caller as a
 /// reserved-prefix violation.
 ///
@@ -450,6 +451,7 @@ pub(super) fn bgraph_fence_open_tag(line: &str) -> Option<String> {
         || info == "bgraph-list"
         || info == "bgraph-block-quote"
         || info == "bgraph-table"
+        || info == "bgraph-equation"
     {
         Some(info.to_string())
     } else if let Some(rest) = info.strip_prefix("bgraph") {
@@ -665,6 +667,8 @@ fn map_node_type_to_semantic(s: &str) -> Result<SemanticElementType, ParseError>
         "List" => Ok(SemanticElementType::List),
         "Blockquote" => Ok(SemanticElementType::Blockquote),
         "Table" => Ok(SemanticElementType::Table),
+        // Schema 1.1.0 (OCR S1): display-math block.
+        "Equation" => Ok(SemanticElementType::Equation),
         other => Err(ParseError::UnknownNodeType(other.to_string())),
     }
 }

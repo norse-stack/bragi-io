@@ -27,6 +27,7 @@ pub(crate) mod canonical;
 pub mod docx;
 pub mod md;
 pub mod metadata;
+pub mod ocr;
 pub mod pdf;
 pub mod traits;
 

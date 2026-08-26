@@ -85,11 +85,13 @@ pub fn extract_document_metadata<E: MetadataExtractor>(
         pdf: None,
         md: None,
         docx: None,
+        ocr: None,
     };
     match extractor.extract_channel_metadata(input) {
         ChannelMetadata::Pdf(p) => md.pdf = Some(p),
         ChannelMetadata::Md(m) => md.md = Some(m),
         ChannelMetadata::Docx(d) => md.docx = Some(d),
+        ChannelMetadata::Ocr(o) => md.ocr = Some(o),
     }
     md
 }

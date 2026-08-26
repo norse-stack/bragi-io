@@ -40,6 +40,7 @@ use bragi_io_core::graphs::serialization::markdown::emit_markdown;
 use bragi_io_core::graphs::serialization::version::FormatVersion;
 use bragi_io_core::preprocessors::docx::parse_docx;
 use bragi_io_core::preprocessors::md::{parse_markdown, ParseIdentity, ParseOptions};
+use bragi_io_core::preprocessors::ocr::parse_ocr;
 use bragi_io_core::preprocessors::Preprocessor;
 use bragi_io_core::processor::DocumentProcessor;
 use bragi_io_core::storage::{CacheDefaults, FileStorage, FreshFrom};
@@ -352,6 +353,7 @@ fn golden_freeze_attention_roundtrips_verified() {
 enum LightChannel {
     Md,
     Docx,
+    Ocr,
 }
 
 impl LightChannel {
@@ -359,6 +361,7 @@ impl LightChannel {
         match self {
             LightChannel::Md => "demo-md",
             LightChannel::Docx => "demo-docx",
+            LightChannel::Ocr => "demo-ocr",
         }
     }
 
@@ -366,6 +369,7 @@ impl LightChannel {
         match self {
             LightChannel::Md => "source.md",
             LightChannel::Docx => "source.docx",
+            LightChannel::Ocr => "source.json",
         }
     }
 }
@@ -399,6 +403,13 @@ fn regenerate_light(ch: LightChannel) -> (DocumentGraph, ParseProvenance) {
                 std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
             let result =
                 parse_docx(&bytes, ParseOptions::default()).expect("demo-docx source parses");
+            (result.graph, result.provenance)
+        }
+        LightChannel::Ocr => {
+            let bytes =
+                std::fs::read(&source).unwrap_or_else(|e| panic!("read {}: {e}", source.display()));
+            let result =
+                parse_ocr(&bytes, ParseOptions::default()).expect("demo-ocr source parses");
             (result.graph, result.provenance)
         }
     }
@@ -503,6 +514,78 @@ fn golden_freeze_demo_docx_reproduces_bgraph_md() {
 #[test]
 fn golden_freeze_demo_docx_roundtrips_verified() {
     check_light_roundtrips(LightChannel::Docx);
+}
+
+#[test]
+fn golden_freeze_demo_ocr_reproduces_bgraph_md() {
+    check_light_reproduces(LightChannel::Ocr);
+}
+
+#[test]
+fn golden_freeze_demo_ocr_roundtrips_verified() {
+    check_light_roundtrips(LightChannel::Ocr);
+}
+
+/// CR-98: the frozen attention outline reads TRUE — asserted, not
+/// eyeballed. Chapters 1–7 at depth 1, `x.y` at 2, `x.y.z` at 3,
+/// Abstract/References at 1; the leading document title keeps its S1
+/// level (2, from Mistral's `##`); the unnumbered appendix lands at 1.
+/// Pre-CR-98, OCR-4's per-page levels put same-rank chapters on
+/// different depths (1–3 at level 1, 4–7 at level 2) — this pins the
+/// normalized shape so a regression re-blesses loudly, not silently.
+#[test]
+fn golden_freeze_demo_ocr_outline_reads_true() {
+    let md = if bless_enabled() {
+        // Bless race-avoidance, same as check_light_roundtrips: Test A
+        // may be rewriting the file concurrently.
+        regenerate_light_bgraph_md(LightChannel::Ocr)
+    } else {
+        let path = light_golden_md_path(LightChannel::Ocr);
+        std::fs::read_to_string(&path)
+            .unwrap_or_else(|e| panic!("Missing frozen golden bgraph.md at {}: {e}.", path.display()))
+    };
+    let graph = parse_markdown(&md, ParseOptions::default())
+        .expect("frozen demo-ocr golden parses")
+        .graph;
+    let outline = graph
+        .document_info
+        .outline_data
+        .as_ref()
+        .expect("demo-ocr golden carries outline_data");
+    let got: Vec<(&str, u32)> = outline
+        .sections
+        .iter()
+        .map(|s| (s.title.as_str(), s.level))
+        .collect();
+    let want: Vec<(&str, u32)> = vec![
+        ("Attention Is All You Need", 1), // leading title — pinned to the top (CR-98 decision note)
+        ("Abstract", 1),
+        ("1 Introduction", 1),
+        ("2 Background", 1),
+        ("3 Model Architecture", 1),
+        ("3.1 Encoder and Decoder Stacks", 2),
+        ("3.2 Attention", 2),
+        ("3.2.1 Scaled Dot-Product Attention", 3),
+        ("3.2.2 Multi-Head Attention", 3),
+        ("3.2.3 Applications of Attention in our Model", 3),
+        ("3.3 Position-wise Feed-Forward Networks", 2),
+        ("3.4 Embeddings and Softmax", 2),
+        ("3.5 Positional Encoding", 2),
+        ("4 Why Self-Attention", 1),
+        ("5 Training", 1),
+        ("5.1 Training Data and Batching", 2),
+        ("5.2 Hardware and Schedule", 2),
+        ("5.3 Optimizer", 2),
+        ("5.4 Regularization", 2),
+        ("6 Results", 1),
+        ("6.1 Machine Translation", 2),
+        ("6.2 Model Variations", 2),
+        ("6.3 English Constituency Parsing", 2),
+        ("7 Conclusion", 1),
+        ("References", 1),
+        ("Attention Visualizations", 1),
+    ];
+    assert_eq!(got, want, "frozen demo-ocr outline must read the true ranks");
 }
 
 // =========================================================================
@@ -702,6 +785,17 @@ fn golden_freeze_demo_docx_json_wire() {
         &provenance,
         &light_golden_json_path(LightChannel::Docx),
         "demo-docx",
+    );
+}
+
+#[test]
+fn golden_freeze_demo_ocr_json_wire() {
+    let (graph, provenance) = regenerate_light(LightChannel::Ocr);
+    check_json_wire(
+        &graph,
+        &provenance,
+        &light_golden_json_path(LightChannel::Ocr),
+        "demo-ocr",
     );
 }
 

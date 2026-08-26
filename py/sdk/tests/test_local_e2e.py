@@ -76,7 +76,7 @@ def test_local_parse_pdf_end_to_end(monkeypatch, tmp_path) -> None:
     graph = _local_parse_pdf(str(_ATTENTION_PDF))
 
     assert isinstance(graph, BragiGraph)
-    assert graph.schema_version == "1.0.0"
+    assert graph.schema_version == "1.1.0"
     assert len(graph.nodes) > 0
     # PDF-via-Tika invariants (not byte-pinned to the committed fixture, since a
     # fresh Tika parse may differ from the C2-cached golden bytes).

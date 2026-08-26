@@ -244,7 +244,10 @@ fn emit_node(node: &DocumentNode) -> Option<String> {
             let prefix = heading_prefix(depth);
             Some(format!("{prefix} {text}", text = node.content.text))
         }
-        "Paragraph" | "CodeBlock" | "List" | "Blockquote" | "Table" => {
+        // `Equation` (schema 1.1.0, OCR S1) joins the verbatim-body group:
+        // its `$$…$$` / `\[ … \]` LaTeX is legitimate plain-markdown
+        // display math, emitted as-is.
+        "Paragraph" | "CodeBlock" | "List" | "Blockquote" | "Table" | "Equation" => {
             Some(node.content.text.clone())
         }
         "Header" | "Footer" | "Margin" => {
