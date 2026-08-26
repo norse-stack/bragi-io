@@ -9,6 +9,13 @@
 //! no native-arm reconciliation, no Mistral API call, no network — the
 //! JSON is pinned source bytes, which is the arc's determinism boundary.
 //!
+//! [`numbering`] is the CR-98 outline post-pass: OCR-4's per-page
+//! heading levels are noisy (no cross-page memory), so where a coherent
+//! majority of Section titles carry a numbering scheme, the numbering's
+//! rank replaces the per-page level (capped at
+//! `numbering::MAX_OUTLINE_DEPTH`). Unnumbered documents pass through
+//! byte-identical.
+//!
 //! ## Payload contract
 //!
 //! [`payload`] holds the tolerant serde structs. **`pages[].blocks[]` is
@@ -32,6 +39,7 @@
 //! what the payload knows about its own run.
 
 pub mod body;
+mod numbering;
 pub mod payload;
 
 pub use body::parse_ocr;

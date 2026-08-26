@@ -1,6 +1,6 @@
 {
   "schema_version": "1.1.0",
-  "bgraph_sha256": "3576d88930372a5363acd378b786eae918891df246aac05810d48873bd54c195",
+  "bgraph_sha256": "10b4ac45901b308738356c89d2c369792be0b227f795800965021b179c44d299",
   "created_at": "1970-01-01T00:00:00Z",
   "parse_provenance": {
     "bragi_version": "0.5.0",
@@ -10,7 +10,7 @@
   },
   "nodes": [
     {
-      "id": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+      "id": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "node_type": "Document",
       "location": {
         "semantic": {
@@ -31,9 +31,16 @@
         "cdb4ab2d-ac4d-5a6d-a195-d3def98b259a",
         "e1c5df07-a7b3-5a48-a588-e8e3f04f7f12",
         "7962788f-d2e7-50bc-8359-c47c4b37c03d",
+        "489feb8e-0692-570c-9a30-4a94247c2ce3",
         "70d57604-6f5f-51c4-85d0-7f4b6eaf0ffe",
         "81d55c7b-072a-570c-be1f-dac52c532db0",
-        "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33"
+        "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
+        "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
+        "4948c013-2084-5f50-895d-c78200c92644",
+        "7f79edae-607d-5311-a855-0aab258d8129",
+        "32e6931a-d233-5177-8583-ffe25137feda",
+        "51b0de81-acca-5396-a48d-853f69a96e6c",
+        "7144690b-d843-5acd-b4e7-afda4aa70b74"
       ]
     },
     {
@@ -61,7 +68,7 @@
       },
       "style_info": null,
       "token_count": 9,
-      "parent": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": []
     },
     {
@@ -89,7 +96,7 @@
       },
       "style_info": null,
       "token_count": 43,
-      "parent": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": []
     },
     {
@@ -119,7 +126,7 @@
       },
       "style_info": null,
       "token_count": 6,
-      "parent": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
         "ee38678d-a9a5-5625-90b8-5602c44e0981",
         "c359bd88-46f5-527b-9347-ca61a63695c8",
@@ -128,8 +135,7 @@
         "804e1606-47bd-5fca-9a0a-69a50aaf965f",
         "5d13743e-3470-565f-9072-cc03a90d2b64",
         "658e54ea-aac7-591b-820b-58bd0c9d13a2",
-        "d11be79e-cea3-55f2-a14c-1a6d23a51a09",
-        "825d317f-dd4e-54b4-905b-65f977c92665"
+        "d11be79e-cea3-55f2-a14c-1a6d23a51a09"
       ]
     },
     {
@@ -373,14 +379,13 @@
       "children": []
     },
     {
-      "id": "825d317f-dd4e-54b4-905b-65f977c92665",
+      "id": "489feb8e-0692-570c-9a30-4a94247c2ce3",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "3.9",
-          "depth": 3,
+          "path": "4",
+          "depth": 1,
           "breadcrumbs": [
-            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -400,24 +405,23 @@
       },
       "style_info": null,
       "token_count": 2,
-      "parent": "7962788f-d2e7-50bc-8359-c47c4b37c03d",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
-        "9baa74a5-61c8-5f11-93e2-7688d7961c82",
-        "fd48ca8f-6dc2-5cf7-97d7-6c8c3a570156",
-        "35124059-5863-576f-86be-1794bfaf9a89",
-        "d44c00bd-e67e-580b-bd0f-76793a1f391c",
-        "6d5e19b1-7b01-5231-a551-2a71f4e14606"
+        "a79badde-5c5f-53bf-95f5-83efbe741578",
+        "3ec39122-8fff-505d-967e-baa0a39fac35",
+        "8581f969-58d3-56cc-835a-eb698eb33de4",
+        "78d9cd32-4b7c-52f8-9817-cd4198db4cfd",
+        "4040a58e-e6a4-516d-92a8-48a87a1956d8"
       ]
     },
     {
-      "id": "9baa74a5-61c8-5f11-93e2-7688d7961c82",
+      "id": "a79badde-5c5f-53bf-95f5-83efbe741578",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "3.9.1",
-          "depth": 4,
+          "path": "4.1",
+          "depth": 2,
           "breadcrumbs": [
-            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -437,18 +441,17 @@
       },
       "style_info": null,
       "token_count": 284,
-      "parent": "825d317f-dd4e-54b4-905b-65f977c92665",
+      "parent": "489feb8e-0692-570c-9a30-4a94247c2ce3",
       "children": []
     },
     {
-      "id": "fd48ca8f-6dc2-5cf7-97d7-6c8c3a570156",
+      "id": "3ec39122-8fff-505d-967e-baa0a39fac35",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "3.9.2",
-          "depth": 4,
+          "path": "4.2",
+          "depth": 2,
           "breadcrumbs": [
-            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -468,18 +471,17 @@
       },
       "style_info": null,
       "token_count": 226,
-      "parent": "825d317f-dd4e-54b4-905b-65f977c92665",
+      "parent": "489feb8e-0692-570c-9a30-4a94247c2ce3",
       "children": []
     },
     {
-      "id": "35124059-5863-576f-86be-1794bfaf9a89",
+      "id": "8581f969-58d3-56cc-835a-eb698eb33de4",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "3.9.3",
-          "depth": 4,
+          "path": "4.3",
+          "depth": 2,
           "breadcrumbs": [
-            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -499,18 +501,17 @@
       },
       "style_info": null,
       "token_count": 10,
-      "parent": "825d317f-dd4e-54b4-905b-65f977c92665",
+      "parent": "489feb8e-0692-570c-9a30-4a94247c2ce3",
       "children": []
     },
     {
-      "id": "d44c00bd-e67e-580b-bd0f-76793a1f391c",
+      "id": "78d9cd32-4b7c-52f8-9817-cd4198db4cfd",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "3.9.4",
-          "depth": 4,
+          "path": "4.4",
+          "depth": 2,
           "breadcrumbs": [
-            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -530,18 +531,17 @@
       },
       "style_info": null,
       "token_count": 10,
-      "parent": "825d317f-dd4e-54b4-905b-65f977c92665",
+      "parent": "489feb8e-0692-570c-9a30-4a94247c2ce3",
       "children": []
     },
     {
-      "id": "6d5e19b1-7b01-5231-a551-2a71f4e14606",
+      "id": "4040a58e-e6a4-516d-92a8-48a87a1956d8",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "3.9.5",
-          "depth": 4,
+          "path": "4.5",
+          "depth": 2,
           "breadcrumbs": [
-            "Attention Is All You Need",
             "Abstract"
           ]
         },
@@ -561,7 +561,7 @@
       },
       "style_info": null,
       "token_count": 22,
-      "parent": "825d317f-dd4e-54b4-905b-65f977c92665",
+      "parent": "489feb8e-0692-570c-9a30-4a94247c2ce3",
       "children": []
     },
     {
@@ -569,7 +569,7 @@
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "4",
+          "path": "5",
           "depth": 1,
           "breadcrumbs": [
             "1 Introduction"
@@ -591,7 +591,7 @@
       },
       "style_info": null,
       "token_count": 3,
-      "parent": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
         "29075eeb-91f8-5104-a598-1785af4f0493",
         "0cae10b0-cb24-5f84-9272-3472d4ea5d0e",
@@ -604,7 +604,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "4.1",
+          "path": "5.1",
           "depth": 2,
           "breadcrumbs": [
             "1 Introduction"
@@ -634,7 +634,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "4.2",
+          "path": "5.2",
           "depth": 2,
           "breadcrumbs": [
             "1 Introduction"
@@ -664,7 +664,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "4.3",
+          "path": "5.3",
           "depth": 2,
           "breadcrumbs": [
             "1 Introduction"
@@ -694,7 +694,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "4.4",
+          "path": "5.4",
           "depth": 2,
           "breadcrumbs": [
             "1 Introduction"
@@ -724,7 +724,7 @@
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "5",
+          "path": "6",
           "depth": 1,
           "breadcrumbs": [
             "2 Background"
@@ -746,7 +746,7 @@
       },
       "style_info": null,
       "token_count": 3,
-      "parent": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
         "b9688a04-04c0-5ec5-980f-b32e8677eb78",
         "d6905a37-e8fb-5319-9c6c-0aff0c7c3ddd",
@@ -759,7 +759,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "5.1",
+          "path": "6.1",
           "depth": 2,
           "breadcrumbs": [
             "2 Background"
@@ -789,7 +789,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "5.2",
+          "path": "6.2",
           "depth": 2,
           "breadcrumbs": [
             "2 Background"
@@ -819,7 +819,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "5.3",
+          "path": "6.3",
           "depth": 2,
           "breadcrumbs": [
             "2 Background"
@@ -849,7 +849,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "5.4",
+          "path": "6.4",
           "depth": 2,
           "breadcrumbs": [
             "2 Background"
@@ -879,7 +879,7 @@
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6",
+          "path": "7",
           "depth": 1,
           "breadcrumbs": [
             "3 Model Architecture"
@@ -901,19 +901,17 @@
       },
       "style_info": null,
       "token_count": 5,
-      "parent": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
         "d14de51a-ca51-55b5-8e25-7b045ef76927",
         "c77cc7f0-c6cf-5126-a7a8-28c9a494edb4",
         "4d25248f-0c22-590c-89f5-9319b3f9a087",
         "a0b500e0-fc4c-58b7-a56e-e7a56af26847",
         "033562ef-355c-5236-9a5c-3e639309a823",
-        "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
-        "bc2fe380-3765-576a-96ef-e7dc0c6b8fad",
-        "a3ffbad7-0f65-5e95-981e-226863b3354c",
-        "6adce5d0-d459-5d28-99b2-7f4efb5a8f19",
-        "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
-        "db514fdb-2244-5fed-93a3-61dc47b16b90"
+        "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
+        "e2a3a195-29cf-573a-af86-506ba1de9f70",
+        "0a9ed8aa-462b-577c-a69c-3cfdefd3b158",
+        "0e9f2086-b1a1-599d-9c8e-1be40e332025"
       ]
     },
     {
@@ -921,7 +919,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.1",
+          "path": "7.1",
           "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture"
@@ -951,7 +949,7 @@
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.2",
+          "path": "7.2",
           "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture"
@@ -981,7 +979,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.3",
+          "path": "7.3",
           "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture"
@@ -1011,7 +1009,7 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.4",
+          "path": "7.4",
           "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture"
@@ -1041,8 +1039,8 @@
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5",
-          "depth": 3,
+          "path": "7.5",
+          "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture",
             "3.1 Encoder and Decoder Stacks"
@@ -1067,8 +1065,7 @@
       "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
       "children": [
         "94b27b4e-7c73-5256-881c-5804d5201e07",
-        "892bfe8d-9f44-5eeb-bc15-bb8b86f40221",
-        "244371e4-3206-513f-bbd9-5d8d252920f9"
+        "892bfe8d-9f44-5eeb-bc15-bb8b86f40221"
       ]
     },
     {
@@ -1076,8 +1073,8 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.1",
-          "depth": 4,
+          "path": "7.5.1",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
             "3.1 Encoder and Decoder Stacks"
@@ -1107,8 +1104,8 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.2",
-          "depth": 4,
+          "path": "7.5.2",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
             "3.1 Encoder and Decoder Stacks"
@@ -1134,15 +1131,14 @@
       "children": []
     },
     {
-      "id": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "id": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5.3",
-          "depth": 3,
+          "path": "7.6",
+          "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention"
           ]
         },
@@ -1162,7 +1158,7 @@
       },
       "style_info": null,
       "token_count": 3,
-      "parent": "033562ef-355c-5236-9a5c-3e639309a823",
+      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
       "children": [
         "5480c6a4-65d1-5de2-b273-d1c953a4f26a",
         "0288f035-c871-5421-97e3-54d035a670e6",
@@ -1170,7 +1166,9 @@
         "12c84a4a-5946-5926-8b89-9ec89bcd4798",
         "2555c761-5a11-5f4e-bffa-0413311c8178",
         "ab888ba2-2fc7-58cf-a4df-241ea41dfde8",
-        "56058479-c10e-59d9-b869-bb3067e9d7ae"
+        "56058479-c10e-59d9-b869-bb3067e9d7ae",
+        "8adf460c-df83-5853-a6ad-6cb40d49bd83",
+        "0daf25ab-19f2-5fca-86f3-7ca9f115f45f"
       ]
     },
     {
@@ -1178,11 +1176,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.1",
-          "depth": 4,
+          "path": "7.6.1",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention"
           ]
         },
@@ -1202,7 +1199,7 @@
       },
       "style_info": null,
       "token_count": 50,
-      "parent": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": []
     },
     {
@@ -1210,11 +1207,10 @@
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.5.3.2",
-          "depth": 4,
+          "path": "7.6.2",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention"
           ]
         },
@@ -1234,7 +1230,7 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": []
     },
     {
@@ -1242,11 +1238,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.3",
-          "depth": 4,
+          "path": "7.6.3",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention"
           ]
         },
@@ -1266,7 +1261,7 @@
       },
       "style_info": null,
       "token_count": 7,
-      "parent": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": []
     },
     {
@@ -1274,11 +1269,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.4",
-          "depth": 4,
+          "path": "7.6.4",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention"
           ]
         },
@@ -1298,7 +1292,7 @@
       },
       "style_info": null,
       "token_count": 5,
-      "parent": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": []
     },
     {
@@ -1306,11 +1300,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.5",
-          "depth": 4,
+          "path": "7.6.5",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention"
           ]
         },
@@ -1330,7 +1323,7 @@
       },
       "style_info": null,
       "token_count": 33,
-      "parent": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": []
     },
     {
@@ -1338,11 +1331,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.6",
-          "depth": 4,
+          "path": "7.6.6",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention"
           ]
         },
@@ -1362,7 +1354,7 @@
       },
       "style_info": null,
       "token_count": 33,
-      "parent": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": []
     },
     {
@@ -1370,11 +1362,10 @@
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5.3.7",
+          "path": "7.6.7",
           "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
           ]
@@ -1395,26 +1386,24 @@
       },
       "style_info": null,
       "token_count": 8,
-      "parent": "244371e4-3206-513f-bbd9-5d8d252920f9",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": [
-        "b3917551-af1e-5132-a3b0-644ab6f0d403",
-        "80f3a924-f0bc-5823-b0cd-e4b733e2d55c",
-        "9406a8d4-dbc4-5e64-9ade-91884217946b",
-        "06fb6ac7-3ebd-5bff-a899-55dd3fdfaac2",
-        "3a695574-3e32-57a3-ad69-dbafefd7fc97",
-        "7b50f31b-2946-5804-8ca4-2a77761c65fd"
+        "ee1fb5db-3130-5845-8de6-1faf9f6012e9",
+        "2d2fb7ac-6fc5-5978-97df-a685fd4e0167",
+        "7f1aa2f9-e85c-5d1a-b6ed-c24353f567b3",
+        "f05b85fc-2f19-5982-b482-c52f19e5b364",
+        "6bb5764b-220f-502e-a9f2-425c8876bc6f"
       ]
     },
     {
-      "id": "b3917551-af1e-5132-a3b0-644ab6f0d403",
+      "id": "ee1fb5db-3130-5845-8de6-1faf9f6012e9",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.1",
+          "path": "7.6.7.1",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
           ]
@@ -1439,15 +1428,14 @@
       "children": []
     },
     {
-      "id": "80f3a924-f0bc-5823-b0cd-e4b733e2d55c",
+      "id": "2d2fb7ac-6fc5-5978-97df-a685fd4e0167",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.2",
+          "path": "7.6.7.2",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
           ]
@@ -1472,15 +1460,14 @@
       "children": []
     },
     {
-      "id": "9406a8d4-dbc4-5e64-9ade-91884217946b",
+      "id": "7f1aa2f9-e85c-5d1a-b6ed-c24353f567b3",
       "node_type": "Equation",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.3",
+          "path": "7.6.7.3",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
           ]
@@ -1505,15 +1492,14 @@
       "children": []
     },
     {
-      "id": "06fb6ac7-3ebd-5bff-a899-55dd3fdfaac2",
+      "id": "f05b85fc-2f19-5982-b482-c52f19e5b364",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.4",
+          "path": "7.6.7.4",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
           ]
@@ -1538,15 +1524,14 @@
       "children": []
     },
     {
-      "id": "3a695574-3e32-57a3-ad69-dbafefd7fc97",
+      "id": "6bb5764b-220f-502e-a9f2-425c8876bc6f",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.5",
+          "path": "7.6.7.5",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
             "3.2.1 Scaled Dot-Product Attention"
           ]
@@ -1571,17 +1556,15 @@
       "children": []
     },
     {
-      "id": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "id": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6",
+          "path": "7.6.8",
           "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1601,31 +1584,28 @@
       },
       "style_info": null,
       "token_count": 6,
-      "parent": "56058479-c10e-59d9-b869-bb3067e9d7ae",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": [
-        "0da5dc66-9af5-575d-83d4-d3dc725ac450",
-        "b1b18c41-5733-5798-bb27-62672263ff76",
-        "d8f964e9-775a-5953-a7a1-464c8fcec392",
-        "17d347d1-acc9-5133-bff7-79b8e62e25ec",
-        "0d17198c-071a-5a40-9515-ab4298ccc67d",
-        "929b4e55-b302-5c53-adc6-8859b9d99704",
-        "c97ba2a9-52e8-5552-91d4-4aa4986cad15",
-        "65daf3b4-df66-5b7c-be45-f34b8e29fc45",
-        "a6920f0e-1ea8-5d5e-840c-7db06d241d22"
+        "a23ce33f-4c23-5607-95a3-fa84a6eac38f",
+        "3ca934a7-1e45-5500-aa0d-b746ae4b7493",
+        "e6dd6503-98f4-559a-ac64-112d10cb6dad",
+        "9a863b3a-2b5f-5d18-a8dc-827337dbbb63",
+        "dd0bcbda-a904-57f7-a5ae-5c80dc6387e5",
+        "07b1b987-5f97-5f32-bc26-30d323a3a4bc",
+        "8ccda5f7-bf60-59fc-9789-a575ee43f945",
+        "275b554f-f3a6-51b8-ada7-3e40f0d1ff82"
       ]
     },
     {
-      "id": "0da5dc66-9af5-575d-83d4-d3dc725ac450",
+      "id": "a23ce33f-4c23-5607-95a3-fa84a6eac38f",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.1",
+          "path": "7.6.8.1",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1645,21 +1625,19 @@
       },
       "style_info": null,
       "token_count": 107,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "b1b18c41-5733-5798-bb27-62672263ff76",
+      "id": "3ca934a7-1e45-5500-aa0d-b746ae4b7493",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.2",
+          "path": "7.6.8.2",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1679,21 +1657,19 @@
       },
       "style_info": null,
       "token_count": 61,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "d8f964e9-775a-5953-a7a1-464c8fcec392",
+      "id": "e6dd6503-98f4-559a-ac64-112d10cb6dad",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.3",
+          "path": "7.6.8.3",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1713,21 +1689,19 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "17d347d1-acc9-5133-bff7-79b8e62e25ec",
+      "id": "9a863b3a-2b5f-5d18-a8dc-827337dbbb63",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.4",
+          "path": "7.6.8.4",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1747,21 +1721,19 @@
       },
       "style_info": null,
       "token_count": 29,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "0d17198c-071a-5a40-9515-ab4298ccc67d",
+      "id": "dd0bcbda-a904-57f7-a5ae-5c80dc6387e5",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.5",
+          "path": "7.6.8.5",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1781,21 +1753,19 @@
       },
       "style_info": null,
       "token_count": 47,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "929b4e55-b302-5c53-adc6-8859b9d99704",
+      "id": "07b1b987-5f97-5f32-bc26-30d323a3a4bc",
       "node_type": "Equation",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.6",
+          "path": "7.6.8.6",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1815,21 +1785,19 @@
       },
       "style_info": null,
       "token_count": 68,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "c97ba2a9-52e8-5552-91d4-4aa4986cad15",
+      "id": "8ccda5f7-bf60-59fc-9789-a575ee43f945",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.7",
+          "path": "7.6.8.7",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1849,21 +1817,19 @@
       },
       "style_info": null,
       "token_count": 71,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "65daf3b4-df66-5b7c-be45-f34b8e29fc45",
+      "id": "275b554f-f3a6-51b8-ada7-3e40f0d1ff82",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.8",
+          "path": "7.6.8.8",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
             "3.2.2 Multi-Head Attention"
           ]
         },
@@ -1883,22 +1849,19 @@
       },
       "style_info": null,
       "token_count": 69,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "8adf460c-df83-5853-a6ad-6cb40d49bd83",
       "children": []
     },
     {
-      "id": "a6920f0e-1ea8-5d5e-840c-7db06d241d22",
+      "id": "0daf25ab-19f2-5fca-86f3-7ca9f115f45f",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9",
+          "path": "7.6.9",
           "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
             "3.2.3 Applications of Attention in our Model"
           ]
         },
@@ -1918,26 +1881,22 @@
       },
       "style_info": null,
       "token_count": 11,
-      "parent": "7b50f31b-2946-5804-8ca4-2a77761c65fd",
+      "parent": "1b0fdb47-f090-5c42-a51c-fa58bba2006d",
       "children": [
-        "d80136cd-8c6f-5ff5-9a66-4f9e3555651b",
-        "5dbeefff-d71b-5e7b-8056-90d9cda517f4",
-        "10c5f0d6-0083-57ae-8f56-ef0b63e51099"
+        "cd9b3eaa-cffb-5e4b-b8ad-f41cad0c8299",
+        "173b2922-2394-5d17-9de1-1e5888f04837"
       ]
     },
     {
-      "id": "d80136cd-8c6f-5ff5-9a66-4f9e3555651b",
+      "id": "cd9b3eaa-cffb-5e4b-b8ad-f41cad0c8299",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.1",
+          "path": "7.6.9.1",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
             "3.2.3 Applications of Attention in our Model"
           ]
         },
@@ -1957,22 +1916,19 @@
       },
       "style_info": null,
       "token_count": 16,
-      "parent": "a6920f0e-1ea8-5d5e-840c-7db06d241d22",
+      "parent": "0daf25ab-19f2-5fca-86f3-7ca9f115f45f",
       "children": []
     },
     {
-      "id": "5dbeefff-d71b-5e7b-8056-90d9cda517f4",
+      "id": "173b2922-2394-5d17-9de1-1e5888f04837",
       "node_type": "List",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.2",
+          "path": "7.6.9.2",
           "depth": 4,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
             "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
             "3.2.3 Applications of Attention in our Model"
           ]
         },
@@ -1992,23 +1948,18 @@
       },
       "style_info": null,
       "token_count": 277,
-      "parent": "a6920f0e-1ea8-5d5e-840c-7db06d241d22",
+      "parent": "0daf25ab-19f2-5fca-86f3-7ca9f115f45f",
       "children": []
     },
     {
-      "id": "10c5f0d6-0083-57ae-8f56-ef0b63e51099",
+      "id": "e2a3a195-29cf-573a-af86-506ba1de9f70",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3",
-          "depth": 3,
+          "path": "7.7",
+          "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
             "3.3 Position-wise Feed-Forward Networks"
           ]
         },
@@ -2028,12 +1979,11 @@
       },
       "style_info": null,
       "token_count": 9,
-      "parent": "a6920f0e-1ea8-5d5e-840c-7db06d241d22",
+      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
       "children": [
         "cc146a2b-4c21-5851-a2f7-9a5277fd7b2e",
         "d442336b-dc85-5882-a232-9624da7f0943",
-        "bd5efbba-7f97-5b5e-a127-75a75d785b6a",
-        "504a0118-0481-5877-a2f1-f94d7cfb4530"
+        "bd5efbba-7f97-5b5e-a127-75a75d785b6a"
       ]
     },
     {
@@ -2041,15 +1991,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.1",
-          "depth": 4,
+          "path": "7.7.1",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
             "3.3 Position-wise Feed-Forward Networks"
           ]
         },
@@ -2069,7 +2014,7 @@
       },
       "style_info": null,
       "token_count": 68,
-      "parent": "10c5f0d6-0083-57ae-8f56-ef0b63e51099",
+      "parent": "e2a3a195-29cf-573a-af86-506ba1de9f70",
       "children": []
     },
     {
@@ -2077,15 +2022,10 @@
       "node_type": "Equation",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.2",
-          "depth": 4,
+          "path": "7.7.2",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
             "3.3 Position-wise Feed-Forward Networks"
           ]
         },
@@ -2105,7 +2045,7 @@
       },
       "style_info": null,
       "token_count": 18,
-      "parent": "10c5f0d6-0083-57ae-8f56-ef0b63e51099",
+      "parent": "e2a3a195-29cf-573a-af86-506ba1de9f70",
       "children": []
     },
     {
@@ -2113,15 +2053,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.3",
-          "depth": 4,
+          "path": "7.7.3",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
             "3.3 Position-wise Feed-Forward Networks"
           ]
         },
@@ -2141,24 +2076,18 @@
       },
       "style_info": null,
       "token_count": 80,
-      "parent": "10c5f0d6-0083-57ae-8f56-ef0b63e51099",
+      "parent": "e2a3a195-29cf-573a-af86-506ba1de9f70",
       "children": []
     },
     {
-      "id": "504a0118-0481-5877-a2f1-f94d7cfb4530",
+      "id": "0a9ed8aa-462b-577c-a69c-3cfdefd3b158",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4",
-          "depth": 3,
+          "path": "7.8",
+          "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
             "3.4 Embeddings and Softmax"
           ]
         },
@@ -2178,13 +2107,12 @@
       },
       "style_info": null,
       "token_count": 6,
-      "parent": "10c5f0d6-0083-57ae-8f56-ef0b63e51099",
+      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
       "children": [
         "2abb513b-5f5b-5d40-974e-9e2022439072",
         "ff6c4159-7017-573a-8099-c6f7cce87dbe",
         "fdaeaa59-9ab0-5bf8-8fc2-a388c49cff61",
-        "ac61748e-675e-531d-b6e0-4cb239473051",
-        "dddfeb49-88ff-57aa-a963-aa505df4c351"
+        "ac61748e-675e-531d-b6e0-4cb239473051"
       ]
     },
     {
@@ -2192,16 +2120,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.1",
-          "depth": 4,
+          "path": "7.8.1",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
             "3.4 Embeddings and Softmax"
           ]
         },
@@ -2221,7 +2143,7 @@
       },
       "style_info": null,
       "token_count": 131,
-      "parent": "504a0118-0481-5877-a2f1-f94d7cfb4530",
+      "parent": "0a9ed8aa-462b-577c-a69c-3cfdefd3b158",
       "children": []
     },
     {
@@ -2229,16 +2151,10 @@
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.2",
-          "depth": 4,
+          "path": "7.8.2",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
             "3.4 Embeddings and Softmax"
           ]
         },
@@ -2258,7 +2174,7 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "504a0118-0481-5877-a2f1-f94d7cfb4530",
+      "parent": "0a9ed8aa-462b-577c-a69c-3cfdefd3b158",
       "children": []
     },
     {
@@ -2266,16 +2182,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.3",
-          "depth": 4,
+          "path": "7.8.3",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
             "3.4 Embeddings and Softmax"
           ]
         },
@@ -2295,7 +2205,7 @@
       },
       "style_info": null,
       "token_count": 71,
-      "parent": "504a0118-0481-5877-a2f1-f94d7cfb4530",
+      "parent": "0a9ed8aa-462b-577c-a69c-3cfdefd3b158",
       "children": []
     },
     {
@@ -2303,16 +2213,10 @@
       "node_type": "Table",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.4",
-          "depth": 4,
+          "path": "7.8.4",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
             "3.4 Embeddings and Softmax"
           ]
         },
@@ -2332,25 +2236,18 @@
       },
       "style_info": null,
       "token_count": 107,
-      "parent": "504a0118-0481-5877-a2f1-f94d7cfb4530",
+      "parent": "0a9ed8aa-462b-577c-a69c-3cfdefd3b158",
       "children": []
     },
     {
-      "id": "dddfeb49-88ff-57aa-a963-aa505df4c351",
+      "id": "0e9f2086-b1a1-599d-9c8e-1be40e332025",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.5",
-          "depth": 3,
+          "path": "7.9",
+          "depth": 2,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
-            "3.4 Embeddings and Softmax",
             "3.5 Positional Encoding"
           ]
         },
@@ -2370,7 +2267,7 @@
       },
       "style_info": null,
       "token_count": 5,
-      "parent": "504a0118-0481-5877-a2f1-f94d7cfb4530",
+      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
       "children": [
         "31ba6ba4-df35-5ef8-84a0-196d2f72664f",
         "8093c913-9af3-5405-9f91-3123c3454ac5",
@@ -2385,17 +2282,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.5.1",
-          "depth": 4,
+          "path": "7.9.1",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
-            "3.4 Embeddings and Softmax",
             "3.5 Positional Encoding"
           ]
         },
@@ -2415,7 +2305,7 @@
       },
       "style_info": null,
       "token_count": 132,
-      "parent": "dddfeb49-88ff-57aa-a963-aa505df4c351",
+      "parent": "0e9f2086-b1a1-599d-9c8e-1be40e332025",
       "children": []
     },
     {
@@ -2423,17 +2313,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.5.2",
-          "depth": 4,
+          "path": "7.9.2",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
-            "3.4 Embeddings and Softmax",
             "3.5 Positional Encoding"
           ]
         },
@@ -2453,7 +2336,7 @@
       },
       "style_info": null,
       "token_count": 18,
-      "parent": "dddfeb49-88ff-57aa-a963-aa505df4c351",
+      "parent": "0e9f2086-b1a1-599d-9c8e-1be40e332025",
       "children": []
     },
     {
@@ -2461,17 +2344,10 @@
       "node_type": "Equation",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.5.3",
-          "depth": 4,
+          "path": "7.9.3",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
-            "3.4 Embeddings and Softmax",
             "3.5 Positional Encoding"
           ]
         },
@@ -2491,7 +2367,7 @@
       },
       "style_info": null,
       "token_count": 21,
-      "parent": "dddfeb49-88ff-57aa-a963-aa505df4c351",
+      "parent": "0e9f2086-b1a1-599d-9c8e-1be40e332025",
       "children": []
     },
     {
@@ -2499,17 +2375,10 @@
       "node_type": "Equation",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.5.4",
-          "depth": 4,
+          "path": "7.9.4",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
-            "3.4 Embeddings and Softmax",
             "3.5 Positional Encoding"
           ]
         },
@@ -2529,7 +2398,7 @@
       },
       "style_info": null,
       "token_count": 22,
-      "parent": "dddfeb49-88ff-57aa-a963-aa505df4c351",
+      "parent": "0e9f2086-b1a1-599d-9c8e-1be40e332025",
       "children": []
     },
     {
@@ -2537,17 +2406,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.5.5",
-          "depth": 4,
+          "path": "7.9.5",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
-            "3.4 Embeddings and Softmax",
             "3.5 Positional Encoding"
           ]
         },
@@ -2567,7 +2429,7 @@
       },
       "style_info": null,
       "token_count": 115,
-      "parent": "dddfeb49-88ff-57aa-a963-aa505df4c351",
+      "parent": "0e9f2086-b1a1-599d-9c8e-1be40e332025",
       "children": []
     },
     {
@@ -2575,17 +2437,10 @@
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.5.3.7.6.9.3.4.5.6",
-          "depth": 4,
+          "path": "7.9.6",
+          "depth": 3,
           "breadcrumbs": [
             "3 Model Architecture",
-            "3.1 Encoder and Decoder Stacks",
-            "3.2 Attention",
-            "3.2.1 Scaled Dot-Product Attention",
-            "3.2.2 Multi-Head Attention",
-            "3.2.3 Applications of Attention in our Model",
-            "3.3 Position-wise Feed-Forward Networks",
-            "3.4 Embeddings and Softmax",
             "3.5 Positional Encoding"
           ]
         },
@@ -2605,18 +2460,17 @@
       },
       "style_info": null,
       "token_count": 77,
-      "parent": "dddfeb49-88ff-57aa-a963-aa505df4c351",
+      "parent": "0e9f2086-b1a1-599d-9c8e-1be40e332025",
       "children": []
     },
     {
-      "id": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "id": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.6",
-          "depth": 2,
+          "path": "8",
+          "depth": 1,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2636,27 +2490,26 @@
       },
       "style_info": null,
       "token_count": 5,
-      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
-        "8ab02fd5-0f5e-51f4-a190-c153a37ddb1f",
-        "3bd1892f-a016-5572-b010-e67cc0645998",
-        "082150b1-b911-5dc4-b683-a509d535050d",
-        "e97ba2ea-cd7e-5abc-9118-cff5f6ba694c",
-        "760754a9-961f-5abf-9744-1532dcd8dd73",
-        "6d5b1126-25a8-57d7-af4a-39c2207d5651",
-        "57487601-4aa4-5cba-aa27-7dc79d844d3d",
-        "b21cde57-52ee-5e74-95bc-960926f92f2a"
+        "a5391a75-dc32-5a43-a8ff-288e66b0636f",
+        "54b3337e-0fb3-5ef6-8210-79e97f01b2c3",
+        "e080aace-d079-5eea-8b4e-a3170a73d9ca",
+        "e2061a6c-05f1-52fd-8794-36fa586965e3",
+        "32bc85aa-732e-5340-87a6-c632cdf05a14",
+        "9df48c5f-1532-5a26-a364-9c13f84a2df7",
+        "ea46f794-022d-5009-aa43-ee2a70777fc8",
+        "5c96743e-f3bb-5011-b91d-56fa30c8bc39"
       ]
     },
     {
-      "id": "8ab02fd5-0f5e-51f4-a190-c153a37ddb1f",
+      "id": "a5391a75-dc32-5a43-a8ff-288e66b0636f",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.6.1",
-          "depth": 3,
+          "path": "8.1",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2676,18 +2529,17 @@
       },
       "style_info": null,
       "token_count": 116,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "3bd1892f-a016-5572-b010-e67cc0645998",
+      "id": "54b3337e-0fb3-5ef6-8210-79e97f01b2c3",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.6.2",
-          "depth": 3,
+          "path": "8.2",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2707,18 +2559,17 @@
       },
       "style_info": null,
       "token_count": 46,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "082150b1-b911-5dc4-b683-a509d535050d",
+      "id": "e080aace-d079-5eea-8b4e-a3170a73d9ca",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.6.3",
-          "depth": 3,
+          "path": "8.3",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2738,18 +2589,17 @@
       },
       "style_info": null,
       "token_count": 154,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "e97ba2ea-cd7e-5abc-9118-cff5f6ba694c",
+      "id": "e2061a6c-05f1-52fd-8794-36fa586965e3",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.6.4",
-          "depth": 3,
+          "path": "8.4",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2769,18 +2619,17 @@
       },
       "style_info": null,
       "token_count": 76,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "760754a9-961f-5abf-9744-1532dcd8dd73",
+      "id": "32bc85aa-732e-5340-87a6-c632cdf05a14",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.6.5",
-          "depth": 3,
+          "path": "8.5",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2800,18 +2649,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "6d5b1126-25a8-57d7-af4a-39c2207d5651",
+      "id": "9df48c5f-1532-5a26-a364-9c13f84a2df7",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.6.6",
-          "depth": 3,
+          "path": "8.6",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2831,18 +2679,17 @@
       },
       "style_info": null,
       "token_count": 147,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "57487601-4aa4-5cba-aa27-7dc79d844d3d",
+      "id": "ea46f794-022d-5009-aa43-ee2a70777fc8",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.6.7",
-          "depth": 3,
+          "path": "8.7",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2862,18 +2709,17 @@
       },
       "style_info": null,
       "token_count": 188,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "b21cde57-52ee-5e74-95bc-960926f92f2a",
+      "id": "5c96743e-f3bb-5011-b91d-56fa30c8bc39",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.6.8",
-          "depth": 3,
+          "path": "8.8",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "4 Why Self-Attention"
           ]
         },
@@ -2893,18 +2739,17 @@
       },
       "style_info": null,
       "token_count": 87,
-      "parent": "2cce3606-8fba-5ca4-b0f8-56a1e9455bee",
+      "parent": "a0e04aa2-48b6-52d5-9798-97db9e0a0d78",
       "children": []
     },
     {
-      "id": "bc2fe380-3765-576a-96ef-e7dc0c6b8fad",
+      "id": "4948c013-2084-5f50-895d-c78200c92644",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.7",
-          "depth": 2,
+          "path": "9",
+          "depth": 1,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training"
           ]
         },
@@ -2924,24 +2769,23 @@
       },
       "style_info": null,
       "token_count": 2,
-      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
-        "fb61ff9f-84cd-5ed5-8794-7ddf2fefd521",
-        "f444a7b6-1f33-54d6-a566-077e12062cef",
-        "9d05b8f0-d20c-58ad-be53-aa4505434a6e",
-        "4623fa3a-67d1-5751-9714-456f6a03821f",
-        "3c98fe7c-9fc3-5276-97bb-7689c071a77b"
+        "3c3f465b-8eb5-58bb-ac1d-09324e807cca",
+        "948f7b41-264b-5dd0-80a9-0c0170bb8c34",
+        "f7d2dd26-d5eb-58af-98a7-b858a24d76eb",
+        "3ad116a8-6d1f-5933-800a-ba9144433e43",
+        "58c10f5b-ecad-5426-80a7-1756b11382be"
       ]
     },
     {
-      "id": "fb61ff9f-84cd-5ed5-8794-7ddf2fefd521",
+      "id": "3c3f465b-8eb5-58bb-ac1d-09324e807cca",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.1",
-          "depth": 3,
+          "path": "9.1",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training"
           ]
         },
@@ -2961,18 +2805,17 @@
       },
       "style_info": null,
       "token_count": 14,
-      "parent": "bc2fe380-3765-576a-96ef-e7dc0c6b8fad",
+      "parent": "4948c013-2084-5f50-895d-c78200c92644",
       "children": []
     },
     {
-      "id": "f444a7b6-1f33-54d6-a566-077e12062cef",
+      "id": "948f7b41-264b-5dd0-80a9-0c0170bb8c34",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.7.2",
-          "depth": 3,
+          "path": "9.2",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.1 Training Data and Batching"
           ]
@@ -2993,20 +2836,19 @@
       },
       "style_info": null,
       "token_count": 7,
-      "parent": "bc2fe380-3765-576a-96ef-e7dc0c6b8fad",
+      "parent": "4948c013-2084-5f50-895d-c78200c92644",
       "children": [
-        "82e3030f-d1eb-5969-a087-0d89425f7eca"
+        "8db3e60d-3fe0-52b9-8544-d1a7bbd7122a"
       ]
     },
     {
-      "id": "82e3030f-d1eb-5969-a087-0d89425f7eca",
+      "id": "8db3e60d-3fe0-52b9-8544-d1a7bbd7122a",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.2.1",
-          "depth": 4,
+          "path": "9.2.1",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.1 Training Data and Batching"
           ]
@@ -3027,18 +2869,17 @@
       },
       "style_info": null,
       "token_count": 147,
-      "parent": "f444a7b6-1f33-54d6-a566-077e12062cef",
+      "parent": "948f7b41-264b-5dd0-80a9-0c0170bb8c34",
       "children": []
     },
     {
-      "id": "9d05b8f0-d20c-58ad-be53-aa4505434a6e",
+      "id": "f7d2dd26-d5eb-58af-98a7-b858a24d76eb",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.7.3",
-          "depth": 3,
+          "path": "9.3",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.2 Hardware and Schedule"
           ]
@@ -3059,20 +2900,19 @@
       },
       "style_info": null,
       "token_count": 6,
-      "parent": "bc2fe380-3765-576a-96ef-e7dc0c6b8fad",
+      "parent": "4948c013-2084-5f50-895d-c78200c92644",
       "children": [
-        "be62eb87-81b3-5d56-9743-604a37a114eb"
+        "fce6a33f-7618-5581-8d1e-14e3ac428afa"
       ]
     },
     {
-      "id": "be62eb87-81b3-5d56-9743-604a37a114eb",
+      "id": "fce6a33f-7618-5581-8d1e-14e3ac428afa",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.3.1",
-          "depth": 4,
+          "path": "9.3.1",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.2 Hardware and Schedule"
           ]
@@ -3093,18 +2933,17 @@
       },
       "style_info": null,
       "token_count": 99,
-      "parent": "9d05b8f0-d20c-58ad-be53-aa4505434a6e",
+      "parent": "f7d2dd26-d5eb-58af-98a7-b858a24d76eb",
       "children": []
     },
     {
-      "id": "4623fa3a-67d1-5751-9714-456f6a03821f",
+      "id": "3ad116a8-6d1f-5933-800a-ba9144433e43",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.7.4",
-          "depth": 3,
+          "path": "9.4",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -3125,22 +2964,21 @@
       },
       "style_info": null,
       "token_count": 3,
-      "parent": "bc2fe380-3765-576a-96ef-e7dc0c6b8fad",
+      "parent": "4948c013-2084-5f50-895d-c78200c92644",
       "children": [
-        "07e2b4d3-69c3-52e0-8d78-c1dee93cb97b",
-        "4cc54e43-a957-5143-a503-20eecb42a406",
-        "f14d4dc0-1b69-513f-b506-379e98829786"
+        "986613af-e72c-544d-b5c5-1c31f13a5d20",
+        "b86688d7-30c7-5108-83c9-5085a38f8d09",
+        "37c89a8e-b96c-51f4-b9f8-e2492a418403"
       ]
     },
     {
-      "id": "07e2b4d3-69c3-52e0-8d78-c1dee93cb97b",
+      "id": "986613af-e72c-544d-b5c5-1c31f13a5d20",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.4.1",
-          "depth": 4,
+          "path": "9.4.1",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -3161,18 +2999,17 @@
       },
       "style_info": null,
       "token_count": 44,
-      "parent": "4623fa3a-67d1-5751-9714-456f6a03821f",
+      "parent": "3ad116a8-6d1f-5933-800a-ba9144433e43",
       "children": []
     },
     {
-      "id": "4cc54e43-a957-5143-a503-20eecb42a406",
+      "id": "b86688d7-30c7-5108-83c9-5085a38f8d09",
       "node_type": "Equation",
       "location": {
         "semantic": {
-          "path": "6.7.4.2",
-          "depth": 4,
+          "path": "9.4.2",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -3193,18 +3030,17 @@
       },
       "style_info": null,
       "token_count": 25,
-      "parent": "4623fa3a-67d1-5751-9714-456f6a03821f",
+      "parent": "3ad116a8-6d1f-5933-800a-ba9144433e43",
       "children": []
     },
     {
-      "id": "f14d4dc0-1b69-513f-b506-379e98829786",
+      "id": "37c89a8e-b96c-51f4-b9f8-e2492a418403",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.4.3",
-          "depth": 4,
+          "path": "9.4.3",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.3 Optimizer"
           ]
@@ -3225,18 +3061,17 @@
       },
       "style_info": null,
       "token_count": 56,
-      "parent": "4623fa3a-67d1-5751-9714-456f6a03821f",
+      "parent": "3ad116a8-6d1f-5933-800a-ba9144433e43",
       "children": []
     },
     {
-      "id": "3c98fe7c-9fc3-5276-97bb-7689c071a77b",
+      "id": "58c10f5b-ecad-5426-80a7-1756b11382be",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.7.5",
-          "depth": 3,
+          "path": "9.5",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3257,25 +3092,24 @@
       },
       "style_info": null,
       "token_count": 4,
-      "parent": "bc2fe380-3765-576a-96ef-e7dc0c6b8fad",
+      "parent": "4948c013-2084-5f50-895d-c78200c92644",
       "children": [
-        "26ebcaf7-cae1-5cc5-8394-f75d57c83d73",
-        "c0972506-b75a-5e1e-9f08-d1b95bb0de7f",
-        "0c16a717-fa1f-5e3f-8abf-99eefc19386b",
-        "c7f7b72a-16dd-5728-8884-8af27f3133d1",
-        "e5c7def0-df42-5669-a6ca-a9da6071e8a9",
-        "2808b2f9-cdf3-5644-a159-e9565def7ae8"
+        "96401613-bddd-5fe0-a3a0-d75d81c277d2",
+        "4cf9a912-be9f-54b8-bb13-b0681bfca311",
+        "dcdae0ea-0745-5211-9d7e-1ff788c84d1a",
+        "a6c7a645-4b58-53df-b989-d80695d3f9a3",
+        "211e8819-6ded-50b9-bac0-e8e892bc893b",
+        "5166e277-b587-5b8c-88b3-eed75597cbf9"
       ]
     },
     {
-      "id": "26ebcaf7-cae1-5cc5-8394-f75d57c83d73",
+      "id": "96401613-bddd-5fe0-a3a0-d75d81c277d2",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.5.1",
-          "depth": 4,
+          "path": "9.5.1",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3296,18 +3130,17 @@
       },
       "style_info": null,
       "token_count": 14,
-      "parent": "3c98fe7c-9fc3-5276-97bb-7689c071a77b",
+      "parent": "58c10f5b-ecad-5426-80a7-1756b11382be",
       "children": []
     },
     {
-      "id": "c0972506-b75a-5e1e-9f08-d1b95bb0de7f",
+      "id": "4cf9a912-be9f-54b8-bb13-b0681bfca311",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.7.5.2",
-          "depth": 4,
+          "path": "9.5.2",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3328,18 +3161,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "3c98fe7c-9fc3-5276-97bb-7689c071a77b",
+      "parent": "58c10f5b-ecad-5426-80a7-1756b11382be",
       "children": []
     },
     {
-      "id": "0c16a717-fa1f-5e3f-8abf-99eefc19386b",
+      "id": "dcdae0ea-0745-5211-9d7e-1ff788c84d1a",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.5.3",
-          "depth": 4,
+          "path": "9.5.3",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3360,18 +3192,17 @@
       },
       "style_info": null,
       "token_count": 48,
-      "parent": "3c98fe7c-9fc3-5276-97bb-7689c071a77b",
+      "parent": "58c10f5b-ecad-5426-80a7-1756b11382be",
       "children": []
     },
     {
-      "id": "c7f7b72a-16dd-5728-8884-8af27f3133d1",
+      "id": "a6c7a645-4b58-53df-b989-d80695d3f9a3",
       "node_type": "Table",
       "location": {
         "semantic": {
-          "path": "6.7.5.4",
-          "depth": 4,
+          "path": "9.5.4",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3392,18 +3223,17 @@
       },
       "style_info": null,
       "token_count": 196,
-      "parent": "3c98fe7c-9fc3-5276-97bb-7689c071a77b",
+      "parent": "58c10f5b-ecad-5426-80a7-1756b11382be",
       "children": []
     },
     {
-      "id": "e5c7def0-df42-5669-a6ca-a9da6071e8a9",
+      "id": "211e8819-6ded-50b9-bac0-e8e892bc893b",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.5.5",
-          "depth": 4,
+          "path": "9.5.5",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3424,18 +3254,17 @@
       },
       "style_info": null,
       "token_count": 79,
-      "parent": "3c98fe7c-9fc3-5276-97bb-7689c071a77b",
+      "parent": "58c10f5b-ecad-5426-80a7-1756b11382be",
       "children": []
     },
     {
-      "id": "2808b2f9-cdf3-5644-a159-e9565def7ae8",
+      "id": "5166e277-b587-5b8c-88b3-eed75597cbf9",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.7.5.6",
-          "depth": 4,
+          "path": "9.5.6",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "5 Training",
             "5.4 Regularization"
           ]
@@ -3456,18 +3285,17 @@
       },
       "style_info": null,
       "token_count": 50,
-      "parent": "3c98fe7c-9fc3-5276-97bb-7689c071a77b",
+      "parent": "58c10f5b-ecad-5426-80a7-1756b11382be",
       "children": []
     },
     {
-      "id": "a3ffbad7-0f65-5e95-981e-226863b3354c",
+      "id": "7f79edae-607d-5311-a855-0aab258d8129",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.8",
-          "depth": 2,
+          "path": "10",
+          "depth": 1,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results"
           ]
         },
@@ -3487,22 +3315,21 @@
       },
       "style_info": null,
       "token_count": 2,
-      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
-        "3e67e6a4-1932-5610-9a2e-ac250d5a494f",
-        "fb630b63-6b7f-5cc1-9674-68ffa7309617",
-        "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c"
+        "dfd4d39c-1170-57ac-8e09-2cff726c18d6",
+        "c2b30175-bd4e-5226-8b45-fad74218c4c1",
+        "7a6e0124-2f2c-51c9-8648-06bdf3f245f6"
       ]
     },
     {
-      "id": "3e67e6a4-1932-5610-9a2e-ac250d5a494f",
+      "id": "dfd4d39c-1170-57ac-8e09-2cff726c18d6",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.8.1",
-          "depth": 3,
+          "path": "10.1",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3523,23 +3350,22 @@
       },
       "style_info": null,
       "token_count": 5,
-      "parent": "a3ffbad7-0f65-5e95-981e-226863b3354c",
+      "parent": "7f79edae-607d-5311-a855-0aab258d8129",
       "children": [
-        "8f15ebee-b285-5b85-b578-e6a151f75018",
-        "91329424-c2e7-5e24-9b5a-ee5fc52137b3",
-        "de435778-ec11-5eaf-b53e-a14f8c7e4ea4",
-        "b0ba6908-7ee4-5f7e-bb44-5557fe6ba3c4"
+        "e48cd167-f893-5fa6-b925-4a2058b5f01d",
+        "96c52792-48ea-5bfc-9f7e-2484d842faea",
+        "8f32820b-0872-5101-bece-dec697c081a6",
+        "cf42ffd4-cf7e-52ad-ba86-0c2daffe80ee"
       ]
     },
     {
-      "id": "8f15ebee-b285-5b85-b578-e6a151f75018",
+      "id": "e48cd167-f893-5fa6-b925-4a2058b5f01d",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.1.1",
-          "depth": 4,
+          "path": "10.1.1",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3560,18 +3386,17 @@
       },
       "style_info": null,
       "token_count": 128,
-      "parent": "3e67e6a4-1932-5610-9a2e-ac250d5a494f",
+      "parent": "dfd4d39c-1170-57ac-8e09-2cff726c18d6",
       "children": []
     },
     {
-      "id": "91329424-c2e7-5e24-9b5a-ee5fc52137b3",
+      "id": "96c52792-48ea-5bfc-9f7e-2484d842faea",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.1.2",
-          "depth": 4,
+          "path": "10.1.2",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3592,18 +3417,17 @@
       },
       "style_info": null,
       "token_count": 85,
-      "parent": "3e67e6a4-1932-5610-9a2e-ac250d5a494f",
+      "parent": "dfd4d39c-1170-57ac-8e09-2cff726c18d6",
       "children": []
     },
     {
-      "id": "de435778-ec11-5eaf-b53e-a14f8c7e4ea4",
+      "id": "8f32820b-0872-5101-bece-dec697c081a6",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.1.3",
-          "depth": 4,
+          "path": "10.1.3",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3624,18 +3448,17 @@
       },
       "style_info": null,
       "token_count": 115,
-      "parent": "3e67e6a4-1932-5610-9a2e-ac250d5a494f",
+      "parent": "dfd4d39c-1170-57ac-8e09-2cff726c18d6",
       "children": []
     },
     {
-      "id": "b0ba6908-7ee4-5f7e-bb44-5557fe6ba3c4",
+      "id": "cf42ffd4-cf7e-52ad-ba86-0c2daffe80ee",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.1.4",
-          "depth": 4,
+          "path": "10.1.4",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.1 Machine Translation"
           ]
@@ -3656,18 +3479,17 @@
       },
       "style_info": null,
       "token_count": 90,
-      "parent": "3e67e6a4-1932-5610-9a2e-ac250d5a494f",
+      "parent": "dfd4d39c-1170-57ac-8e09-2cff726c18d6",
       "children": []
     },
     {
-      "id": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "id": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.8.2",
-          "depth": 3,
+          "path": "10.2",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3688,27 +3510,26 @@
       },
       "style_info": null,
       "token_count": 5,
-      "parent": "a3ffbad7-0f65-5e95-981e-226863b3354c",
+      "parent": "7f79edae-607d-5311-a855-0aab258d8129",
       "children": [
-        "25c50814-9b42-5ba8-8534-3f7a8ba8a3df",
-        "3ef7acd5-7718-591c-9d52-4f173d61cf47",
-        "f2d1b33f-b934-5a9a-9bc6-be353ff6d50a",
-        "af19922c-762d-58ca-8a5e-5b135d19ce5f",
-        "b9acbcf8-965e-5061-843f-a3eaa60cd121",
-        "3cb7c1b3-53ca-57a5-96f0-1e4b41dcfaef",
-        "cc04cb7e-9c70-52e3-87e7-66d9934fec9a",
-        "21240dab-65ee-5501-b2c0-effd2b08f2da"
+        "09cd266e-6daf-5b41-a100-11065370f5fe",
+        "4dc0eb64-185f-53ac-8322-e0b7974e76f6",
+        "7893305b-3238-5773-921a-0271e0bc3f03",
+        "eedd3a6b-4b40-5b7d-8aed-8c043539c84c",
+        "27cfe078-0018-5696-ac01-794c9eb3b77b",
+        "3f5e77fe-ed2b-5d5c-bbba-e04de522cee9",
+        "1f1f8fe1-f14b-5601-825e-ad6e95ccbb58",
+        "d3c24b0d-7bd6-54d1-8625-be5964876e62"
       ]
     },
     {
-      "id": "25c50814-9b42-5ba8-8534-3f7a8ba8a3df",
+      "id": "09cd266e-6daf-5b41-a100-11065370f5fe",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.2.1",
-          "depth": 4,
+          "path": "10.2.1",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3729,18 +3550,17 @@
       },
       "style_info": null,
       "token_count": 47,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "3ef7acd5-7718-591c-9d52-4f173d61cf47",
+      "id": "4dc0eb64-185f-53ac-8322-e0b7974e76f6",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.2.2",
-          "depth": 4,
+          "path": "10.2.2",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3761,18 +3581,17 @@
       },
       "style_info": null,
       "token_count": 23,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "f2d1b33f-b934-5a9a-9bc6-be353ff6d50a",
+      "id": "7893305b-3238-5773-921a-0271e0bc3f03",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.8.2.3",
-          "depth": 4,
+          "path": "10.2.3",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3793,18 +3612,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "af19922c-762d-58ca-8a5e-5b135d19ce5f",
+      "id": "eedd3a6b-4b40-5b7d-8aed-8c043539c84c",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.2.4",
-          "depth": 4,
+          "path": "10.2.4",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3825,18 +3643,17 @@
       },
       "style_info": null,
       "token_count": 80,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "b9acbcf8-965e-5061-843f-a3eaa60cd121",
+      "id": "27cfe078-0018-5696-ac01-794c9eb3b77b",
       "node_type": "Table",
       "location": {
         "semantic": {
-          "path": "6.8.2.5",
-          "depth": 4,
+          "path": "10.2.5",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3857,18 +3674,17 @@
       },
       "style_info": null,
       "token_count": 360,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "3cb7c1b3-53ca-57a5-96f0-1e4b41dcfaef",
+      "id": "3f5e77fe-ed2b-5d5c-bbba-e04de522cee9",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.2.6",
-          "depth": 4,
+          "path": "10.2.6",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3889,18 +3705,17 @@
       },
       "style_info": null,
       "token_count": 38,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "cc04cb7e-9c70-52e3-87e7-66d9934fec9a",
+      "id": "1f1f8fe1-f14b-5601-825e-ad6e95ccbb58",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.2.7",
-          "depth": 4,
+          "path": "10.2.7",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3921,18 +3736,17 @@
       },
       "style_info": null,
       "token_count": 72,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "21240dab-65ee-5501-b2c0-effd2b08f2da",
+      "id": "d3c24b0d-7bd6-54d1-8625-be5964876e62",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.2.8",
-          "depth": 4,
+          "path": "10.2.8",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.2 Model Variations"
           ]
@@ -3953,18 +3767,17 @@
       },
       "style_info": null,
       "token_count": 132,
-      "parent": "fb630b63-6b7f-5cc1-9674-68ffa7309617",
+      "parent": "c2b30175-bd4e-5226-8b45-fad74218c4c1",
       "children": []
     },
     {
-      "id": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "id": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.8.3",
-          "depth": 3,
+          "path": "10.3",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -3985,28 +3798,27 @@
       },
       "style_info": null,
       "token_count": 8,
-      "parent": "a3ffbad7-0f65-5e95-981e-226863b3354c",
+      "parent": "7f79edae-607d-5311-a855-0aab258d8129",
       "children": [
-        "bcee615b-ca59-50e9-8983-2a2e1d92e0a1",
-        "27cb9e0b-7094-5b27-a1c6-0ee7ce230e11",
-        "34eb1b1a-bfab-51f3-bc52-87ec5a560abc",
-        "0dd8aac6-3ca3-5709-b1fb-62e4d75f1bde",
-        "03a002aa-9fdd-54e3-95f4-3d24d4d54be7",
-        "74a3adf7-31cf-5e6c-bff0-e5e787d63acb",
-        "7386e5a2-6ce3-5b92-81c3-0d40351cdb5a",
-        "37d645db-d60f-52dd-8cb4-dd8228d98126",
-        "93334fd1-895c-5a48-8e76-03dbbd6e6500"
+        "fcae56a5-fb67-5361-8253-e3671df4d5b7",
+        "7150ce6e-87b3-52f6-a1ae-e478f586c0fb",
+        "911c97af-2f36-5402-9126-869b5be131bc",
+        "2e4a65ba-bf51-5a60-857f-6b63d7ba9dc5",
+        "89944094-f510-5103-85a1-9eabe344af42",
+        "65165237-ad9a-55fd-9c68-304129599802",
+        "4185185c-0a10-5485-8aaa-e77031adde06",
+        "342dedc9-c734-5e84-8e82-ff800aca5298",
+        "ba5155f4-ef5e-571f-a032-14829827fa78"
       ]
     },
     {
-      "id": "bcee615b-ca59-50e9-8983-2a2e1d92e0a1",
+      "id": "fcae56a5-fb67-5361-8253-e3671df4d5b7",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.3.1",
-          "depth": 4,
+          "path": "10.3.1",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4027,18 +3839,17 @@
       },
       "style_info": null,
       "token_count": 96,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "27cb9e0b-7094-5b27-a1c6-0ee7ce230e11",
+      "id": "7150ce6e-87b3-52f6-a1ae-e478f586c0fb",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.3.2",
-          "depth": 4,
+          "path": "10.3.2",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4059,18 +3870,17 @@
       },
       "style_info": null,
       "token_count": 106,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "34eb1b1a-bfab-51f3-bc52-87ec5a560abc",
+      "id": "911c97af-2f36-5402-9126-869b5be131bc",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.3.3",
-          "depth": 4,
+          "path": "10.3.3",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4091,18 +3901,17 @@
       },
       "style_info": null,
       "token_count": 72,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "0dd8aac6-3ca3-5709-b1fb-62e4d75f1bde",
+      "id": "2e4a65ba-bf51-5a60-857f-6b63d7ba9dc5",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.8.3.4",
-          "depth": 4,
+          "path": "10.3.4",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4123,18 +3932,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "03a002aa-9fdd-54e3-95f4-3d24d4d54be7",
+      "id": "89944094-f510-5103-85a1-9eabe344af42",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.3.5",
-          "depth": 4,
+          "path": "10.3.5",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4155,18 +3963,17 @@
       },
       "style_info": null,
       "token_count": 27,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "74a3adf7-31cf-5e6c-bff0-e5e787d63acb",
+      "id": "65165237-ad9a-55fd-9c68-304129599802",
       "node_type": "Table",
       "location": {
         "semantic": {
-          "path": "6.8.3.6",
-          "depth": 4,
+          "path": "10.3.6",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4187,18 +3994,17 @@
       },
       "style_info": null,
       "token_count": 194,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "7386e5a2-6ce3-5b92-81c3-0d40351cdb5a",
+      "id": "4185185c-0a10-5485-8aaa-e77031adde06",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.3.7",
-          "depth": 4,
+          "path": "10.3.7",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4219,18 +4025,17 @@
       },
       "style_info": null,
       "token_count": 40,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "37d645db-d60f-52dd-8cb4-dd8228d98126",
+      "id": "342dedc9-c734-5e84-8e82-ff800aca5298",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.3.8",
-          "depth": 4,
+          "path": "10.3.8",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4251,18 +4056,17 @@
       },
       "style_info": null,
       "token_count": 58,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "93334fd1-895c-5a48-8e76-03dbbd6e6500",
+      "id": "ba5155f4-ef5e-571f-a032-14829827fa78",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.8.3.9",
-          "depth": 4,
+          "path": "10.3.9",
+          "depth": 3,
           "breadcrumbs": [
-            "3 Model Architecture",
             "6 Results",
             "6.3 English Constituency Parsing"
           ]
@@ -4283,18 +4087,17 @@
       },
       "style_info": null,
       "token_count": 42,
-      "parent": "b749b3c4-ba7f-5349-bcce-9a9f716b9d4c",
+      "parent": "7a6e0124-2f2c-51c9-8648-06bdf3f245f6",
       "children": []
     },
     {
-      "id": "6adce5d0-d459-5d28-99b2-7f4efb5a8f19",
+      "id": "32e6931a-d233-5177-8583-ffe25137feda",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.9",
-          "depth": 2,
+          "path": "11",
+          "depth": 1,
           "breadcrumbs": [
-            "3 Model Architecture",
             "7 Conclusion"
           ]
         },
@@ -4314,24 +4117,23 @@
       },
       "style_info": null,
       "token_count": 3,
-      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
-        "70d816fa-568f-5e11-b323-7a9ca257559f",
-        "05ced6db-09b8-5aa0-8ab5-9fe4980a106a",
-        "274c185a-0b5f-56a2-be41-96db21c2fb36",
-        "a48ba3a6-ddd1-5251-a833-6231e001613e",
-        "641ca444-4554-5682-aeed-e6715c63c782"
+        "a5f927ed-dc8e-5c02-9ed1-dbc88e7edc30",
+        "c809082f-cf3d-545b-b659-a90d54c714e0",
+        "9ada5ebd-c296-58d1-b1c5-9ad47fca0447",
+        "764df7bd-1c8d-573d-b6cc-7c17b4e50c10",
+        "a29c4c5c-39a7-563a-9d4d-a43cd054d17b"
       ]
     },
     {
-      "id": "70d816fa-568f-5e11-b323-7a9ca257559f",
+      "id": "a5f927ed-dc8e-5c02-9ed1-dbc88e7edc30",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.9.1",
-          "depth": 3,
+          "path": "11.1",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "7 Conclusion"
           ]
         },
@@ -4351,18 +4153,17 @@
       },
       "style_info": null,
       "token_count": 56,
-      "parent": "6adce5d0-d459-5d28-99b2-7f4efb5a8f19",
+      "parent": "32e6931a-d233-5177-8583-ffe25137feda",
       "children": []
     },
     {
-      "id": "05ced6db-09b8-5aa0-8ab5-9fe4980a106a",
+      "id": "c809082f-cf3d-545b-b659-a90d54c714e0",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.9.2",
-          "depth": 3,
+          "path": "11.2",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "7 Conclusion"
           ]
         },
@@ -4382,18 +4183,17 @@
       },
       "style_info": null,
       "token_count": 85,
-      "parent": "6adce5d0-d459-5d28-99b2-7f4efb5a8f19",
+      "parent": "32e6931a-d233-5177-8583-ffe25137feda",
       "children": []
     },
     {
-      "id": "274c185a-0b5f-56a2-be41-96db21c2fb36",
+      "id": "9ada5ebd-c296-58d1-b1c5-9ad47fca0447",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.9.3",
-          "depth": 3,
+          "path": "11.3",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "7 Conclusion"
           ]
         },
@@ -4413,18 +4213,17 @@
       },
       "style_info": null,
       "token_count": 100,
-      "parent": "6adce5d0-d459-5d28-99b2-7f4efb5a8f19",
+      "parent": "32e6931a-d233-5177-8583-ffe25137feda",
       "children": []
     },
     {
-      "id": "a48ba3a6-ddd1-5251-a833-6231e001613e",
+      "id": "764df7bd-1c8d-573d-b6cc-7c17b4e50c10",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.9.4",
-          "depth": 3,
+          "path": "11.4",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "7 Conclusion"
           ]
         },
@@ -4444,18 +4243,17 @@
       },
       "style_info": null,
       "token_count": 27,
-      "parent": "6adce5d0-d459-5d28-99b2-7f4efb5a8f19",
+      "parent": "32e6931a-d233-5177-8583-ffe25137feda",
       "children": []
     },
     {
-      "id": "641ca444-4554-5682-aeed-e6715c63c782",
+      "id": "a29c4c5c-39a7-563a-9d4d-a43cd054d17b",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.9.5",
-          "depth": 3,
+          "path": "11.5",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "7 Conclusion"
           ]
         },
@@ -4475,18 +4273,17 @@
       },
       "style_info": null,
       "token_count": 32,
-      "parent": "6adce5d0-d459-5d28-99b2-7f4efb5a8f19",
+      "parent": "32e6931a-d233-5177-8583-ffe25137feda",
       "children": []
     },
     {
-      "id": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "id": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.10",
-          "depth": 2,
+          "path": "12",
+          "depth": 1,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4506,28 +4303,27 @@
       },
       "style_info": null,
       "token_count": 2,
-      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
-        "0aa5902f-2d70-59da-bf97-eb9ea8112ef1",
-        "17b4c4aa-01f9-5aff-9776-e6b8ecf1dbab",
-        "47038df7-f3fa-579e-b337-e108e882360b",
-        "a7ea4f49-f999-5203-ae5f-7183f64aba81",
-        "5d794046-e681-5361-b07b-5e0b5453477d",
-        "5ea77ff4-2ea9-5a0e-9d32-fd26068251a6",
-        "6348e249-b7b5-59cb-8db5-7de5dc7914db",
-        "a278e809-9716-57a8-a49f-26d59e12db6f",
-        "41a9c075-4bed-5c59-8cd0-417ba94bef43"
+        "c768fe67-cff2-54da-b2e1-e54a71a730a9",
+        "ae42b926-a90a-5058-9f20-fee25aaca5ca",
+        "630896e5-dac9-55c7-8125-054e8ce5690d",
+        "6448108f-4954-5e8f-afee-29fdad470316",
+        "7b6ac11b-899d-5e41-a59a-6ce4cdfb0a80",
+        "a2737949-661b-5dcd-a7c9-0f429b54384e",
+        "3125e651-e967-5901-a17f-6971988796e8",
+        "e69f7c3b-c70c-5f2b-918d-a7d9fcf0180c",
+        "533f3150-c919-54f1-a670-bf54bece0a22"
       ]
     },
     {
-      "id": "0aa5902f-2d70-59da-bf97-eb9ea8112ef1",
+      "id": "c768fe67-cff2-54da-b2e1-e54a71a730a9",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.10.1",
-          "depth": 3,
+          "path": "12.1",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4547,18 +4343,17 @@
       },
       "style_info": null,
       "token_count": 29,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "17b4c4aa-01f9-5aff-9776-e6b8ecf1dbab",
+      "id": "ae42b926-a90a-5058-9f20-fee25aaca5ca",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.10.2",
-          "depth": 3,
+          "path": "12.2",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4578,18 +4373,17 @@
       },
       "style_info": null,
       "token_count": 38,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "47038df7-f3fa-579e-b337-e108e882360b",
+      "id": "630896e5-dac9-55c7-8125-054e8ce5690d",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.10.3",
-          "depth": 3,
+          "path": "12.3",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4609,18 +4403,17 @@
       },
       "style_info": null,
       "token_count": 39,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "a7ea4f49-f999-5203-ae5f-7183f64aba81",
+      "id": "6448108f-4954-5e8f-afee-29fdad470316",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.10.4",
-          "depth": 3,
+          "path": "12.4",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4640,18 +4433,17 @@
       },
       "style_info": null,
       "token_count": 35,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "5d794046-e681-5361-b07b-5e0b5453477d",
+      "id": "7b6ac11b-899d-5e41-a59a-6ce4cdfb0a80",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.10.5",
-          "depth": 3,
+          "path": "12.5",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4671,18 +4463,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "5ea77ff4-2ea9-5a0e-9d32-fd26068251a6",
+      "id": "a2737949-661b-5dcd-a7c9-0f429b54384e",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.10.6",
-          "depth": 3,
+          "path": "12.6",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4702,18 +4493,17 @@
       },
       "style_info": null,
       "token_count": 804,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "6348e249-b7b5-59cb-8db5-7de5dc7914db",
+      "id": "3125e651-e967-5901-a17f-6971988796e8",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.10.7",
-          "depth": 3,
+          "path": "12.7",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4733,18 +4523,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "a278e809-9716-57a8-a49f-26d59e12db6f",
+      "id": "e69f7c3b-c70c-5f2b-918d-a7d9fcf0180c",
       "node_type": "List",
       "location": {
         "semantic": {
-          "path": "6.10.8",
-          "depth": 3,
+          "path": "12.8",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4764,18 +4553,17 @@
       },
       "style_info": null,
       "token_count": 810,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "41a9c075-4bed-5c59-8cd0-417ba94bef43",
+      "id": "533f3150-c919-54f1-a670-bf54bece0a22",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.10.9",
-          "depth": 3,
+          "path": "12.9",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "References"
           ]
         },
@@ -4795,18 +4583,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "a3d8a9cc-48ff-5908-8214-9fe5c69cce11",
+      "parent": "51b0de81-acca-5396-a48d-853f69a96e6c",
       "children": []
     },
     {
-      "id": "db514fdb-2244-5fed-93a3-61dc47b16b90",
+      "id": "7144690b-d843-5acd-b4e7-afda4aa70b74",
       "node_type": "Section",
       "location": {
         "semantic": {
-          "path": "6.11",
-          "depth": 2,
+          "path": "13",
+          "depth": 1,
           "breadcrumbs": [
-            "3 Model Architecture",
             "Attention Visualizations"
           ]
         },
@@ -4826,25 +4613,24 @@
       },
       "style_info": null,
       "token_count": 6,
-      "parent": "eaf9a1b0-eb02-5c03-8cf8-ce755ba78f33",
+      "parent": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
       "children": [
-        "c2d25a91-5578-548a-a8b9-2453aca93dcb",
-        "0a6e3775-1455-5e33-b504-62e3e144ad5f",
-        "8bb73569-1f70-524c-8f0f-d3b38e0e57d2",
-        "13185f18-2a49-5442-91c4-8b7202dfc097",
-        "0339f18f-31d2-535e-a059-ca177ac49430",
-        "a2d770e9-e52a-5e54-beb8-abd2466550af"
+        "48a5409b-9f5d-553e-97b6-2cfa91edd8ea",
+        "43b72368-a2db-5714-bf75-791b5a6e652e",
+        "2c7c614b-3393-54e4-ace6-de1a521f7844",
+        "b5df2f62-95ff-55c2-a6a5-e5cf54629bb8",
+        "a7f5b285-57dd-5d5f-b961-4eb28bcbda70",
+        "b490c395-e2ed-5554-b047-c01e39b86692"
       ]
     },
     {
-      "id": "c2d25a91-5578-548a-a8b9-2453aca93dcb",
+      "id": "48a5409b-9f5d-553e-97b6-2cfa91edd8ea",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.11.1",
-          "depth": 3,
+          "path": "13.1",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "Attention Visualizations"
           ]
         },
@@ -4864,18 +4650,17 @@
       },
       "style_info": null,
       "token_count": 94,
-      "parent": "db514fdb-2244-5fed-93a3-61dc47b16b90",
+      "parent": "7144690b-d843-5acd-b4e7-afda4aa70b74",
       "children": []
     },
     {
-      "id": "0a6e3775-1455-5e33-b504-62e3e144ad5f",
+      "id": "43b72368-a2db-5714-bf75-791b5a6e652e",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.11.2",
-          "depth": 3,
+          "path": "13.2",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "Attention Visualizations"
           ]
         },
@@ -4895,18 +4680,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "db514fdb-2244-5fed-93a3-61dc47b16b90",
+      "parent": "7144690b-d843-5acd-b4e7-afda4aa70b74",
       "children": []
     },
     {
-      "id": "8bb73569-1f70-524c-8f0f-d3b38e0e57d2",
+      "id": "2c7c614b-3393-54e4-ace6-de1a521f7844",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.11.3",
-          "depth": 3,
+          "path": "13.3",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "Attention Visualizations"
           ]
         },
@@ -4926,18 +4710,17 @@
       },
       "style_info": null,
       "token_count": 66,
-      "parent": "db514fdb-2244-5fed-93a3-61dc47b16b90",
+      "parent": "7144690b-d843-5acd-b4e7-afda4aa70b74",
       "children": []
     },
     {
-      "id": "13185f18-2a49-5442-91c4-8b7202dfc097",
+      "id": "b5df2f62-95ff-55c2-a6a5-e5cf54629bb8",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.11.4",
-          "depth": 3,
+          "path": "13.4",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "Attention Visualizations"
           ]
         },
@@ -4957,18 +4740,17 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "db514fdb-2244-5fed-93a3-61dc47b16b90",
+      "parent": "7144690b-d843-5acd-b4e7-afda4aa70b74",
       "children": []
     },
     {
-      "id": "0339f18f-31d2-535e-a059-ca177ac49430",
+      "id": "a7f5b285-57dd-5d5f-b961-4eb28bcbda70",
       "node_type": "Paragraph",
       "location": {
         "semantic": {
-          "path": "6.11.5",
-          "depth": 3,
+          "path": "13.5",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "Attention Visualizations"
           ]
         },
@@ -4988,18 +4770,17 @@
       },
       "style_info": null,
       "token_count": 67,
-      "parent": "db514fdb-2244-5fed-93a3-61dc47b16b90",
+      "parent": "7144690b-d843-5acd-b4e7-afda4aa70b74",
       "children": []
     },
     {
-      "id": "a2d770e9-e52a-5e54-beb8-abd2466550af",
+      "id": "b490c395-e2ed-5554-b047-c01e39b86692",
       "node_type": "Footer",
       "location": {
         "semantic": {
-          "path": "6.11.6",
-          "depth": 3,
+          "path": "13.6",
+          "depth": 2,
           "breadcrumbs": [
-            "3 Model Architecture",
             "Attention Visualizations"
           ]
         },
@@ -5019,12 +4800,12 @@
       },
       "style_info": null,
       "token_count": 1,
-      "parent": "db514fdb-2244-5fed-93a3-61dc47b16b90",
+      "parent": "7144690b-d843-5acd-b4e7-afda4aa70b74",
       "children": []
     }
   ],
   "document_info": {
-    "root_id": "73ef22d9-3d6b-5b1a-8729-02a0c2240e55",
+    "root_id": "4ebf3068-37d1-56cd-9c8a-77258db90c86",
     "kind": "document",
     "document_metadata": {
       "title": null,
@@ -5050,7 +4831,7 @@
         {
           "title": "Abstract",
           "order": 1,
-          "level": 3
+          "level": 1
         },
         {
           "title": "1 Introduction",
@@ -5070,12 +4851,12 @@
         {
           "title": "3.1 Encoder and Decoder Stacks",
           "order": 5,
-          "level": 3
+          "level": 2
         },
         {
           "title": "3.2 Attention",
           "order": 6,
-          "level": 3
+          "level": 2
         },
         {
           "title": "3.2.1 Scaled Dot-Product Attention",
@@ -5095,82 +4876,82 @@
         {
           "title": "3.3 Position-wise Feed-Forward Networks",
           "order": 10,
-          "level": 3
+          "level": 2
         },
         {
           "title": "3.4 Embeddings and Softmax",
           "order": 11,
-          "level": 3
+          "level": 2
         },
         {
           "title": "3.5 Positional Encoding",
           "order": 12,
-          "level": 3
+          "level": 2
         },
         {
           "title": "4 Why Self-Attention",
           "order": 13,
-          "level": 2
+          "level": 1
         },
         {
           "title": "5 Training",
           "order": 14,
-          "level": 2
+          "level": 1
         },
         {
           "title": "5.1 Training Data and Batching",
           "order": 15,
-          "level": 3
+          "level": 2
         },
         {
           "title": "5.2 Hardware and Schedule",
           "order": 16,
-          "level": 3
+          "level": 2
         },
         {
           "title": "5.3 Optimizer",
           "order": 17,
-          "level": 3
+          "level": 2
         },
         {
           "title": "5.4 Regularization",
           "order": 18,
-          "level": 3
+          "level": 2
         },
         {
           "title": "6 Results",
           "order": 19,
-          "level": 2
+          "level": 1
         },
         {
           "title": "6.1 Machine Translation",
           "order": 20,
-          "level": 3
+          "level": 2
         },
         {
           "title": "6.2 Model Variations",
           "order": 21,
-          "level": 3
+          "level": 2
         },
         {
           "title": "6.3 English Constituency Parsing",
           "order": 22,
-          "level": 3
+          "level": 2
         },
         {
           "title": "7 Conclusion",
           "order": 23,
-          "level": 2
+          "level": 1
         },
         {
           "title": "References",
           "order": 24,
-          "level": 2
+          "level": 1
         },
         {
           "title": "Attention Visualizations",
           "order": 25,
-          "level": 2
+          "level": 1
         }
       ]
     },
@@ -5708,12 +5489,12 @@
       "max_depth": 4,
       "depth_counts": {
         "0": 1,
-        "1": 5,
-        "2": 19,
-        "3": 53,
-        "4": 73
+        "1": 12,
+        "2": 59,
+        "3": 64,
+        "4": 15
       },
-      "avg_depth": 3.2715232
+      "avg_depth": 2.5298014
     }
   }
 }

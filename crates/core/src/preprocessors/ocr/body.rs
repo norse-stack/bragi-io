@@ -53,6 +53,13 @@
 //! a single Section body must stay single-line on the bgraph.md wire.
 //! Degrades gracefully; never panics.
 //!
+//! Those per-page levels are then subject to the CR-98 normalization
+//! post-pass ([`super::numbering`]): where a coherent majority of the
+//! Section titles carry a numbering scheme (`3.2.1` / `A.1`), the
+//! numbering's rank replaces the OCR level — see
+//! [`normalize_outline_by_numbering`]. Unnumbered documents pass through
+//! byte-identical.
+//!
 //! ## ParseIdentity / provenance
 //!
 //! Returns [`ParseIdentity::Verified`] (same "we parsed successfully"
@@ -91,7 +98,15 @@ pub fn parse_ocr(bytes: &[u8], _opts: ParseOptions) -> Result<ParseResult, Parse
         .map_err(|e| ParseError::MalformedOcr(format!("not an OCR-4 JSON payload: {e}")))?;
 
     // 2. Project blocks → elements.
-    let projection = project_blocks(&doc);
+    let mut projection = project_blocks(&doc);
+
+    // 2b. CR-98: numbering-rank outline normalization. Runs after
+    //     block→variant mapping and BEFORE the graph build + outline
+    //     assembly, so Section node depths, `SemanticLocation`
+    //     path/depth/breadcrumbs, and `outline_data` are all derived by
+    //     the existing builder from the already-normalized levels
+    //     (no post-build patching). No-op when the coherence gate fails.
+    normalize_outline_by_numbering(&mut projection);
 
     // 3. Provenance. `config_hash = "none"` (no tunables — like DOCX/MD).
     let provenance = ParseProvenance {
@@ -234,6 +249,47 @@ fn project_blocks(doc: &OcrDocument) -> Projection {
         dpi: first_dpi,
         images_skipped,
         empty_skipped,
+    }
+}
+
+/// CR-98 post-pass: where a coherent majority of the document's Section
+/// titles carry a numbering scheme, the numbering's rank (component
+/// count of `3.2.1` / `A.1`, capped at
+/// [`super::numbering::MAX_OUTLINE_DEPTH`]) replaces Mistral's per-page
+/// heading levels. The decision core is
+/// [`super::numbering::normalized_levels`]; this function applies its
+/// verdict to the projection:
+///
+/// - each Section element (and its `outline` twin) takes its normalized
+///   level, in emission order;
+/// - each non-Section leaf re-attaches under the *normalized* level of
+///   the last Section before it (`level + 1`; `1` before any Section) —
+///   the same attachment rule `project_blocks` used with the raw levels,
+///   so node depths and the outline stay in agreement.
+///
+/// When the gate fails (`None`) the projection is left untouched —
+/// unnumbered documents come out byte-identical to pre-CR-98 output.
+fn normalize_outline_by_numbering(projection: &mut Projection) {
+    let titles: Vec<&str> = projection.outline.iter().map(|(t, _)| t.as_str()).collect();
+    let s1_levels: Vec<u32> = projection.outline.iter().map(|(_, lvl)| *lvl).collect();
+    let Some(levels) = super::numbering::normalized_levels(&titles, &s1_levels) else {
+        return;
+    };
+
+    for ((_, lvl), new) in projection.outline.iter_mut().zip(&levels) {
+        *lvl = *new;
+    }
+
+    let mut section_idx = 0usize;
+    let mut current_section_level: u32 = 0;
+    for element in &mut projection.elements {
+        if element.element_type == SemanticElementType::Section {
+            element.hierarchy_level = levels[section_idx];
+            current_section_level = levels[section_idx];
+            section_idx += 1;
+        } else {
+            element.hierarchy_level = current_section_level + 1;
+        }
     }
 }
 
@@ -666,6 +722,151 @@ mod tests {
             nodes_of_type(&graph, "Section")[0].location.semantic.depth,
             1
         );
+    }
+
+    // --- CR-98: numbering-rank outline normalization ------------------
+
+    #[test]
+    fn numbering_rank_overrides_noisy_per_page_levels() {
+        // The attention defect in miniature: same-rank chapters land on
+        // different markdown levels page to page (no cross-page memory).
+        // The numbering rank must win.
+        let page1 = [
+            block("title", "## Attention Is All You Need", 10.0),
+            block("title", "### Abstract", 30.0),
+            block("title", "# 1 Introduction", 50.0),
+            block("text", "intro body", 70.0),
+            block("title", "# 2 Background", 90.0),
+        ]
+        .join(",");
+        let page2 = [
+            // Per-page amnesia: chapter 3 arrives one level deep.
+            block("title", "## 3 Model Architecture", 10.0),
+            block("title", "### 3.1 Encoder and Decoder Stacks", 30.0),
+            block("text", "encoder body", 50.0),
+            block("title", "### 3.2 Attention", 70.0),
+            block("title", "#### 3.2.1 Scaled Dot-Product Attention", 90.0),
+        ]
+        .join(",");
+        let page3 = [
+            block("title", "## A. Training Details", 10.0),
+            block("title", "### A.1 Optimizer", 30.0),
+            block("title", "## References", 50.0),
+        ]
+        .join(",");
+        let json = payload(&format!(
+            r#"{{"index":0,"blocks":[{page1}]}},{{"index":1,"blocks":[{page2}]}},{{"index":2,"blocks":[{page3}]}}"#
+        ));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let sections = nodes_of_type(&graph, "Section");
+        let got: Vec<(String, u32)> = sections
+            .iter()
+            .map(|n| (n.content.text.clone(), n.location.semantic.depth))
+            .collect();
+        let want: Vec<(&str, u32)> = vec![
+            ("Attention Is All You Need", 2), // leading title: stays at S1's level
+            ("Abstract", 1),                  // unnumbered → depth 1
+            ("1 Introduction", 1),
+            ("2 Background", 1),
+            ("3 Model Architecture", 1), // rank beats the noisy `##`
+            ("3.1 Encoder and Decoder Stacks", 2),
+            ("3.2 Attention", 2),
+            ("3.2.1 Scaled Dot-Product Attention", 3),
+            ("A. Training Details", 1), // appendix letter = rank 1
+            ("A.1 Optimizer", 2),
+            ("References", 1), // unnumbered → depth 1
+        ];
+        assert_eq!(
+            got,
+            want.into_iter()
+                .map(|(t, l)| (t.to_string(), l))
+                .collect::<Vec<_>>()
+        );
+        // Leaves re-attach under the NORMALIZED section level.
+        let paras = nodes_of_type(&graph, "Paragraph");
+        assert_eq!(paras[0].content.text, "intro body");
+        assert_eq!(paras[0].location.semantic.depth, 2); // under depth-1 "1 Introduction"
+        assert_eq!(paras[1].content.text, "encoder body");
+        assert_eq!(paras[1].location.semantic.depth, 3); // under depth-2 "3.1"
+        // outline_data agrees with the node depths (min level is 1, so
+        // the rebase is the identity).
+        let outline = graph.document_info.outline_data.as_ref().unwrap();
+        assert_eq!(outline.sections.len(), 11);
+        assert_eq!(outline.sections[0].level, 2);
+        assert_eq!(outline.sections[4].level, 1);
+        assert_eq!(outline.sections[7].level, 3);
+    }
+
+    #[test]
+    fn rfc_shape_trailing_dot_numbering_normalizes() {
+        // rfc-quic shape: stacked title block + `N.` / `N.M.` numbering.
+        let blocks = [
+            block("title", "# RFC 9000\n## QUIC: A UDP-Based Multiplexed Transport", 10.0),
+            block("title", "# 1. Introduction", 30.0),
+            block("title", "## 1.1. Document Structure", 50.0),
+            block("title", "# 2. Streams", 70.0),
+            block("title", "## 2.1. Stream Types and Identifiers", 90.0),
+            block("title", "# 3. Flow Control", 110.0),
+        ]
+        .join(",");
+        let json = payload(&format!(r#"{{"index":0,"blocks":[{blocks}]}}"#));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let sections = nodes_of_type(&graph, "Section");
+        let depths: Vec<u32> = sections.iter().map(|n| n.location.semantic.depth).collect();
+        // "RFC 9000" is the leading title (RFC is an acronym, not
+        // numbering) — keeps S1's level 1. The unnumbered subtitle
+        // attaches at depth 1; ranks carry the rest.
+        assert_eq!(depths, vec![1, 1, 1, 2, 1, 2, 1]);
+    }
+
+    #[test]
+    fn deep_numbering_folds_to_the_cap_through_the_full_parse() {
+        let blocks = [
+            block("title", "# 1 Alpha", 10.0),
+            block("title", "## 1.1 Beta", 30.0),
+            block("title", "### 1.1.1 Gamma", 50.0),
+            block("title", "#### 1.1.1.1 Delta", 70.0),
+            block("title", "##### 1.1.1.1.1 Epsilon", 90.0),
+            block("text", "leaf under the fold", 110.0),
+        ]
+        .join(",");
+        let json = payload(&format!(r#"{{"index":0,"blocks":[{blocks}]}}"#));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let sections = nodes_of_type(&graph, "Section");
+        let depths: Vec<u32> = sections.iter().map(|n| n.location.semantic.depth).collect();
+        assert_eq!(depths, vec![1, 2, 3, 4, 4], "rank 5 folds to the cap");
+        let para = &nodes_of_type(&graph, "Paragraph")[0];
+        assert_eq!(para.location.semantic.depth, 5);
+    }
+
+    #[test]
+    fn unnumbered_document_projection_is_untouched() {
+        // Gate negative: no numbering anywhere — the pass must leave the
+        // projection exactly as S1 built it (levels, outline, order).
+        let blocks = [
+            block("title", "## Overview", 10.0),
+            block("text", "prose", 30.0),
+            block("title", "### Details", 50.0),
+            block("title", "## Wrap-Up", 70.0),
+        ]
+        .join(",");
+        let json = payload(&format!(r#"{{"index":0,"blocks":[{blocks}]}}"#));
+        let doc: OcrDocument = serde_json::from_slice(&json).unwrap();
+        let mut projection = project_blocks(&doc);
+        let levels_before: Vec<u32> = projection
+            .elements
+            .iter()
+            .map(|e| e.hierarchy_level)
+            .collect();
+        let outline_before = projection.outline.clone();
+        normalize_outline_by_numbering(&mut projection);
+        let levels_after: Vec<u32> = projection
+            .elements
+            .iter()
+            .map(|e| e.hierarchy_level)
+            .collect();
+        assert_eq!(levels_before, levels_after);
+        assert_eq!(outline_before, projection.outline);
     }
 
     // --- flow / provenance / metadata / identity ----------------------
