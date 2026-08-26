@@ -1,5 +1,5 @@
 ```bgraph
-{"schema":"1.1.0","kind":"document","bragi_version":"0.5.0","source":{"format":"ocr","sha256":"818fa0c521fec6d424fae41f412ecfdaa1c486d5a9db24ae87db0091b0b0b94e"},"flow_type":"Fixed","config_hash":"none","bgraph_sha256":"10b4ac45901b308738356c89d2c369792be0b227f795800965021b179c44d299"}
+{"schema":"1.1.0","kind":"document","bragi_version":"0.5.0","source":{"format":"ocr","sha256":"818fa0c521fec6d424fae41f412ecfdaa1c486d5a9db24ae87db0091b0b0b94e"},"flow_type":"Fixed","config_hash":"none","bgraph_sha256":"9ac1086bd1e9c7ad5a7e6590c4b935c38cc455d560addbe4efb3032fbac3f70d"}
 ```
 
 ```bgraph-metadata
@@ -7,7 +7,7 @@
 ```
 
 ```bgraph-outline
-{"sections":[{"title":"Attention Is All You Need","order":0,"level":2},{"title":"Abstract","order":1,"level":1},{"title":"1 Introduction","order":2,"level":1},{"title":"2 Background","order":3,"level":1},{"title":"3 Model Architecture","order":4,"level":1},{"title":"3.1 Encoder and Decoder Stacks","order":5,"level":2},{"title":"3.2 Attention","order":6,"level":2},{"title":"3.2.1 Scaled Dot-Product Attention","order":7,"level":3},{"title":"3.2.2 Multi-Head Attention","order":8,"level":3},{"title":"3.2.3 Applications of Attention in our Model","order":9,"level":3},{"title":"3.3 Position-wise Feed-Forward Networks","order":10,"level":2},{"title":"3.4 Embeddings and Softmax","order":11,"level":2},{"title":"3.5 Positional Encoding","order":12,"level":2},{"title":"4 Why Self-Attention","order":13,"level":1},{"title":"5 Training","order":14,"level":1},{"title":"5.1 Training Data and Batching","order":15,"level":2},{"title":"5.2 Hardware and Schedule","order":16,"level":2},{"title":"5.3 Optimizer","order":17,"level":2},{"title":"5.4 Regularization","order":18,"level":2},{"title":"6 Results","order":19,"level":1},{"title":"6.1 Machine Translation","order":20,"level":2},{"title":"6.2 Model Variations","order":21,"level":2},{"title":"6.3 English Constituency Parsing","order":22,"level":2},{"title":"7 Conclusion","order":23,"level":1},{"title":"References","order":24,"level":1},{"title":"Attention Visualizations","order":25,"level":1}]}
+{"sections":[{"title":"Attention Is All You Need","order":0,"level":1},{"title":"Abstract","order":1,"level":1},{"title":"1 Introduction","order":2,"level":1},{"title":"2 Background","order":3,"level":1},{"title":"3 Model Architecture","order":4,"level":1},{"title":"3.1 Encoder and Decoder Stacks","order":5,"level":2},{"title":"3.2 Attention","order":6,"level":2},{"title":"3.2.1 Scaled Dot-Product Attention","order":7,"level":3},{"title":"3.2.2 Multi-Head Attention","order":8,"level":3},{"title":"3.2.3 Applications of Attention in our Model","order":9,"level":3},{"title":"3.3 Position-wise Feed-Forward Networks","order":10,"level":2},{"title":"3.4 Embeddings and Softmax","order":11,"level":2},{"title":"3.5 Positional Encoding","order":12,"level":2},{"title":"4 Why Self-Attention","order":13,"level":1},{"title":"5 Training","order":14,"level":1},{"title":"5.1 Training Data and Batching","order":15,"level":2},{"title":"5.2 Hardware and Schedule","order":16,"level":2},{"title":"5.3 Optimizer","order":17,"level":2},{"title":"5.4 Regularization","order":18,"level":2},{"title":"6 Results","order":19,"level":1},{"title":"6.1 Machine Translation","order":20,"level":2},{"title":"6.2 Model Variations","order":21,"level":2},{"title":"6.3 English Constituency Parsing","order":22,"level":2},{"title":"7 Conclusion","order":23,"level":1},{"title":"References","order":24,"level":1},{"title":"Attention Visualizations","order":25,"level":1}]}
 ```
 
 arXiv:1706.03762v7 [cs.CL] 2 Aug 2023
@@ -20,64 +20,64 @@ Provided proper attribution is provided, Google hereby grants permission to repr
 {"id":"e1c5df07-a7b3-5a48-a588-e8e3f04f7f12","node_type":"Paragraph","location":{"semantic":{"path":"2","depth":1,"breadcrumbs":[]},"physical":{"page":1,"bounding_box":{"x":120.77419,"y":68.90322,"width":366.96774,"height":41.032257}}},"text_order":1,"token_count":43,"style":null}
 ```
 
-## Attention Is All You Need
+# Attention Is All You Need
 ```bgraph-section
-{"id":"7962788f-d2e7-50bc-8359-c47c4b37c03d","node_type":"Section","location":{"semantic":{"path":"3","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":208.25806,"y":144.77419,"width":191.2258,"height":17.032257}}},"text_order":2,"token_count":6,"style":null}
+{"id":"7962788f-d2e7-50bc-8359-c47c4b37c03d","node_type":"Section","location":{"semantic":{"path":"3","depth":1,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":208.25806,"y":144.77419,"width":191.2258,"height":17.032257}}},"text_order":2,"token_count":6,"style":null}
 ```
 
 **Ashish Vaswani***
 Google Brain
 avaswani@google.com
 ```bgraph-paragraph
-{"id":"ee38678d-a9a5-5625-90b8-5602c44e0981","node_type":"Paragraph","location":{"semantic":{"path":"3.1","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":113.80645,"y":229.93547,"width":102.967735,"height":34.838707}}},"text_order":3,"token_count":13,"style":null}
+{"id":"ee38678d-a9a5-5625-90b8-5602c44e0981","node_type":"Paragraph","location":{"semantic":{"path":"3.1","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":113.80645,"y":229.93547,"width":102.967735,"height":34.838707}}},"text_order":3,"token_count":13,"style":null}
 ```
 
 **Noam Shazeer***
 Google Brain
 noam@google.com
 ```bgraph-paragraph
-{"id":"c359bd88-46f5-527b-9347-ca61a63695c8","node_type":"Paragraph","location":{"semantic":{"path":"3.2","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":227.6129,"y":229.93547,"width":82.064514,"height":34.838707}}},"text_order":4,"token_count":11,"style":null}
+{"id":"c359bd88-46f5-527b-9347-ca61a63695c8","node_type":"Paragraph","location":{"semantic":{"path":"3.2","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":227.6129,"y":229.93547,"width":82.064514,"height":34.838707}}},"text_order":4,"token_count":11,"style":null}
 ```
 
 **Niki Parmar***
 Google Research
 nikip@google.com
 ```bgraph-paragraph
-{"id":"37d225ff-4508-5407-acec-66580c8f6977","node_type":"Paragraph","location":{"semantic":{"path":"3.3","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":319.7419,"y":229.93547,"width":88.258064,"height":34.838707}}},"text_order":5,"token_count":12,"style":null}
+{"id":"37d225ff-4508-5407-acec-66580c8f6977","node_type":"Paragraph","location":{"semantic":{"path":"3.3","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":319.7419,"y":229.93547,"width":88.258064,"height":34.838707}}},"text_order":5,"token_count":12,"style":null}
 ```
 
 **Jakob Uszkoreit***
 Google Research
 usz@google.com
 ```bgraph-paragraph
-{"id":"bbe992f0-1cbc-536a-959e-f96e07700690","node_type":"Paragraph","location":{"semantic":{"path":"3.4","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":418.83868,"y":229.93547,"width":77.41935,"height":34.838707}}},"text_order":6,"token_count":12,"style":null}
+{"id":"bbe992f0-1cbc-536a-959e-f96e07700690","node_type":"Paragraph","location":{"semantic":{"path":"3.4","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":418.83868,"y":229.93547,"width":77.41935,"height":34.838707}}},"text_order":6,"token_count":12,"style":null}
 ```
 
 **Llion Jones***
 Google Research
 llion@google.com
 ```bgraph-paragraph
-{"id":"804e1606-47bd-5fca-9a0a-69a50aaf965f","node_type":"Paragraph","location":{"semantic":{"path":"3.5","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":123.870964,"y":279.48386,"width":87.48387,"height":34.838707}}},"text_order":7,"token_count":12,"style":null}
+{"id":"804e1606-47bd-5fca-9a0a-69a50aaf965f","node_type":"Paragraph","location":{"semantic":{"path":"3.5","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":123.870964,"y":279.48386,"width":87.48387,"height":34.838707}}},"text_order":7,"token_count":12,"style":null}
 ```
 
 **Aidan N. Gomez*** †
 University of Toronto
 aidan@cs.toronto.edu
 ```bgraph-paragraph
-{"id":"5d13743e-3470-565f-9072-cc03a90d2b64","node_type":"Paragraph","location":{"semantic":{"path":"3.6","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":232.25806,"y":279.48386,"width":107.6129,"height":34.838707}}},"text_order":8,"token_count":16,"style":null}
+{"id":"5d13743e-3470-565f-9072-cc03a90d2b64","node_type":"Paragraph","location":{"semantic":{"path":"3.6","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":232.25806,"y":279.48386,"width":107.6129,"height":34.838707}}},"text_order":8,"token_count":16,"style":null}
 ```
 
 **Łukasz Kaiser***
 Google Brain
 lukaszkaiser@google.com
 ```bgraph-paragraph
-{"id":"658e54ea-aac7-591b-820b-58bd0c9d13a2","node_type":"Paragraph","location":{"semantic":{"path":"3.7","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":361.54837,"y":279.48386,"width":123.09677,"height":34.838707}}},"text_order":9,"token_count":14,"style":null}
+{"id":"658e54ea-aac7-591b-820b-58bd0c9d13a2","node_type":"Paragraph","location":{"semantic":{"path":"3.7","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":361.54837,"y":279.48386,"width":123.09677,"height":34.838707}}},"text_order":9,"token_count":14,"style":null}
 ```
 
 **Illia Polosukhin*** ‡
 illia.polosukhin@gmail.com
 ```bgraph-paragraph
-{"id":"d11be79e-cea3-55f2-a14c-1a6d23a51a09","node_type":"Paragraph","location":{"semantic":{"path":"3.8","depth":3,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":235.35483,"y":329.80643,"width":138.58064,"height":24.0}}},"text_order":10,"token_count":13,"style":null}
+{"id":"d11be79e-cea3-55f2-a14c-1a6d23a51a09","node_type":"Paragraph","location":{"semantic":{"path":"3.8","depth":2,"breadcrumbs":["Attention Is All You Need"]},"physical":{"page":1,"bounding_box":{"x":235.35483,"y":329.80643,"width":138.58064,"height":24.0}}},"text_order":10,"token_count":13,"style":null}
 ```
 
 # Abstract

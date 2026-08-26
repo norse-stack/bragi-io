@@ -81,10 +81,12 @@ pub(super) fn numbering_depth(title: &str) -> Option<u32> {
 /// Level assignment when the gate passes:
 /// - numbered title → its numbering rank, capped at [`MAX_OUTLINE_DEPTH`]
 ///   (deeper numbering folds to the cap, children swallowed upward);
-/// - the leading title (index 0), when unnumbered, keeps its S1 level
-///   (capped) — it is the document title, not a section;
-/// - any other unnumbered title (Abstract, References, Acknowledgements)
-///   attaches at depth 1.
+/// - any unnumbered title (Abstract, References, Acknowledgements — and
+///   the leading document title) attaches at depth 1. Pinning the title
+///   to the top is a presentation heuristic, not an invariant (CR-98
+///   decision note): not every document opens with its title; the true
+///   one-doc-one-title invariant lives in `DocumentMetadata`, which the
+///   S2 native-arm graft supplies. The outline entry is presentation.
 ///
 /// Degrades toward flat, never panics, never exceeds the cap.
 pub(super) fn normalized_levels(titles: &[&str], s1_levels: &[u32]) -> Option<Vec<u32>> {
@@ -100,13 +102,11 @@ pub(super) fn normalized_levels(titles: &[&str], s1_levels: &[u32]) -> Option<Ve
     Some(
         depths
             .iter()
-            .enumerate()
-            .map(|(i, depth)| match depth {
+            .map(|depth| match depth {
                 Some(rank) => (*rank).min(MAX_OUTLINE_DEPTH),
-                // Leading unnumbered title = document title: stays where
-                // S1 put it (capped, and floored to 1 like S1's default).
-                None if i == 0 => s1_levels[0].clamp(1, MAX_OUTLINE_DEPTH),
-                // Other unnumbered sections attach at depth 1.
+                // Unnumbered titles — the leading document title included —
+                // attach at depth 1 (see the doc comment: presentation
+                // heuristic, not an invariant).
                 None => 1,
             })
             .collect(),
@@ -214,24 +214,24 @@ mod tests {
     // --- level assignment ---------------------------------------------
 
     #[test]
-    fn leading_unnumbered_title_keeps_its_s1_level() {
+    fn leading_unnumbered_title_pins_to_depth_one() {
         let titles = ["My Paper Title", "1 Introduction", "2 Background", "2.1 Prior Work"];
         let levels = normalized_levels(&titles, &[2, 1, 2, 2]).expect("3/4 passes");
-        assert_eq!(levels, vec![2, 1, 1, 2]);
+        assert_eq!(levels, vec![1, 1, 1, 2]);
     }
 
     #[test]
-    fn non_leading_unnumbered_sections_attach_at_depth_one() {
+    fn unnumbered_sections_attach_at_depth_one() {
         // Attention-shaped: title + Abstract + numbered chapters +
         // References. 6 numbered of 9 = exactly 2/3 — gate passes;
-        // Abstract and References land at 1, the title keeps S1's 2.
+        // title, Abstract and References all land at 1.
         let titles = [
             "Title", "Abstract", "1 Intro", "2 Body", "2.1 Sub", "3 More", "3.1 Sub", "3.2 Sub",
             "References",
         ];
         let levels =
             normalized_levels(&titles, &[2, 3, 1, 1, 3, 2, 3, 3, 2]).expect("6/9 passes");
-        assert_eq!(levels, vec![2, 1, 1, 1, 2, 1, 2, 2, 1]);
+        assert_eq!(levels, vec![1, 1, 1, 1, 2, 1, 2, 2, 1]);
     }
 
     #[test]
@@ -250,12 +250,13 @@ mod tests {
     }
 
     #[test]
-    fn leading_title_s1_level_is_capped_and_floored() {
-        // S1 level deeper than the cap folds down; a zero floors to 1.
+    fn leading_title_depth_is_independent_of_its_s1_level() {
+        // Whatever level OCR gave the title — inflated, zero, anything —
+        // the pin to depth 1 wins.
         let titles = ["Deep Title", "1 A", "2 B", "3 C"];
         assert_eq!(
             normalized_levels(&titles, &[6, 1, 1, 1]).expect("3/4 passes"),
-            vec![4, 1, 1, 1]
+            vec![1, 1, 1, 1]
         );
         assert_eq!(
             normalized_levels(&titles, &[0, 1, 1, 1]).expect("3/4 passes"),

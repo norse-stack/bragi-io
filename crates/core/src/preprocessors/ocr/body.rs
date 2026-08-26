@@ -764,7 +764,7 @@ mod tests {
             .map(|n| (n.content.text.clone(), n.location.semantic.depth))
             .collect();
         let want: Vec<(&str, u32)> = vec![
-            ("Attention Is All You Need", 2), // leading title: stays at S1's level
+            ("Attention Is All You Need", 1), // leading title: pinned to the top
             ("Abstract", 1),                  // unnumbered → depth 1
             ("1 Introduction", 1),
             ("2 Background", 1),
@@ -792,7 +792,7 @@ mod tests {
         // the rebase is the identity).
         let outline = graph.document_info.outline_data.as_ref().unwrap();
         assert_eq!(outline.sections.len(), 11);
-        assert_eq!(outline.sections[0].level, 2);
+        assert_eq!(outline.sections[0].level, 1);
         assert_eq!(outline.sections[4].level, 1);
         assert_eq!(outline.sections[7].level, 3);
     }
@@ -814,7 +814,7 @@ mod tests {
         let sections = nodes_of_type(&graph, "Section");
         let depths: Vec<u32> = sections.iter().map(|n| n.location.semantic.depth).collect();
         // "RFC 9000" is the leading title (RFC is an acronym, not
-        // numbering) — keeps S1's level 1. The unnumbered subtitle
+        // numbering) — pinned to depth 1. The unnumbered subtitle
         // attaches at depth 1; ranks carry the rest.
         assert_eq!(depths, vec![1, 1, 1, 2, 1, 2, 1]);
     }

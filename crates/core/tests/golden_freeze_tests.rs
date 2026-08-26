@@ -558,7 +558,7 @@ fn golden_freeze_demo_ocr_outline_reads_true() {
         .map(|s| (s.title.as_str(), s.level))
         .collect();
     let want: Vec<(&str, u32)> = vec![
-        ("Attention Is All You Need", 2), // leading title — stays where S1 put it
+        ("Attention Is All You Need", 1), // leading title — pinned to the top (CR-98 decision note)
         ("Abstract", 1),
         ("1 Introduction", 1),
         ("2 Background", 1),
