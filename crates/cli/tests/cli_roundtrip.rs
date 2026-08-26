@@ -785,3 +785,95 @@ fn cli_unknown_input_format_errors_with_clear_message() {
         "expected a clear 'unsupported format' message; got:\n{combined}"
     );
 }
+
+// =========================================================================
+// OCR S2 — `--companion-pdf` error shapes (all JVM-free: each error fires
+// before any JVM is spun up).
+// =========================================================================
+
+/// A minimal Mistral OCR-4 payload that passes the `is_ocr_json` sniff.
+const TINY_OCR_JSON: &str =
+    r#"{"pages":[{"index":0,"markdown":"hi","blocks":[{"content":"hi","type":"text"}]}]}"#;
+
+fn run_cli(args: &[&str]) -> (bool, String) {
+    let output = Command::new(BIN).args(args).output().expect("CLI binary spawns");
+    let combined = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+    (output.status.success(), combined)
+}
+
+#[test]
+fn cli_companion_pdf_with_non_ocr_input_is_usage_error() {
+    let dir = unique_temp_dir("companion-non-ocr");
+    let md = dir.join("doc.md");
+    std::fs::write(&md, "# just markdown\n\nprose\n").expect("write md");
+    let pdf = dir.join("companion.pdf");
+    std::fs::write(&pdf, b"%PDF-1.5 stand-in").expect("write pdf");
+
+    let (ok, combined) = run_cli(&[
+        "parse",
+        "-i",
+        md.to_str().unwrap(),
+        "--companion-pdf",
+        pdf.to_str().unwrap(),
+    ]);
+    assert!(!ok, "--companion-pdf on a non-OCR input must be a usage error");
+    assert!(
+        combined.contains("--companion-pdf applies only to OCR inputs"),
+        "expected the usage error to name the constraint; got:\n{combined}"
+    );
+}
+
+#[test]
+fn cli_companion_pdf_unreadable_is_error_not_silent_single_arm() {
+    let dir = unique_temp_dir("companion-unreadable");
+    let ocr = dir.join("mist.json");
+    std::fs::write(&ocr, TINY_OCR_JSON).expect("write ocr json");
+
+    let (ok, combined) = run_cli(&[
+        "parse",
+        "-i",
+        ocr.to_str().unwrap(),
+        "--companion-pdf",
+        dir.join("no-such.pdf").to_str().unwrap(),
+        "-o",
+        dir.join("out.json").to_str().unwrap(),
+    ]);
+    assert!(!ok, "an unreadable companion must fail the parse");
+    assert!(
+        combined.contains("failed to read companion PDF"),
+        "expected the read failure to be named; got:\n{combined}"
+    );
+    assert!(
+        !dir.join("out.json").exists(),
+        "no output may be produced — a silent single-arm fallback would lie"
+    );
+}
+
+#[test]
+fn cli_companion_pdf_empty_is_error_not_silent_single_arm() {
+    let dir = unique_temp_dir("companion-empty");
+    let ocr = dir.join("mist.json");
+    std::fs::write(&ocr, TINY_OCR_JSON).expect("write ocr json");
+    let pdf = dir.join("empty.pdf");
+    std::fs::write(&pdf, b"").expect("write empty pdf");
+
+    let (ok, combined) = run_cli(&[
+        "parse",
+        "-i",
+        ocr.to_str().unwrap(),
+        "--companion-pdf",
+        pdf.to_str().unwrap(),
+        "-o",
+        dir.join("out.json").to_str().unwrap(),
+    ]);
+    assert!(!ok, "an empty companion must fail the parse");
+    assert!(
+        combined.contains("empty (0 bytes)"),
+        "expected the empty-companion error; got:\n{combined}"
+    );
+    assert!(!dir.join("out.json").exists());
+}

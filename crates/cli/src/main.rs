@@ -109,6 +109,19 @@ struct ParseArgs {
     #[arg(long)]
     jar_path: Option<String>,
 
+    /// Companion PDF for the OCR channel (S2 premium graft): run the
+    /// native arm's metadata extraction over this PDF and merge its
+    /// doc-level fields into the OCR graph (canonical fields fill from
+    /// the container; `pdf.*` namespace grafted verbatim;
+    /// `companion_pdf_sha256` recorded in the `ocr.*` namespace). The
+    /// PDF is a metadata companion, not a second source — provenance
+    /// stays the OCR JSON's. OCR (.json) inputs only; requires the
+    /// jni-backend feature (the graft rides the Tika path). Named
+    /// `--companion-pdf` (not `--metadata-…`) because the companion
+    /// carries S3 later (refs/links, bbox join).
+    #[arg(long)]
+    companion_pdf: Option<String>,
+
     /// Enable detailed profiling of all pipeline steps. PDF channel only.
     #[arg(long)]
     profile: bool,
@@ -329,7 +342,21 @@ fn run_parse(args: ParseArgs) -> Result<()> {
     // Schema 0.7.0+ (B6): both bgraph.md and generic markdown flow
     // through the unified `parse_markdown` dispatcher. Routing is
     // the lib's job — we just pass the bytes.
-    match detect_input_format(Path::new(&args.input))? {
+    let format = detect_input_format(Path::new(&args.input))?;
+
+    // `--companion-pdf` is the OCR channel's premium graft — on any other
+    // input it is a usage error, caught before any channel work starts.
+    if args.companion_pdf.is_some() && !matches!(format, InputFormat::Ocr { .. }) {
+        return Err(anyhow!(
+            "--companion-pdf applies only to OCR inputs (a Mistral OCR-4 .json payload); \
+             {} is not one.\n\
+             The flag grafts the companion PDF's native metadata into an OCR parse — \
+             for a PDF input, parse the PDF directly instead.",
+            args.input
+        ));
+    }
+
+    match format {
         InputFormat::Markdown { content } => run_parse_markdown(args, content),
         InputFormat::Pdf => run_parse_pdf(args, cache_dir),
         InputFormat::Docx => run_parse_docx(args),
@@ -663,10 +690,73 @@ fn run_parse_ocr(args: ParseArgs, bytes: Vec<u8>) -> Result<()> {
     let opts = ParseOptions {
         accept_drift: strict_accept_drift(),
     };
+
+    // S2: a companion PDF routes through the graft (native metadata
+    // merged in). Errors are loud — the user asked for the graft;
+    // silently degrading to a single-arm parse would lie about what the
+    // output is.
+    if let Some(pdf_path) = args.companion_pdf.clone() {
+        return run_parse_ocr_grafted(args, bytes, pdf_path, opts);
+    }
+
     let result =
         parse_ocr(&bytes, opts).map_err(|e| anyhow!("\n❌ OCR parse failed: {e}\n"))?;
 
     emit_parsed_graph(&args, result.graph, result.provenance)
+}
+
+/// The S2 premium path: OCR parse + native-metadata graft from the
+/// companion PDF via the Tika seam.
+#[cfg(feature = "jni-backend")]
+fn run_parse_ocr_grafted(
+    args: ParseArgs,
+    ocr_bytes: Vec<u8>,
+    pdf_path: String,
+    opts: bragi_io_core::preprocessors::md::ParseOptions,
+) -> Result<()> {
+    use bragi_io_core::preprocessors::ocr::parse_ocr_with_pdf;
+    use bragi_io_core::preprocessors::pdf::PdfPreprocessor;
+
+    println!("🧬 Grafting native metadata from companion PDF: {pdf_path}");
+
+    // Fail loud BEFORE spinning up a JVM: an unreadable or empty
+    // companion can never silently produce a single-arm parse.
+    let pdf_bytes = std::fs::read(&pdf_path)
+        .map_err(|e| anyhow!("failed to read companion PDF {pdf_path}: {e}"))?;
+    if pdf_bytes.is_empty() {
+        return Err(anyhow!("companion PDF {pdf_path} is empty (0 bytes)"));
+    }
+
+    let (jre_path, jar_path) = resolve_jni_paths(&args)?;
+    let preprocessor = PdfPreprocessor::new_with_jni(&jre_path, &jar_path)?;
+
+    let result = parse_ocr_with_pdf(&ocr_bytes, &pdf_bytes, opts, &preprocessor)
+        .map_err(|e| anyhow!("\n❌ OCR graft parse failed: {e}\n"))?;
+
+    emit_parsed_graph(&args, result.graph, result.provenance)?;
+
+    // A JVM was spun up for the seam — fast exit skips its shutdown
+    // sequence, same as the PDF channel's success branch.
+    std::process::exit(0);
+}
+
+/// Fallback when no JNI backend is compiled in: the graft rides the
+/// Tika path, so the flag is a clear error here — not a panic, and
+/// never a silent single-arm parse.
+#[cfg(not(feature = "jni-backend"))]
+fn run_parse_ocr_grafted(
+    _args: ParseArgs,
+    _ocr_bytes: Vec<u8>,
+    _pdf_path: String,
+    _opts: bragi_io_core::preprocessors::md::ParseOptions,
+) -> Result<()> {
+    Err(anyhow!(
+        "--companion-pdf requires the jni-backend feature: the native metadata graft \
+         extracts the companion PDF's metadata via the Tika path, which this build was \
+         compiled without.\n\
+         Rebuild with: cargo build --release -p bragi-io --features jni-backend\n\
+         (or parse the OCR JSON without --companion-pdf for a single-arm graph)."
+    ))
 }
 
 // =========================================================================
@@ -840,9 +930,11 @@ fn resolve_cache_dir(args: &ParseArgs) -> Result<String> {
     }
 }
 
-/// Create DocumentProcessor with JNI backend (cross-platform, auto-downloads JRE)
+/// Resolve the JRE + Tika JAR paths for the JNI backend — from flags,
+/// JAVA_HOME, or the auto-download/bundle fallback. Shared by the PDF
+/// channel's processor and the OCR graft's companion seam.
 #[cfg(feature = "jni-backend")]
-fn create_processor(args: &ParseArgs, cache_dir: &str) -> Result<DocumentProcessor> {
+fn resolve_jni_paths(args: &ParseArgs) -> Result<(std::path::PathBuf, std::path::PathBuf)> {
     // Get JRE path - either from args, JAVA_HOME, or auto-download
     let jre_path = if let Some(path) = &args.jre_path {
         println!("🔧 Using specified JRE: {}", path);
@@ -870,6 +962,13 @@ fn create_processor(args: &ParseArgs, cache_dir: &str) -> Result<DocumentProcess
         path
     };
 
+    Ok((jre_path, jar_path))
+}
+
+/// Create DocumentProcessor with JNI backend (cross-platform, auto-downloads JRE)
+#[cfg(feature = "jni-backend")]
+fn create_processor(args: &ParseArgs, cache_dir: &str) -> Result<DocumentProcessor> {
+    let (jre_path, jar_path) = resolve_jni_paths(args)?;
     println!("🚀 Using JNI backend");
     DocumentProcessor::new_cli_jni_with_cache(&jre_path, &jar_path, cache_dir)
 }
@@ -897,6 +996,7 @@ fn show_help() {
     println!("  --minimal-parse         Enable minimal parse mode (PDF only)");
     println!("  --jre-path <path>       Path to JRE directory (default: auto-download)");
     println!("  --jar-path <path>       Path to Tika JAR file (default: bundled)");
+    println!("  --companion-pdf <path>  Graft the PDF's native metadata into an OCR parse (OCR input only)");
 
     println!("\n🗄️  Cache Control (PDF only):");
     println!("  --cache-dir <path>      Override cache directory");
@@ -933,6 +1033,7 @@ fn show_help() {
     println!("  bragi parse -i document.pdf");
     println!("  bragi parse -i document.docx");
     println!("  bragi parse -i mist.json -f bgraph-md -o document.bgraph.md");
+    println!("  bragi parse -i mist.json --companion-pdf document.pdf -f bgraph-md");
     println!("  bragi parse -i document.docx -f markdown -o document.md");
     println!("  bragi parse -i document.pdf -f bgraph-md -o document.bgraph.md");
     println!("  bragi parse -i document.md -f markdown -o roundtrip.md");

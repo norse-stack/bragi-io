@@ -52,13 +52,34 @@ GOT_SHA=$(sha "$TMP/out.md" || true)
 WANT_SHA=$(sha "$GOLDEN_MD" || true)
 GOT_NODES=$(grep -oE 'Graph: [0-9]+ nodes' "$TMP/parse.log" | grep -oE '[0-9]+' | head -1 || true)
 
+# --- OCR S2 graft leg. The graft golden is frozen JVM-free by replaying
+# Tika's COMMITTED C1 XHTML for the companion; this is the lane that proves
+# a LIVE Tika run over the same PDF still yields identical native metadata
+# (the Tika-stability equality the freeze assumes). Same committed source
+# pair: demo-ocr/source.json + the attention PDF twin.
+OCR_SRC=crates/core/test_fixtures/golden/1.0.0/demo-ocr/source.json
+GRAFT_GOLDEN_MD=crates/core/test_fixtures/golden/1.0.0/demo-ocr/document.graft.bgraph.md
+
 echo
-echo "   nodes:         got=${GOT_NODES:-?}  want=$EXPECT_NODES"
-echo "   bgraph_sha256: got=${GOT_SHA:-?}"
-echo "                  want=${WANT_SHA:-?}"
+echo "🧬 JVM smoke — OCR graft: fresh Tika metadata seam over the companion PDF"
+PREPROCESSOR_JRE_PATH="$JRE" PREPROCESSOR_JAR_PATH="$JAR" JAVA_HOME="$JRE" \
+  "$CLI" parse -i "$OCR_SRC" --companion-pdf "$PDF" --jar-path "$JAR" \
+    -f bgraph-md -o "$TMP/graft.md" \
+    2>&1 | tee "$TMP/graft.log"
+
+GOT_GRAFT_SHA=$(sha "$TMP/graft.md" || true)
+WANT_GRAFT_SHA=$(sha "$GRAFT_GOLDEN_MD" || true)
+
+echo
+echo "   nodes:               got=${GOT_NODES:-?}  want=$EXPECT_NODES"
+echo "   bgraph_sha256:       got=${GOT_SHA:-?}"
+echo "                        want=${WANT_SHA:-?}"
+echo "   graft bgraph_sha256: got=${GOT_GRAFT_SHA:-?}"
+echo "                        want=${WANT_GRAFT_SHA:-?}"
 
 fail=0
 [ "${GOT_NODES:-}" = "$EXPECT_NODES" ] || { echo "❌ node count mismatch"; fail=1; }
 { [ -n "${GOT_SHA:-}" ] && [ "$GOT_SHA" = "$WANT_SHA" ]; } || { echo "❌ bgraph_sha256 mismatch — the JNI path did not reproduce the golden"; fail=1; }
+{ [ -n "${GOT_GRAFT_SHA:-}" ] && [ "$GOT_GRAFT_SHA" = "$WANT_GRAFT_SHA" ]; } || { echo "❌ graft bgraph_sha256 mismatch — a live Tika metadata seam no longer reproduces the frozen graft golden"; fail=1; }
 [ "$fail" = 0 ] || { echo "❌ JVM smoke FAILED"; exit 1; }
-echo "✅ JVM smoke passed — the real JNI/Tika path reproduces the golden (${EXPECT_NODES} nodes, sha ${GOT_SHA:0:12}…)"
+echo "✅ JVM smoke passed — the real JNI/Tika path reproduces the golden (${EXPECT_NODES} nodes, sha ${GOT_SHA:0:12}…) and the OCR graft (sha ${GOT_GRAFT_SHA:0:12}…)"
