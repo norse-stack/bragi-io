@@ -33,16 +33,32 @@
 //! fields (`title`/`author`/`description`/`language`/`created`) are all
 //! `None` by design** — the OCR JSON has no source-native document
 //! metadata, and synthesizing a title from the first heading would be a
-//! body-side fallback (09-metadata-first-class § F-02). S2 grafts the
-//! canonical fields from the native arm; leaving them null *is* the
-//! design. The `ocr:` namespace ([`crate::types::OcrMetadata`]) carries
-//! what the payload knows about its own run.
+//! body-side fallback (09-metadata-first-class § F-02). Leaving them
+//! null *is* the single-arm design. The `ocr:` namespace
+//! ([`crate::types::OcrMetadata`]) carries what the payload knows about
+//! its own run.
+//!
+//! ## Native metadata graft (S2)
+//!
+//! [`graft`] fills the gap on the premium path: the native arm's
+//! metadata extraction runs over a companion PDF and its doc-level
+//! fields merge into the OCR graph with a fixed precedence policy
+//! (native wins canonical fields; `pdf` namespace verbatim; `ocr`
+//! namespace untouched except `companion_pdf_sha256`).
+//! [`graft::parse_ocr_with_pdf`] is the composed entry point
+//! (`jni-backend`); [`graft::graft_native_metadata`] is the pure,
+//! JVM-free merge. No companion → byte-identical to the single-arm
+//! output.
 
 pub mod body;
+pub mod graft;
 mod numbering;
 pub mod payload;
 
 pub use body::parse_ocr;
+pub use graft::{companion_sha256, graft_native_metadata, native_metadata_from_xhtml};
+#[cfg(feature = "jni-backend")]
+pub use graft::parse_ocr_with_pdf;
 pub use payload::is_ocr_json;
 
 use crate::preprocessors::metadata::MetadataExtractor;
@@ -122,6 +138,10 @@ impl MetadataExtractor for OcrMetadataExtractor {
             pages_processed: self.pages_processed,
             doc_size_bytes: self.doc_size_bytes,
             dpi: self.dpi,
+            // S2 linkage — set only by the graft
+            // ([`super::ocr::graft_native_metadata`]), never by the
+            // single-arm extraction.
+            companion_pdf_sha256: None,
             extras: std::collections::BTreeMap::new(),
         })
     }

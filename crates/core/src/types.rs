@@ -881,6 +881,19 @@ pub struct OcrMetadata {
     /// `pages[].dimensions.dpi` of the first page carrying dimensions —
     /// the raster resolution the pixel bboxes were reported at.
     pub dpi: Option<u32>,
+    /// S2 companion linkage: sha256 of the companion PDF whose native-arm
+    /// metadata was grafted into this graph
+    /// ([`crate::preprocessors::ocr::graft_native_metadata`]). `None` on
+    /// single-arm parses. Serialized absent-when-`None` (same convention as
+    /// the namespace slots on [`DocumentMetadata`]) so a no-companion parse
+    /// stays byte-identical to the S1 single-arm output — `document_metadata`
+    /// is inside the hashed content body, and the graft must change nothing
+    /// it wasn't asked to. The PDF is a metadata *companion*, not a second
+    /// source: provenance keeps `source_format: "ocr"` / `source_sha256` =
+    /// the mist.json bytes, and the PDF's hash lives here in the `ocr`
+    /// namespace.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub companion_pdf_sha256: Option<String>,
     #[serde(default)]
     pub extras: BTreeMap<String, serde_json::Value>,
 }
