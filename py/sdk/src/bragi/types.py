@@ -411,11 +411,38 @@ class DocxMetadata:
 
 
 @dataclass
+class OcrMetadata:
+    """OCR-channel metadata namespace (S1): what the Mistral OCR run knows
+    about itself. Canonical fields (``title``/``author``/…) come from the
+    companion PDF's native arm when grafted — ``companion_pdf_sha256`` records
+    that linkage (``None`` on single-arm parses).
+    """
+
+    model: Optional[str] = None
+    pages_processed: Optional[int] = None
+    doc_size_bytes: Optional[int] = None
+    dpi: Optional[int] = None
+    companion_pdf_sha256: Optional[str] = None
+    extras: Dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, d: Dict[str, Any]) -> "OcrMetadata":
+        return cls(
+            model=d.get("model"),
+            pages_processed=d.get("pages_processed"),
+            doc_size_bytes=d.get("doc_size_bytes"),
+            dpi=d.get("dpi"),
+            companion_pdf_sha256=d.get("companion_pdf_sha256"),
+            extras=dict(d.get("extras", {})),
+        )
+
+
+@dataclass
 class DocumentMetadata:
     """Document metadata: universal extracted fields + channel namespaces (CR-57).
 
-    Only one of ``pdf`` / ``md`` / ``docx`` is populated per document — the one
-    matching the source channel.
+    Only one of ``pdf`` / ``md`` / ``docx`` / ``ocr`` is populated per document —
+    the one matching the source channel.
     """
 
     title: Optional[str] = None
@@ -426,12 +453,14 @@ class DocumentMetadata:
     pdf: Optional[PdfMetadata] = None
     md: Optional[MdMetadata] = None
     docx: Optional[DocxMetadata] = None
+    ocr: Optional[OcrMetadata] = None
 
     @classmethod
     def from_dict(cls, d: Dict[str, Any]) -> "DocumentMetadata":
         pdf = d.get("pdf")
         md = d.get("md")
         docx = d.get("docx")
+        ocr = d.get("ocr")
         return cls(
             title=d.get("title"),
             author=d.get("author"),
@@ -441,6 +470,7 @@ class DocumentMetadata:
             pdf=PdfMetadata.from_dict(pdf) if pdf else None,
             md=MdMetadata.from_dict(md) if md else None,
             docx=DocxMetadata.from_dict(docx) if docx else None,
+            ocr=OcrMetadata.from_dict(ocr) if ocr else None,
         )
 
 

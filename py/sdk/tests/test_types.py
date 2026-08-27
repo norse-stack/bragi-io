@@ -1,8 +1,8 @@
 """Deserialization of the 1.0.0 graph.json fixtures into typed BragiGraph.
 
 Ground truth: `attention_graph.json` (PDF, Fixed flow) + `demo_md_graph.json`
-(markdown, Free flow), both regenerated from the core golden family via
-`make sync-python-fixture`.
+(markdown, Free flow) + `demo_ocr_graph.json` (OCR, Fixed flow), all
+regenerated from the core golden family via `make sync-python-fixture`.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from bragi.types import (
     InternalRef,
     NodeContent,
     NodeLocation,
+    OcrMetadata,
     ParseProvenance,
     PhysicalLocation,
     SemanticLocation,
@@ -36,6 +37,13 @@ _FIXTURES_DIR = Path(__file__).parent / "fixtures"
 def demo_md_graph() -> BragiGraph:
     """The Free-flow markdown fixture (regression-guards flow_type)."""
     raw = json.loads((_FIXTURES_DIR / "demo_md_graph.json").read_text(encoding="utf-8"))
+    return BragiGraph.from_dict(raw)
+
+
+@pytest.fixture
+def demo_ocr_graph() -> BragiGraph:
+    """The OCR-channel fixture (mist.json input, schema 1.1.0)."""
+    raw = json.loads((_FIXTURES_DIR / "demo_ocr_graph.json").read_text(encoding="utf-8"))
     return BragiGraph.from_dict(raw)
 
 
@@ -279,3 +287,43 @@ class TestNodeContent:
     def test_section_has_meaningful_text(self, attention_graph: BragiGraph) -> None:
         sections = attention_graph.sections
         assert any("Attention" in s.content.text for s in sections)
+
+
+class TestOcrChannel:
+    """The OCR channel (S1): mist.json input, OcrMetadata, Equation nodes."""
+
+    def test_ocr_provenance(self, demo_ocr_graph: BragiGraph) -> None:
+        prov = demo_ocr_graph.parse_provenance
+        assert prov.source_format == "ocr"
+        assert len(prov.source_sha256) == 64
+
+    def test_ocr_metadata_namespace(self, demo_ocr_graph: BragiGraph) -> None:
+        meta = demo_ocr_graph.document_info.document_metadata
+        assert meta.pdf is None and meta.md is None and meta.docx is None
+        ocr = meta.ocr
+        assert isinstance(ocr, OcrMetadata)
+        assert ocr.model == "mistral-ocr-4-0"
+        assert ocr.pages_processed == 15
+        assert ocr.doc_size_bytes == 2215244
+        assert ocr.dpi == 93
+        # Single-arm parse: no companion PDF was grafted.
+        assert ocr.companion_pdf_sha256 is None
+
+    def test_ocr_title_inferred(self, demo_ocr_graph: BragiGraph) -> None:
+        meta = demo_ocr_graph.document_info.document_metadata
+        assert meta.title == "Attention Is All You Need"
+
+    def test_equation_nodes(self, demo_ocr_graph: BragiGraph) -> None:
+        equations = [n for n in demo_ocr_graph.nodes if n.node_type == "Equation"]
+        assert len(equations) == 6
+        # Equations carry physical locations like any Fixed-flow node.
+        assert all(e.location.physical is not None for e in equations)
+
+    def test_companion_pdf_sha256_from_dict(self) -> None:
+        """The grafted-parse field (S2) deserializes when present."""
+        ocr = OcrMetadata.from_dict(
+            {"model": "mistral-ocr-4-0", "companion_pdf_sha256": "ab" * 32}
+        )
+        assert ocr.companion_pdf_sha256 == "ab" * 32
+        assert ocr.pages_processed is None
+        assert ocr.extras == {}

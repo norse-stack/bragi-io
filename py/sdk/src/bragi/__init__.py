@@ -44,6 +44,7 @@ from bragi.types import (
     NodeContent,
     NodeLocation,
     NodeTypeDistribution,
+    OcrMetadata,
     ParseProvenance,
     PdfMetadata,
     PhysicalLocation,
@@ -83,6 +84,7 @@ __all__ = [
     "PdfMetadata",
     "MdMetadata",
     "DocxMetadata",
+    "OcrMetadata",
     "BookmarkData",
     "BookmarkSection",
     # Structural profile types

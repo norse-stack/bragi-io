@@ -260,6 +260,7 @@ All types are plain Python dataclasses with full IDE autocomplete. Import them f
 | `PdfMetadata` | PDF-channel metadata namespace |
 | `MdMetadata` | Markdown-channel metadata namespace (frontmatter) |
 | `DocxMetadata` | DOCX-channel metadata namespace |
+| `OcrMetadata` | OCR-channel metadata namespace (model, pages, companion PDF) |
 | `BookmarkData` | Document outline (PDF bookmarks) |
 | `BookmarkSection` | A single outline entry |
 | `StructuralProfile` | Graph statistics |

@@ -217,6 +217,8 @@ sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fix
 		--cache-dir $(GOLDEN_CACHE) --fresh-from c2
 	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-md/source.md -f bgraph \
 		-o $(PY_FIXTURES)/demo_md_graph.json
+	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-ocr/source.json -f bgraph \
+		-o $(PY_FIXTURES)/demo_ocr_graph.json
 	@echo "✅ Python fixtures regenerated under $(PY_FIXTURES)/"
 
 ## The SDK's test venv, created on demand. The repo's python is uv-managed, and
