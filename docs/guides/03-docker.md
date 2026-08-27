@@ -16,7 +16,7 @@ The server starts on `http://localhost:8080`. Verify it's running:
 
 ```bash
 curl http://localhost:8080/health
-# {"name": "Bragi API — Self-Hosted", "status": "healthy", "version": "0.5.0"}
+# {"name": "Bragi API — Self-Hosted", "status": "healthy", "version": "0.6.0"}
 ```
 
 ### With docker run
