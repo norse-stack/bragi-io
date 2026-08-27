@@ -1,5 +1,5 @@
 ```bgraph
-{"schema":"1.1.0","kind":"document","bragi_version":"0.5.0","source":{"format":"ocr","sha256":"818fa0c521fec6d424fae41f412ecfdaa1c486d5a9db24ae87db0091b0b0b94e"},"flow_type":"Fixed","config_hash":"none","bgraph_sha256":"69fa626c1cac24ca60acc45fa3e4005ba4c4837930cd5f36c313d2303a3282c5"}
+{"schema":"1.1.0","kind":"document","bragi_version":"0.6.0","source":{"format":"ocr","sha256":"818fa0c521fec6d424fae41f412ecfdaa1c486d5a9db24ae87db0091b0b0b94e"},"flow_type":"Fixed","config_hash":"none","bgraph_sha256":"69fa626c1cac24ca60acc45fa3e4005ba4c4837930cd5f36c313d2303a3282c5"}
 ```
 
 ```bgraph-metadata
