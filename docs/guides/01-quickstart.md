@@ -31,7 +31,7 @@ cargo install bragi-io
 pip install bragi-io
 ```
 
-> On first use for a PDF, the CLI fetches a Java runtime (used for PDF text extraction) and caches it. DOCX and Markdown parse in pure Rust, no runtime needed.
+> On first use for a PDF, the CLI fetches a Java runtime (used for PDF text extraction) and caches it. DOCX, Markdown, and OCR JSON parse in pure Rust, no runtime needed.
 
 ---
 
@@ -39,11 +39,13 @@ pip install bragi-io
 
 ### CLI
 
-Input format is detected from the extension (`.pdf`, `.docx`, `.md`, `.bgraph.md`):
+Input format is detected from the extension (`.pdf`, `.docx`, `.md`, `.bgraph.md`, `.json`):
 
 ```bash
 bragi parse -i document.pdf -o document.bgraph.json
 ```
+
+A `.json` input is an OCR response payload (currently the Mistral OCR shape): the page blocks become the graph, equations land as `Equation` nodes, and `--companion-pdf original.pdf` grafts the original PDF's document metadata (title, author, …) into the result.
 
 Want the canonical Markdown serialization instead?
 
@@ -58,7 +60,7 @@ import bragi
 
 bgraph = bragi.parse_pdf("document.pdf")
 
-print(bgraph)                # <BragiGraph: 179 nodes, schema v1.0.0>
+print(bgraph)                # <BragiGraph: 179 nodes, schema v1.1.0>
 print(len(bgraph.sections))
 
 for section in bgraph.sections:
@@ -77,7 +79,7 @@ Everything below is one parse of the canonical example — *Attention Is All You
 
 ```json
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "bgraph_sha256": "f6d2fcf0d4b647b973d83197aefc3f7c8dd948ef7f259bb3eda2a7a8b2470299",
   "parse_provenance": { "bragi_version": "0.6.0", "source_format": "pdf", "...": "..." },
   "nodes": [ ... ],
@@ -88,7 +90,7 @@ Everything below is one parse of the canonical example — *Attention Is All You
 
 | Field | Description |
 |-------|-------------|
-| `schema_version` | The bgraph format version (`"1.0.0"`). Check it to detect shape changes. |
+| `schema_version` | The bgraph format version (`"1.1.0"`). Check it to detect shape changes. |
 | `bgraph_sha256` | An integrity hash proving this serialization round-trips back to the same graph. |
 | `parse_provenance` | The (version, source, config) triple that reproduces this parse. |
 | `nodes` | Every node in the document tree, sorted by reading order. |

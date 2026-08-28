@@ -52,7 +52,7 @@ This is the self-hosted tier — async processing without needing a hosted API k
 curl -X POST http://localhost:8080/v1/parse/pdf \
   --data-binary @document.pdf \
   -o bgraph.json
-# {"success": true, "graph": { "schema_version": "1.0.0", "nodes": [ ... ] }}
+# {"success": true, "graph": { "schema_version": "1.1.0", "nodes": [ ... ] }}
 ```
 
 ### Parameters

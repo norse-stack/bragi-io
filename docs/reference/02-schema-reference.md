@@ -2,7 +2,7 @@
 
 Complete field-by-field documentation of the Bragi output format (`bgraph.json`).
 
-**Schema version:** `1.0.0`
+**Schema version:** `1.1.0`
 **Source of truth:** [`types.rs`](../../crates/core/src/types.rs)
 
 All examples are from processing Claude Shannon's *A Mathematical Theory of Communication* (55 pages).
@@ -15,7 +15,7 @@ The root object of the `bgraph.json` output.
 
 ```json
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "bgraph_sha256": "f6d2fcf0…",
   "created_at": "1970-01-01T00:00:00Z",
   "parse_provenance": { ... },
@@ -27,7 +27,7 @@ The root object of the `bgraph.json` output.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `schema_version` | string | Output format version. Currently `"1.0.0"`. Check this to detect schema changes. |
+| `schema_version` | string | Output format version. Currently `"1.1.0"`. Check this to detect schema changes. |
 | `bgraph_sha256` | string (hex) | SHA-256 content address of the canonical graph. Identical inputs produce an identical hash; `created_at` is excluded so the address stays stable. |
 | `created_at` | string (ISO 8601) | When the graph was generated. A side-effect field — **not** part of `bgraph_sha256`. |
 | `parse_provenance` | object | How the graph was produced. See [ParseProvenance](#parseprovenance). |
@@ -53,7 +53,7 @@ How the graph was produced — the inputs that determine it.
 | Field | Type | Description |
 |-------|------|-------------|
 | `bragi_version` | string | Version of Bragi that produced this graph. |
-| `source_format` | string | Source format: `"pdf"`, `"md"`, or `"docx"`. |
+| `source_format` | string | Source format: `"pdf"`, `"markdown"`, `"docx"`, or `"ocr"`. |
 | `source_sha256` | string (hex) | SHA-256 of the source document bytes. |
 | `config_hash` | string (hex) | SHA-256 of the effective parsing config. |
 
@@ -82,7 +82,7 @@ Every element in the `nodes` array is a `DocumentNode`.
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string (UUID) | Unique identifier for this node. |
-| `node_type` | string | One of: `"Document"`, `"Section"`, `"Paragraph"`, `"Margin"`, `"List"`, `"ListItem"`, `"Table"`, `"Figure"`, `"Header"`, `"Footer"`. |
+| `node_type` | string | One of: `"Document"`, `"Section"`, `"Paragraph"`, `"Margin"`, `"Header"`, `"Footer"`, `"CodeBlock"`, `"List"`, `"Blockquote"`, `"Table"`, `"Equation"`. Treat as an open set — minor schema versions may add types. |
 | `location` | object | Where this node exists — both in the tree and on the page. See [NodeLocation](#nodelocation). |
 | `text_order` | integer? | Sequential reading order (0-indexed). `null` for the Document root. |
 | `content` | object | The node's text content. See [NodeContent](#nodecontent). |
@@ -98,14 +98,15 @@ Every element in the `nodes` array is a `DocumentNode`.
 | `Section` | Detected heading or structural division. | 1+ | Yes — paragraphs and nested sections |
 | `Paragraph` | Merged, semantically coherent text block. | 2+ | No (leaf) |
 | `Margin` | Page-anchored marginal text (page numbers, running heads) captured off the body. | 2+ | No (leaf) |
-| `List` | Container for list items. | 2+ | Yes — ListItem children |
-| `ListItem` | Individual list entry. | 3+ | No (leaf) |
-| `Table` | Detected table structure. | 2+ | Varies |
-| `Figure` | Detected figure or image reference. | 2+ | Varies |
 | `Header` | Page header (repeated content). | 2+ | No (leaf) |
 | `Footer` | Page footer (repeated content). | 2+ | No (leaf) |
+| `CodeBlock` | One code block, held verbatim (fence delimiters and language tag preserved). | 2+ | No (leaf) |
+| `List` | One list block, held verbatim (bullets/numbering preserved). | 2+ | No (leaf) |
+| `Blockquote` | One blockquote, held verbatim (`>` markers preserved). | 2+ | No (leaf) |
+| `Table` | One table, held verbatim (pipe syntax preserved). | 2+ | No (leaf) |
+| `Equation` | One display-math block, verbatim LaTeX as delivered by the source (schema 1.1.0). | 2+ | No (leaf) |
 
-Currently, PDF processing primarily produces `Document`, `Section`, `Paragraph`, and `Margin` nodes. The remaining types are defined in the schema for future format support.
+Each source channel produces a subset of this union: PDF emits `Section`/`Paragraph`/`Margin`, Markdown and DOCX add the verbatim block types, and OCR emits the widest set including `Header`/`Footer`/`Equation`. Filter on the types you care about rather than assuming which appear.
 
 ---
 
@@ -205,7 +206,7 @@ Document-level metadata. Not a node in the tree — information *about* the docu
 
 ### DocumentMetadata
 
-Universal fields sit at the top; format-specific metadata lives in a channel namespace (`pdf`, `md`, or `docx`) matching the source. At most one namespace is present, and it is absent entirely when the source carried no format-specific metadata. All fields are pass-through — Bragi doesn't infer or modify them.
+Universal fields sit at the top; format-specific metadata lives in a channel namespace (`pdf`, `md`, `docx`, or `ocr`) matching the source. At most one namespace is present, and it is absent entirely when the source carried no format-specific metadata. All fields are pass-through — Bragi doesn't infer or modify them.
 
 ```json
 {
@@ -237,7 +238,7 @@ Universal fields sit at the top; format-specific metadata lives in a channel nam
 | `description` | string? | Document description. |
 | `language` | string? | Language tag (e.g., `"en"`, `"de"`). |
 | `created` | string? | Creation timestamp (ISO 8601). |
-| `pdf` / `md` / `docx` | object? | The channel namespace matching the source. At most one is present; absent when the source has no format-specific metadata. |
+| `pdf` / `md` / `docx` / `ocr` | object? | The channel namespace matching the source. At most one is present; absent when the source has no format-specific metadata. |
 
 **`pdf` namespace:**
 
@@ -252,6 +253,17 @@ Universal fields sit at the top; format-specific metadata lives in a channel nam
 | `has_marked_content` | boolean? | Whether the PDF has tagged/marked content (accessibility structure). |
 | `modified` | string? | Last modification timestamp (ISO 8601). |
 | `extras` | object | Raw pass-through of remaining Tika metadata keys (string → string). |
+
+**`ocr` namespace:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `model` | string? | The OCR model that produced the source payload. |
+| `pages_processed` | integer? | Pages processed, as reported by the OCR run. |
+| `doc_size_bytes` | integer? | Size of the original document the OCR run read, in bytes. |
+| `dpi` | integer? | Raster resolution the pixel bounding boxes were reported at. |
+| `companion_pdf_sha256` | string? (hex) | SHA-256 of the companion PDF whose native metadata was grafted in via `--companion-pdf`. Absent on single-arm parses. |
+| `extras` | object | Raw pass-through of remaining payload fields. |
 
 ---
 
@@ -406,10 +418,12 @@ page_3_nodes = [
 
 ## Schema Versioning
 
-The `schema_version` field (currently `"1.0.0"`) follows semver:
+The `schema_version` field (currently `"1.1.0"`) follows semver:
 
 - **Major** (X.0.0): Breaking changes to existing fields
 - **Minor** (0.X.0): New fields added (backwards compatible)
 - **Patch** (0.0.X): Bug fixes to field values
+
+`1.1.0` added the `Equation` node type and the `ocr` metadata namespace — additive, so `1.0.0` consumers keep working if they tolerate unknown node types and metadata keys.
 
 Always check `schema_version` before parsing to handle schema evolution gracefully.

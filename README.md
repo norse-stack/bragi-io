@@ -97,13 +97,13 @@ cargo install bragi-io
 pip install bragi-io
 ```
 
-On first use for a PDF, the CLI fetches a Java runtime (used for PDF text extraction) and caches it; later runs reuse it. DOCX and Markdown parse in pure Rust, no runtime needed.
+On first use for a PDF, the CLI fetches a Java runtime (used for PDF text extraction) and caches it; later runs reuse it. DOCX, Markdown, and OCR JSON parse in pure Rust, no runtime needed.
 
 ---
 
 ## Parse a document
 
-**CLI** — output goes to a file with `-o`; input format is detected from the extension (`.pdf`, `.docx`, `.md`, `.bgraph.md`):
+**CLI** — output goes to a file with `-o`; input format is detected from the extension (`.pdf`, `.docx`, `.md`, `.bgraph.md`, `.json` for OCR payloads):
 
 ```bash
 bragi parse -i document.pdf -o document.bgraph.json
@@ -159,7 +159,7 @@ make serve      # http://localhost:8080
 ```
 ```bash
 curl -X POST http://localhost:8080/v1/parse/pdf --data-binary @attention.pdf
-# {"success": true, "graph": { "schema_version": "1.0.0", "nodes": [ ... ] }}
+# {"success": true, "graph": { "schema_version": "1.1.0", "nodes": [ ... ] }}
 ```
 
 Point the Python SDK at it and your parsing code doesn't change:
