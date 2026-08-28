@@ -43,7 +43,7 @@ How the graph was produced — the inputs that determine it.
 
 ```json
 {
-  "bragi_version": "0.6.0",
+  "bragi_version": "0.6.1",
   "source_format": "pdf",
   "source_sha256": "bdfaa68d…",
   "config_hash": "6daf2782…"
@@ -142,7 +142,7 @@ Always present. Computed from the tree structure.
 
 ### PhysicalLocation
 
-Present for PDFs. `null` for reflow formats (Markdown, DOCX — future).
+Present for fixed-flow sources (PDF, OCR). `null` for reflow formats (Markdown, DOCX — future).
 
 | Field | Type | Description |
 |-------|------|-------------|
