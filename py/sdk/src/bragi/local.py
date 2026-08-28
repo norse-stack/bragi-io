@@ -45,10 +45,13 @@ def _local_parse_pdf(
             str(cli_path),
             "parse",
             "-i", str(pdf_path),
-            "--jre-path", str(jre_dir),
             "-f", "bgraph",
             "-o", str(output_path),
         ]
+        # No usable JRE found (no JAVA_HOME, no packaged JRE): omit the flag
+        # so the CLI's own auto-download runs instead of trusting an empty dir.
+        if jre_dir is not None:
+            cmd.extend(["--jre-path", str(jre_dir)])
 
         if config_path:
             cmd.extend(["--config", str(config_path)])

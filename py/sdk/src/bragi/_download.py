@@ -173,20 +173,25 @@ def find_or_download_cli() -> Path:
         ) from exc
 
 
-def get_jre_dir() -> Path:
-    """Return the JRE directory path (for ``--jre-path`` flag).
+def get_jre_dir() -> Path | None:
+    """Return a usable JRE directory for the ``--jre-path`` flag, or ``None``.
 
     Resolution order:
     1. ``JAVA_HOME`` environment variable (if set and exists)
-    2. Package-local ``_runtime/jre/`` directory (for pip-installed JRE)
+    2. Package-local ``_runtime/jre/`` — only if it actually holds a JRE
 
-    Creates the fallback directory if it doesn't exist. The CLI itself
-    handles downloading the JRE into the fallback directory.
+    ``None`` means: pass no ``--jre-path`` at all. The CLI treats an explicit
+    ``--jre-path`` as authoritative and never downloads into it, so pointing
+    it at an empty directory breaks first use on a machine without Java —
+    omitting the flag lets the CLI's own auto-download run (into its
+    ``~/.local/share/bragi`` cache).
     """
     java_home = os.environ.get("JAVA_HOME")
     if java_home:
         java_home_path = Path(java_home)
         if java_home_path.is_dir():
             return java_home_path
-    _JRE_DIR.mkdir(parents=True, exist_ok=True)
-    return _JRE_DIR
+    java = "java.exe" if sys.platform == "win32" else "java"
+    if (_JRE_DIR / "bin" / java).exists():
+        return _JRE_DIR
+    return None

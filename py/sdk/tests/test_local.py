@@ -161,3 +161,52 @@ class TestLocalParsePdf:
         call_args = mock_run.call_args[0][0]
         assert "--config" in call_args
         assert "/path/to/config.yaml" in call_args
+        # A resolved JRE dir rides along as --jre-path.
+        assert "--jre-path" in call_args
+        assert str(tmp_path / "jre") in call_args
+
+    @patch("bragi.local.find_or_download_cli")
+    @patch("bragi.local.get_jre_dir")
+    @patch("bragi.local.subprocess.run")
+    def test_no_jre_omits_the_flag(
+        self,
+        mock_run: MagicMock,
+        mock_jre: MagicMock,
+        mock_cli: MagicMock,
+        tmp_path: Path,
+    ) -> None:
+        """No usable JRE: the flag must be absent so the CLI auto-downloads.
+
+        An explicit --jre-path is authoritative to the CLI (it never
+        downloads into it) — passing an empty dir was the 0.6.0 first-use
+        failure on JVM-less machines.
+        """
+        mock_cli.return_value = tmp_path / "bragi"
+        mock_jre.return_value = None
+
+        pdf = tmp_path / "test.pdf"
+        pdf.write_bytes(b"%PDF-1.4 dummy")
+
+        fixture = json.loads(
+            (_FIXTURES_DIR / "attention_graph.json").read_text(encoding="utf-8")
+        )
+
+        def fake_run(cmd, **kwargs):
+            output_path = None
+            for i, arg in enumerate(cmd):
+                if arg == "-o" and i + 1 < len(cmd):
+                    output_path = cmd[i + 1]
+                    break
+            if output_path:
+                Path(output_path).write_text(json.dumps(fixture), encoding="utf-8")
+            result = MagicMock()
+            result.returncode = 0
+            result.stderr = b""
+            return result
+
+        mock_run.side_effect = fake_run
+
+        _local_parse_pdf(str(pdf))
+
+        call_args = mock_run.call_args[0][0]
+        assert "--jre-path" not in call_args

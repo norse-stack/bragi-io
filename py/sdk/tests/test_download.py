@@ -87,14 +87,29 @@ class TestFindOrDownloadCli:
 
 
 class TestGetJreDir:
-    """Test JRE directory creation."""
+    """JRE resolution: a real JRE or nothing — never an empty directory."""
 
     @patch.dict(os.environ, {}, clear=True)
-    def test_creates_directory(self, tmp_path: Path) -> None:
+    def test_no_jre_anywhere_is_none(self, tmp_path: Path) -> None:
         # Clear the environment so JAVA_HOME (set on dev machines with a JDK,
-        # e.g. via sdkman) doesn't short-circuit the fallback we're testing.
+        # e.g. via sdkman) doesn't short-circuit the case we're testing. The
+        # CLI never downloads into an explicit --jre-path, so an empty dir
+        # here would break first use on a JVM-less machine (the 0.6.0 bug).
         jre_dir = tmp_path / "runtime" / "jre"
         with patch("bragi._download._JRE_DIR", jre_dir):
-            result = get_jre_dir()
-            assert result == jre_dir
-            assert jre_dir.exists()
+            assert get_jre_dir() is None
+            assert not jre_dir.exists()
+
+    @patch.dict(os.environ, {}, clear=True)
+    def test_packaged_jre_is_used(self, tmp_path: Path) -> None:
+        jre_dir = tmp_path / "runtime" / "jre"
+        (jre_dir / "bin").mkdir(parents=True)
+        (jre_dir / "bin" / "java").touch()
+        with patch("bragi._download._JRE_DIR", jre_dir):
+            assert get_jre_dir() == jre_dir
+
+    def test_java_home_wins(self, tmp_path: Path) -> None:
+        java_home = tmp_path / "jdk"
+        java_home.mkdir()
+        with patch.dict(os.environ, {"JAVA_HOME": str(java_home)}, clear=True):
+            assert get_jre_dir() == java_home
