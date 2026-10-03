@@ -22,7 +22,7 @@
 //! MUST land on the wrapper; the canonical-input invariant is a
 //! structural property, not a maintained allowlist.
 //!
-//! See `docs/P2/core/architecture/08-bgraph-md-format.md` for the full
+//! See the bgraph.md format spec (architecture doc 08) for the full
 //! contract.
 
 use crate::types::DocumentGraph;
@@ -149,6 +149,7 @@ mod tests {
                 children: vec![para_id],
                 internal_refs: vec![],
                 external_refs: vec![],
+                image: None,
             },
         );
         nodes.insert(
@@ -174,6 +175,7 @@ mod tests {
                 children: Vec::new(),
                 internal_refs: vec![],
                 external_refs: vec![],
+                image: None,
             },
         );
 
@@ -183,6 +185,7 @@ mod tests {
                 root_id,
                 kind: crate::types::default_kind(),
                 document_metadata: DocumentMetadata::default(),
+                resolved_title: None,
                 outline_data: None,
                 flow_type: FlowType::default(),
                 topology: None,
@@ -193,7 +196,7 @@ mod tests {
     #[test]
     fn canonical_json_is_deterministic_across_runs() {
         // Codifies the canonical-input invariant from
-        // docs/P2/core/architecture/08-bgraph-md-format.md: same logical
+        // the bgraph.md format spec (architecture doc 08): same logical
         // graph → byte-identical canonical output, regardless of
         // wall-clock time between builds. If this fails, a non-
         // deterministic field has snuck onto `DocumentGraph` — it must
@@ -263,6 +266,7 @@ mod tests {
                 // Non-zero upstream ingredient: must NOT surface in the
                 // canonical form (the old CR-78 path would have).
                 confidence: 6,
+                image: None,
             },
             SemanticTreeElement {
                 text: "Hello world.".to_string(),
@@ -275,6 +279,7 @@ mod tests {
                 internal_refs: vec![],
                 external_refs: vec![],
                 confidence: 0,
+                image: None,
             },
         ];
         let graph = GraphBuilder::new()

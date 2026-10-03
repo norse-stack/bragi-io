@@ -1,6 +1,6 @@
 // Core trait for the analytics pre-pass.
 //
-// See `docs/P2/core/design-flows/2026-04-28-document-analytics-and-header-footer-classification.md`.
+// See the 2026-04-28 design flow (document analytics and header footer classification).
 
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -17,7 +17,7 @@ use crate::types::PdfTextElement;
 /// self-contained builder that observes elements one at a time and emits a
 /// finalized output.
 ///
-/// See `docs/P2/core/design-flows/2026-04-28-document-analytics-and-header-footer-classification.md`
+/// See the 2026-04-28 design flow (document analytics and header footer classification)
 /// for the full design.
 pub trait Statistic {
     /// The serializable output type produced by `finalize()`.

@@ -6,8 +6,8 @@ name = "bragi-io-core"
 # lockstep with the CLI + Python SDK via `make bump-version` (single command);
 # `make version-check` guards against drift. DELIBERATELY independent of the
 # schema/format axis (BGRAPH_FORMAT_VERSION = 1.0.0): code evolves on 0.x, the
-# customer-facing schema shape stays 1.x. See
-# P2/core/architecture/15-version-model.md.
+# consumer-facing schema shape stays 1.x. See
+# architecture doc 15 (version model).
 version = "0.6.1"
 edition = "2021"
 description = "Core library for semantic document graph processing — parse PDFs into structured, queryable graphs"
@@ -50,6 +50,10 @@ unicode-normalization = "0.1"
 
 # Cryptographic hashing for caching
 sha2 = "0.10"
+
+# Decoding the OCR supplier's image data-URIs so the ImagePayload id can
+# be the content digest of the actual bytes (CR-100 amendment)
+base64 = "0.22"
 
 # CommonMark parser — drives the bgraph.md reverse parser (B3 of the
 # MD+DOCX format expansion flow) and the generic-markdown channel (B6).

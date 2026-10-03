@@ -41,8 +41,8 @@ CANON_OUT := target/canon
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
 # number), kept in lockstep across core + CLI + Python SDK. DELIBERATELY
 # separate from the schema/format axis (BGRAPH_FORMAT_VERSION): code evolves on
-# 0.x, the customer-facing schema stays 1.x. See
-# P2/core/architecture/15-version-model.md.
+# 0.x, the consumer-facing schema stays 1.x. See
+# architecture doc 15 (version model).
 # ---------------------------------------------------------------------------
 bump-version: ## Bundle-bump the code/release version everywhere: make bump-version V=0.5.0
 	@test -n "$(V)" || { echo "usage: make bump-version V=X.Y.Z"; exit 2; }

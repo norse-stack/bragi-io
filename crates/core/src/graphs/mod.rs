@@ -7,6 +7,7 @@ pub mod node_id;
 pub mod prune;
 pub mod serialization;
 pub mod threshold_tail;
+pub mod transform;
 // Re-export for easy access
 pub use analytics::GraphAnalytics;
 pub use node_id::NodeIdGenerator;

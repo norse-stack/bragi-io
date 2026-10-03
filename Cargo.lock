@@ -166,6 +166,7 @@ name = "bragi-io-core"
 version = "0.6.1"
 dependencies = [
  "anyhow",
+ "base64",
  "chrono",
  "gray_matter",
  "jni",

@@ -414,15 +414,16 @@ class DocxMetadata:
 class OcrMetadata:
     """OCR-channel metadata namespace (S1): what the Mistral OCR run knows
     about itself. Canonical fields (``title``/``author``/…) come from the
-    companion PDF's native arm when grafted — ``companion_pdf_sha256`` records
-    that linkage (``None`` on single-arm parses).
+    companion PDF's native arm when grafted — ``supplier_sha256`` records the
+    sha256 of the OCR payload the graph was parsed from (``None`` on
+    single-arm parses, whose doc-level ``source`` already names those bytes).
     """
 
     model: Optional[str] = None
     pages_processed: Optional[int] = None
     doc_size_bytes: Optional[int] = None
     dpi: Optional[int] = None
-    companion_pdf_sha256: Optional[str] = None
+    supplier_sha256: Optional[str] = None
     extras: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
@@ -432,7 +433,7 @@ class OcrMetadata:
             pages_processed=d.get("pages_processed"),
             doc_size_bytes=d.get("doc_size_bytes"),
             dpi=d.get("dpi"),
-            companion_pdf_sha256=d.get("companion_pdf_sha256"),
+            supplier_sha256=d.get("supplier_sha256"),
             extras=dict(d.get("extras", {})),
         )
 

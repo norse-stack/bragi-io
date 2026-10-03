@@ -7,7 +7,7 @@
 //
 // Algorithm canonical: `scripts/band_signatures.py`. Empirically validated
 // on the 6-PDF corpus during prototyping. See
-// `docs/P2/core/handoffs/2026-05-06-block04-page-stats-region-aware.md`.
+// the 2026-05-06 handoff (block04 page stats region aware).
 
 use std::collections::HashMap;
 

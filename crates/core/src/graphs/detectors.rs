@@ -18,7 +18,7 @@
 //!   `main_font` / `bad_fonts` verdict (ported from the validated prototype's
 //!   `run_badfont_sweep`).
 //!
-//! See `docs/P2/core/change-requests/CR-71-font-family-figure-sweep-evidence-first.md`.
+//! See CR-71.
 
 use crate::config::{
     SectionHeightInvariantConfig, SectionOverlapCountInvariantConfig,

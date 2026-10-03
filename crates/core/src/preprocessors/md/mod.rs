@@ -3,7 +3,7 @@
 //! This module is the ingestion-side counterpart to the bgraph.md
 //! emitter at `crate::graphs::serialization::markdown`. Together they
 //! close the round-trip loop for the bgraph.md wire format
-//! (`docs/P2/core/architecture/08-bgraph-md-format.md`):
+//! (the bgraph.md format spec (architecture doc 08)):
 //!
 //! ```text
 //!     DocumentGraph ──emit_markdown──▶ bgraph.md string
@@ -36,7 +36,7 @@ pub mod types;
 ///
 /// This function is the executable form of the format's structural
 /// rule for content boundaries (see
-/// `docs/P2/core/architecture/08-bgraph-md-format.md` § Structural
+/// the bgraph.md format spec (architecture doc 08) § Structural
 /// rule for content boundaries). Downstream consumers that depend on
 /// v2.0.0 strip semantics should import this function; when the format
 /// moves to v3, a sibling `strip_v3` will ship alongside per the
@@ -108,7 +108,7 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// only the *values* of the embedded `id` fields change. Files emitted
 /// under 1.x/2.x still parse structurally; their embedded IDs simply
 /// differ from what a fresh 3.0.0 reparse derives. See
-/// `docs/P2/core/architecture/08-bgraph-md-format.md` § Amendment L.
+/// the bgraph.md format spec (architecture doc 08) § Amendment L.
 ///
 /// v4.0.0 (Block A / Amendment M): **major** — the inaugural
 /// **content-only edition: identity became the content body.**
@@ -123,8 +123,10 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// `bgraph_sha256` re-baselines. The walk algorithm is byte-identical
 /// to v2/v3, so 2.x/3.x files still parse structurally — but their
 /// stamped hashes were computed under the old definition and will not
-/// verify under the v4 recompute (use `--accept-drift` or regenerate).
-/// See `docs/P2/core/architecture/08-bgraph-md-format.md` § Amendment M.
+/// verify under the v4 recompute (regenerate, or the library's
+/// `ParseOptions.accept_drift` — the CLI's `--accept-drift` flag was
+/// removed in Block C.3).
+/// See the bgraph.md format spec (architecture doc 08) § Amendment M.
 ///
 /// v5.0.0 (CR-84): **major** — **node identity is finalized after
 /// topology settles.** The forward deterministic path re-keys every
@@ -144,8 +146,8 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// faithfulness fix riding this bump). The walk algorithm is
 /// byte-identical to v2/v3/v4, so older files still parse
 /// structurally; sanity-mutated v4 PDFs' stamped IDs/hashes will not
-/// verify under v5 (that is the honest answer — regenerate or
-/// `--accept-drift`).
+/// verify under v5 (that is the honest answer — regenerate, or the
+/// library's `ParseOptions.accept_drift`).
 ///
 /// **1.0.0 (Block C — the honest reset).** The `1.x → 5.x` lineage above
 /// is **internal pre-museum churn with no external consumer** (the "no
@@ -167,7 +169,22 @@ pub use types::{ParseError, ParseIdentity, ParseOptions, ParseResult, StripMode}
 /// produced by the OCR channel, non-inline body like CodeBlock. The read
 /// path already accepts all `1.x`, so `1.0.0` artifacts remain readable
 /// unchanged; only newly-emitted artifacts stamp `1.1.0`.
-pub const BGRAPH_FORMAT_VERSION: &str = "1.1.0";
+///
+/// **1.2.0 (CR-100 — image nodes).** Additive minor bump: the `Image`
+/// node variant (fence tag `bgraph-image`) joins the schema — pictures
+/// the OCR channel used to skip. Its body is the supplier's readable
+/// markdown ref (`![img-0.jpeg](img-0.jpeg)`), **required by contract**
+/// like a Section's heading line; the bytes ride in the fence as the
+/// `image` payload (`{id, annotation, base64}`), never in body prose.
+/// `token_count` is `0` by definition — token counts measure readable
+/// text. The dead `NodeType::Figure` variant is **removed** in the same
+/// bump: it existed from the beginning and was emitted by zero channels,
+/// so nothing can fail to deserialize. **Re-baselines:** the emitted
+/// `schema` string moves for every channel; `bgraph_sha256` moves only
+/// for documents that actually carry images (the `image` field is
+/// omitted from the wire when absent), so the standard PDF/Tika channel
+/// and every imageless document hash exactly as before.
+pub const BGRAPH_FORMAT_VERSION: &str = "1.2.0";
 
 /// Parse a markdown string into a `DocumentGraph`.
 ///
@@ -194,7 +211,7 @@ pub fn parse_markdown(input: &str, opts: ParseOptions) -> Result<ParseResult, Pa
 /// and `bgraph_sha256` keys. Cheap; the false-positive risk is
 /// negligible because the prefix is reserved by the v1.0.0 spec
 /// (see "Reserved fence prefix" in
-/// `docs/P2/core/architecture/08-bgraph-md-format.md`).
+/// the bgraph.md format spec (architecture doc 08)).
 pub fn is_bgraph_md(input: &str) -> bool {
     let mut lines = input.lines().skip_while(|l| l.trim().is_empty());
     let Some(first) = lines.next() else {
@@ -265,6 +282,7 @@ mod tests {
                 children: vec![para_id],
                 internal_refs: vec![],
                 external_refs: vec![],
+                image: None,
             },
         );
         nodes.insert(
@@ -290,6 +308,7 @@ mod tests {
                 children: Vec::new(),
                 internal_refs: vec![],
                 external_refs: vec![],
+                image: None,
             },
         );
         let graph = DocumentGraph {
@@ -298,6 +317,7 @@ mod tests {
                 root_id,
                 kind: crate::types::default_kind(),
                 document_metadata: DocumentMetadata::default(),
+                resolved_title: None,
                 outline_data: None,
                 flow_type: FlowType::default(),
                 topology: None,

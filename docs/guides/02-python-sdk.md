@@ -17,7 +17,7 @@ import bragi
 
 bgraph = bragi.parse_pdf("attention.pdf")
 
-print(bgraph)                # <BragiGraph: 179 nodes, schema v1.1.0>
+print(bgraph)                # <BragiGraph: 179 nodes, schema v1.2.0>
 print(len(bgraph.sections))  # 30
 
 for section in bgraph.sections:
@@ -75,7 +75,7 @@ bgraph.paragraphs               # Paragraph nodes only
 bgraph.root                     # the Document root
 bgraph.document_info            # DocumentInfo — metadata about the document
 bgraph.structural_profile       # StructuralProfile — graph statistics
-bgraph.schema_version           # "1.1.0"
+bgraph.schema_version           # "1.2.0"
 bgraph.bgraph_sha256            # the round-trip integrity hash
 bgraph.parse_provenance         # ParseProvenance — version, source, config
 ```

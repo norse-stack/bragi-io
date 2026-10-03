@@ -7,7 +7,7 @@
 //! isn't about the Venn diagram of data — it's about the *shape of the
 //! question* every channel must answer for every canonical field.
 //!
-//! Design rationale: `docs/P2/core/architecture/09-metadata-first-class.md`
+//! Design rationale: architecture doc 09 (metadata first class)
 //! § The trait shape — discipline before data. Wire-format contract:
 //! `08-bgraph-md-format.md` § Amendment I.
 //!

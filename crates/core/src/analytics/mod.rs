@@ -4,7 +4,7 @@
 // geometry, per-page distributions — that downstream rules consume as
 // priors instead of recomputing locally.
 //
-// See `docs/P2/core/design-flows/2026-04-28-document-analytics-and-header-footer-classification.md`
+// See the 2026-04-28 design flow (document analytics and header footer classification)
 // for the full design. Inspired by Postgres `pg_statistic`: descriptive
 // primitives in core, threshold decisions in consumers.
 //

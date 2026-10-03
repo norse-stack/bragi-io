@@ -782,6 +782,7 @@ fn finish_paragraph(
             internal_refs: refs.internal,
             external_refs: refs.external,
             confidence: 0,
+            image: None,
         }
         .validate(),
     )
@@ -873,6 +874,7 @@ fn append_chrome_elements<R: Read + std::io::Seek>(
                     internal_refs: Vec::new(),
                     external_refs: Vec::new(),
                     confidence: 0,
+                    image: None,
                 }
                 .validate(),
             );
@@ -1149,6 +1151,7 @@ fn finish_table(
         internal_refs: acc.refs.internal,
         external_refs: acc.refs.external,
         confidence: 0,
+        image: None,
     }
     .validate()
 }

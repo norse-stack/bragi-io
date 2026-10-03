@@ -2,7 +2,7 @@
 
 Complete field-by-field documentation of the Bragi output format (`bgraph.json`).
 
-**Schema version:** `1.1.0`
+**Schema version:** `1.2.0`
 **Source of truth:** [`types.rs`](../../crates/core/src/types.rs)
 
 All examples are from processing Claude Shannon's *A Mathematical Theory of Communication* (55 pages).
@@ -15,7 +15,7 @@ The root object of the `bgraph.json` output.
 
 ```json
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "bgraph_sha256": "f6d2fcf0…",
   "created_at": "1970-01-01T00:00:00Z",
   "parse_provenance": { ... },
@@ -27,7 +27,7 @@ The root object of the `bgraph.json` output.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `schema_version` | string | Output format version. Currently `"1.1.0"`. Check this to detect schema changes. |
+| `schema_version` | string | Output format version. Currently `"1.2.0"`. Check this to detect schema changes. |
 | `bgraph_sha256` | string (hex) | SHA-256 content address of the canonical graph. Identical inputs produce an identical hash; `created_at` is excluded so the address stays stable. |
 | `created_at` | string (ISO 8601) | When the graph was generated. A side-effect field — **not** part of `bgraph_sha256`. |
 | `parse_provenance` | object | How the graph was produced. See [ParseProvenance](#parseprovenance). |
@@ -82,7 +82,7 @@ Every element in the `nodes` array is a `DocumentNode`.
 | Field | Type | Description |
 |-------|------|-------------|
 | `id` | string (UUID) | Unique identifier for this node. |
-| `node_type` | string | One of: `"Document"`, `"Section"`, `"Paragraph"`, `"Margin"`, `"Header"`, `"Footer"`, `"CodeBlock"`, `"List"`, `"Blockquote"`, `"Table"`, `"Equation"`. Treat as an open set — minor schema versions may add types. |
+| `node_type` | string | One of: `"Document"`, `"Section"`, `"Paragraph"`, `"Margin"`, `"Header"`, `"Footer"`, `"CodeBlock"`, `"List"`, `"Blockquote"`, `"Table"`, `"Equation"`, `"Image"`. Treat as an open set — minor schema versions may add types. |
 | `location` | object | Where this node exists — both in the tree and on the page. See [NodeLocation](#nodelocation). |
 | `text_order` | integer? | Sequential reading order (0-indexed). `null` for the Document root. |
 | `content` | object | The node's text content. See [NodeContent](#nodecontent). |
@@ -105,8 +105,36 @@ Every element in the `nodes` array is a `DocumentNode`.
 | `Blockquote` | One blockquote, held verbatim (`>` markers preserved). | 2+ | No (leaf) |
 | `Table` | One table, held verbatim (pipe syntax preserved). | 2+ | No (leaf) |
 | `Equation` | One display-math block, verbatim LaTeX as delivered by the source (schema 1.1.0). | 2+ | No (leaf) |
+| `Image` | One picture (schema 1.2.0). The node's `content.text` is the readable markdown image reference the source produced; the bytes ride in the node's `image` object, never in the text. `token_count` is always `0`. | 2+ | No (leaf) |
 
-Each source channel produces a subset of this union: PDF emits `Section`/`Paragraph`/`Margin`, Markdown and DOCX add the verbatim block types, and OCR emits the widest set including `Header`/`Footer`/`Equation`. Filter on the types you care about rather than assuming which appear.
+Each source channel produces a subset of this union: PDF emits `Section`/`Paragraph`/`Margin`, Markdown and DOCX add the verbatim block types, and OCR emits the widest set including `Header`/`Footer`/`Equation`/`Image`. Filter on the types you care about rather than assuming which appear.
+
+### The `image` object (schema 1.2.0)
+
+An `Image` node's body text is the picture's markdown reference, verbatim from the source:
+
+```markdown
+![img-0.jpeg](img-0.jpeg)
+```
+
+and the `image` object beside it carries the picture itself. It is present on `Image` nodes only — the key is absent entirely on every other node type, so a document with no pictures has exactly the shape it had under `1.1.0`.
+
+```json
+"image": {
+  "id": "sha256:9f2c1b0e4a7d…",
+  "annotation": null,
+  "base64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQ…"
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | The picture's identity: `sha256:` + the hex digest of the decoded image bytes. Content-derived, so the same picture gets the same id wherever it appears and a label can never lie about it. The body ref (`img-0.jpeg`) stays a human-readable name, not an identifier. |
+| `annotation` | string \| null | A description of the picture, when the source produced one. |
+| `base64` | string \| null | The image as a data URI. `null` when the parse was asked not to include image bytes. |
+
+The picture's position on the page is the node's ordinary `location.physical` — there is no separate geometry field. Keeping the bytes out of `content.text` means anything that concatenates body text (prompt assembly, search indexing, embeddings) never has to filter base64 out: it can only be reached by reading this object on purpose.
+
 
 ---
 
@@ -262,7 +290,7 @@ Universal fields sit at the top; format-specific metadata lives in a channel nam
 | `pages_processed` | integer? | Pages processed, as reported by the OCR run. |
 | `doc_size_bytes` | integer? | Size of the original document the OCR run read, in bytes. |
 | `dpi` | integer? | Raster resolution the pixel bounding boxes were reported at. |
-| `companion_pdf_sha256` | string? (hex) | SHA-256 of the companion PDF whose native metadata was grafted in via `--companion-pdf`. Absent on single-arm parses. |
+| `supplier_sha256` | string? (hex) | SHA-256 of the OCR payload (the supplier's artifact) this graph was parsed from. Set on grafted parses — including the premium API route, where the doc-level `source` names the input PDF instead, so this is where the acquisition's own identity lives. Absent on single-arm parses, whose `source` already names those bytes. |
 | `extras` | object | Raw pass-through of remaining payload fields. |
 
 ---
@@ -418,12 +446,12 @@ page_3_nodes = [
 
 ## Schema Versioning
 
-The `schema_version` field (currently `"1.1.0"`) follows semver:
+The `schema_version` field (currently `"1.2.0"`) follows semver:
 
 - **Major** (X.0.0): Breaking changes to existing fields
 - **Minor** (0.X.0): New fields added (backwards compatible)
 - **Patch** (0.0.X): Bug fixes to field values
 
-`1.1.0` added the `Equation` node type and the `ocr` metadata namespace — additive, so `1.0.0` consumers keep working if they tolerate unknown node types and metadata keys.
+`1.1.0` added the `Equation` node type and the `ocr` metadata namespace. `1.2.0` added the `Image` node type and its `image` object (and removed the never-emitted `Figure` type). Both are additive, so earlier consumers keep working if they tolerate unknown node types and metadata keys — and because the `image` key is omitted on every non-`Image` node, a document with no pictures hashes identically across the bump.
 
 Always check `schema_version` before parsing to handle schema evolution gracefully.

@@ -42,7 +42,7 @@ def demo_md_graph() -> BragiGraph:
 
 @pytest.fixture
 def demo_ocr_graph() -> BragiGraph:
-    """The OCR-channel fixture (mist.json input, schema 1.1.0)."""
+    """The OCR-channel fixture (mist.json input, schema 1.2.0)."""
     raw = json.loads((_FIXTURES_DIR / "demo_ocr_graph.json").read_text(encoding="utf-8"))
     return BragiGraph.from_dict(raw)
 
@@ -51,7 +51,7 @@ class TestBragiDeserialization:
     """Deserialize the real attention fixture and verify all typed fields."""
 
     def test_top_level_fields(self, attention_graph: BragiGraph) -> None:
-        assert attention_graph.schema_version == "1.1.0"
+        assert attention_graph.schema_version == "1.2.0"
         assert len(attention_graph.nodes) > 0
         assert isinstance(attention_graph.document_info, DocumentInfo)
         assert isinstance(attention_graph.structural_profile, StructuralProfile)
@@ -73,7 +73,7 @@ class TestBragiDeserialization:
         r = repr(attention_graph)
         assert "BragiGraph" in r
         assert "nodes" in r
-        assert "v1.1.0" in r
+        assert "v1.2.0" in r
 
     def test_node_count(self, attention_graph: BragiGraph) -> None:
         # attention.pdf golden fixture has 179 nodes.
@@ -273,7 +273,7 @@ class TestBragiDeserialization:
     def test_to_json(self, attention_graph: BragiGraph) -> None:
         j = attention_graph.to_json()
         parsed = json.loads(j)
-        assert parsed["schema_version"] == "1.1.0"
+        assert parsed["schema_version"] == "1.2.0"
         assert len(parsed["nodes"]) == 179
 
 
@@ -306,8 +306,8 @@ class TestOcrChannel:
         assert ocr.pages_processed == 15
         assert ocr.doc_size_bytes == 2215244
         assert ocr.dpi == 93
-        # Single-arm parse: no companion PDF was grafted.
-        assert ocr.companion_pdf_sha256 is None
+        # Single-arm parse: nothing was grafted, so no supplier identity.
+        assert ocr.supplier_sha256 is None
 
     def test_ocr_title_inferred(self, demo_ocr_graph: BragiGraph) -> None:
         meta = demo_ocr_graph.document_info.document_metadata
@@ -319,11 +319,11 @@ class TestOcrChannel:
         # Equations carry physical locations like any Fixed-flow node.
         assert all(e.location.physical is not None for e in equations)
 
-    def test_companion_pdf_sha256_from_dict(self) -> None:
-        """The grafted-parse field (S2) deserializes when present."""
+    def test_supplier_sha256_from_dict(self) -> None:
+        """The grafted-parse field (S2, renamed by CR-13) deserializes."""
         ocr = OcrMetadata.from_dict(
-            {"model": "mistral-ocr-4-0", "companion_pdf_sha256": "ab" * 32}
+            {"model": "mistral-ocr-4-0", "supplier_sha256": "ab" * 32}
         )
-        assert ocr.companion_pdf_sha256 == "ab" * 32
+        assert ocr.supplier_sha256 == "ab" * 32
         assert ocr.pages_processed is None
         assert ocr.extras == {}

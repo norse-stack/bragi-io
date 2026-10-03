@@ -57,7 +57,7 @@ class TestHandleResponse:
         resp = _make_response(200, body)
         graph = _handle_response(resp)
         assert isinstance(graph, BragiGraph)
-        assert graph.schema_version == "1.1.0"
+        assert graph.schema_version == "1.2.0"
         assert len(graph.nodes) == 179
 
     def test_401_raises_auth_error(self) -> None:

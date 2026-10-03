@@ -2,8 +2,8 @@
 // per-page footer, column layout, and a downsampled bbox-stacking heatmap.
 // Ported from `scripts/heatmap_prototype.py` (canonical for algorithm
 // behaviour). Block 06 of the document-analytics flow — see
-// `docs/P2/core/design-flows/2026-04-28-document-analytics-and-header-footer-classification.md`
-// (Block 03 spec) and `docs/P2/core/handoffs/2026-05-01-block03-geometry-header-line.md`
+// the 2026-04-28 design flow (document analytics and header footer classification)
+// (Block 03 spec) and the 2026-05-01 handoff (block03 geometry header line)
 // for the type-shape contract and the empirical rationale behind every config
 // default. Validation oracle: `scripts/output/{stem}/geometry.json`.
 

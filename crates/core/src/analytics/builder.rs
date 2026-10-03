@@ -1,6 +1,6 @@
 // Composite builder that drives the single-pass walk and the dependency-ordered
 // finalization. See
-// `docs/P2/core/design-flows/2026-04-28-document-analytics-and-header-footer-classification.md`.
+// the 2026-04-28 design flow (document analytics and header footer classification).
 
 use serde::{Deserialize, Serialize};
 

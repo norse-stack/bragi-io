@@ -1,7 +1,7 @@
 // Per-page Region tree from XY-cut + retries + column-divider-aligned merge
 // + bbox-crossing safety filter. Ported from `scripts/xy_cut_prototype.py`
 // (canonical for algorithm behaviour). Block 03b of the document-analytics
-// flow — see `docs/P2/core/handoffs/2026-05-04-xy-cut-section-detection-prototype.md`.
+// flow — see the 2026-05-04 handoff (xy cut section detection prototype).
 //
 // The Region tree is the geometric prepass for section detection: leaves are
 // structural units (section headers, paragraph blocks, figures, footnotes),

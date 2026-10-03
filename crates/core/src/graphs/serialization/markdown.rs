@@ -1,7 +1,7 @@
 //! bgraph.md forward emitter — `DocumentGraph` → markdown string.
 //!
 //! Wire-format spec is the source of truth:
-//! `docs/P2/core/architecture/08-bgraph-md-format.md`. The emitted
+//! the bgraph.md format spec (architecture doc 08). The emitted
 //! `schema` field is sourced from
 //! [`crate::preprocessors::md::BGRAPH_FORMAT_VERSION`] — the same
 //! serialization-neutral const the json wrapper stamps into
@@ -223,6 +223,9 @@ fn node_type_to_fence_tag(node_type: &str) -> &'static str {
         "Blockquote" => "block-quote", // F-11 (v2.1.0+; was: blockquote)
         "Table" => "table",
         "Equation" => "equation", // Schema 1.1.0 (OCR S1): display-math block.
+        // Schema 1.2.0 (CR-100): picture. Body is the readable markdown
+        // ref; the bytes ride in the fence's `image` payload.
+        "Image" => "image",
         // CR-59 (v2.1.0+): the `Message` variant was added by CR-49 as a
         // wire-format precursor to the future stream-topology design slice
         // but had no in-memory carrier path in tree-topology channels.
@@ -243,7 +246,7 @@ fn node_type_to_fence_tag(node_type: &str) -> &'static str {
 /// `parent`/`children` (derivable from heading structure on reverse
 /// parse).
 fn node_metadata_json(node: &DocumentNode) -> String {
-    use crate::types::{ExternalRef, InternalRef};
+    use crate::types::{ExternalRef, ImagePayload, InternalRef};
     #[derive(Serialize)]
     struct NodeMetadata<'a> {
         id: &'a NodeId,
@@ -275,6 +278,14 @@ fn node_metadata_json(node: &DocumentNode) -> String {
         /// (`ParsingConfig::include_style_info`), never here. Shape is
         /// verbatim Tika projection — see DT-03.
         style: Option<&'a StyleMetadata>,
+        /// CR-100 (schema 1.2.0): the image payload on `Image` nodes.
+        /// **Omitted** (not `null`) for every other variant, mirroring
+        /// `DocumentNode.image` — so an imageless document's fence bytes
+        /// and `bgraph_sha256` are exactly what they were before the
+        /// field existed. `include_images=false` nulls `base64` inside
+        /// the payload; it never removes the payload or the node.
+        #[serde(skip_serializing_if = "Option::is_none")]
+        image: Option<&'a ImagePayload>,
     }
     // CR-86: the emitter is dumb — it serializes exactly the graph's
     // `style_info` (always present as a key; `null` when the build gate
@@ -288,6 +299,7 @@ fn node_metadata_json(node: &DocumentNode) -> String {
         internal_refs: &node.internal_refs,
         external_refs: &node.external_refs,
         style: node.style_info.as_ref(),
+        image: node.image.as_ref(),
     };
     serde_json::to_string(&meta).expect("DocumentNode subset is always serializable")
 }
@@ -368,6 +380,7 @@ mod tests {
                     children: Vec::new(),
                     internal_refs: vec![],
                     external_refs: vec![],
+                    image: None,
                 },
             );
         }
@@ -395,6 +408,7 @@ mod tests {
                 children: child_ids,
                 internal_refs: vec![],
                 external_refs: vec![],
+                image: None,
             },
         );
 
@@ -407,6 +421,7 @@ mod tests {
                     title: Some("Synthetic Test Doc".to_string()),
                     ..DocumentMetadata::default()
                 },
+                resolved_title: None,
                 outline_data: None,
                 flow_type: FlowType::default(),
                 topology: None,
@@ -827,7 +842,7 @@ mod tests {
     // ========================================================================
     //
     // These tests enforce the conventions documented in
-    // `docs/P2/core/architecture/08-bgraph-md-format.md` § Conventions
+    // the bgraph.md format spec (architecture doc 08) § Conventions
     // and § Emitter whitespace contract. They are the executable form
     // of the spec — a canonical-emit output that violates any
     // convention fails one of these tests.
@@ -837,7 +852,7 @@ mod tests {
     // code and serve as the regression guard for the parts of v2.0.0
     // that are already true.
     //
-    // See `docs/P2/core/change-requests/CR-48-header-footer-margin-body-outside-unification.md`.
+    // See CR-48.
 
     #[test]
     fn convention_c1_doc_level_fence_is_bare_bgraph() {

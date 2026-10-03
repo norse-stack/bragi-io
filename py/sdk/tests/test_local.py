@@ -64,7 +64,7 @@ class TestLocalParsePdf:
         graph = _local_parse_pdf(str(pdf))
 
         assert isinstance(graph, BragiGraph)
-        assert graph.schema_version == "1.1.0"
+        assert graph.schema_version == "1.2.0"
         assert len(graph.nodes) == 179
         mock_run.assert_called_once()
         # B5: the CLI grew an explicit `parse` subcommand — it must be the first

@@ -97,6 +97,7 @@ impl GraphBuilder {
             children: Vec::new(),
             internal_refs: vec![],
             external_refs: vec![],
+            image: None,
         };
         graph.nodes.insert(root_id, document_node);
 
@@ -248,6 +249,10 @@ impl GraphBuilder {
         // bgraph.md emitter can serialize them per the v2.3.0 schema.
         node.internal_refs = element.internal_refs.clone();
         node.external_refs = element.external_refs.clone();
+        // CR-100: the image payload takes the same channel→node path.
+        // Only `Image` elements carry one; every other node leaves it
+        // `None`, which the emitter omits from the wire entirely.
+        node.image = element.image.clone();
         // Block A / A3: `element.confidence` deliberately does NOT flow
         // onto the node — DocumentNode carries content only; the CR-78
         // signal stays parser-internal (sidecar into graph_sanity).
@@ -282,7 +287,17 @@ const OCCURRENCE_FOLD_SEP: char = '\u{1e}';
 ///   from those. Escaping/trimming is idempotent, so build (from raw) and
 ///   parse (from already-escaped) converge on the same key. (C-7 canonical
 ///   form: `08-bgraph-md-format.md` § C-7.)
+/// CR-100 amendment: an Image node's id-content is its payload's
+/// content identity (digest ‖ US ‖ annotation), NOT its body text — the
+/// ref line is a label, and labels don't bear identity. The payload
+/// rides emit→parse in the fence, so build-time and parse-time
+/// derivations converge exactly as they do for text (and
+/// [`rekey_node_ids`] applies the same rule — the two sites must never
+/// drift).
 fn canonical_local_content(element: &SemanticTreeElement) -> String {
+    if let Some(image) = &element.image {
+        return image.node_id_content();
+    }
     crate::types::NodeContent::new(element.text.clone()).text
 }
 
@@ -468,10 +483,24 @@ pub fn rekey_node_ids(graph: &mut DocumentGraph) -> RekeyOutcome {
         .collect();
     body.sort_by_key(|n| n.text_order.expect("filtered to Some above"));
 
-    let new_ids = derive_walk_ids(body.iter().map(|node| IdWalkRow {
-        is_section: node.node_type == "Section",
-        hierarchy_level: node.location.semantic.depth,
-        local_content: &node.content.text,
+    // CR-100 amendment: Image nodes re-key from their payload's content
+    // identity, in lock-step with `canonical_local_content`. Reading the
+    // payload (digest + annotation) rather than live bytes is what keeps
+    // this pass variant-stable — a later re-level may run it AFTER
+    // the lean strip has nulled `base64`, and the digest survives.
+    let contents: Vec<std::borrow::Cow<'_, str>> = body
+        .iter()
+        .map(|node| match &node.image {
+            Some(image) => std::borrow::Cow::Owned(image.node_id_content()),
+            None => std::borrow::Cow::Borrowed(node.content.text.as_str()),
+        })
+        .collect();
+    let new_ids = derive_walk_ids(body.iter().zip(contents.iter()).map(|(node, content)| {
+        IdWalkRow {
+            is_section: node.node_type == "Section",
+            hierarchy_level: node.location.semantic.depth,
+            local_content: content,
+        }
     }));
 
     let old_root = graph.document_info.root_id;
@@ -582,6 +611,8 @@ pub fn node_type_for(t: SemanticElementType) -> &'static str {
         SemanticElementType::Table => "Table",
         // Schema 1.1.0 (OCR S1): display-math block, OCR channel only.
         SemanticElementType::Equation => "Equation",
+        // Schema 1.2.0 (CR-100): picture, OCR channel only.
+        SemanticElementType::Image => "Image",
         // CR-59: `Message` is an orphan variant with no in-memory
         // production path (see `SemanticElementType::Message` doc
         // comment). Reaching this arm means some new code path
@@ -621,6 +652,7 @@ mod tests {
                 internal_refs: vec![],
                 external_refs: vec![],
                 confidence: 0,
+                image: None,
             })
             .collect()
     }

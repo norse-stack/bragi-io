@@ -132,12 +132,29 @@ def check_types():
 
 # --- 4. relative links resolve ---------------------------------------------
 
+def strip_fenced_code(text):
+    """Blank out fenced code blocks, keeping line count so nothing shifts.
+
+    A doc that *shows* markdown syntax — an image reference in a schema
+    example, say — is not linking to anything. Scanning inside fences
+    made every such example a phantom broken link.
+    """
+    out, fenced = [], False
+    for line in text.split("\n"):
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            out.append("")
+            continue
+        out.append("" if fenced else line)
+    return "\n".join(out)
+
+
 def check_links():
     print("\n── relative links resolve")
     broken = []
     total = 0
     for doc in ALL_DOCS:
-        for m in re.finditer(r"\[[^\]]*\]\(([^)]+)\)", doc.read_text()):
+        for m in re.finditer(r"\[[^\]]*\]\(([^)]+)\)", strip_fenced_code(doc.read_text())):
             target = m.group(1).strip()
             if "://" in target or target.startswith(("#", "mailto:")):
                 continue

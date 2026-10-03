@@ -2,7 +2,7 @@
 // `DocumentAnalysis::analyze_text_elements()` in `types.rs` (Block 02 migration
 // commit). Extended with cost-function primitives in the Block 02 extension commit.
 //
-// See `docs/P2/core/design-flows/2026-04-28-document-analytics-and-header-footer-classification.md`
+// See the 2026-04-28 design flow (document analytics and header footer classification)
 // (Block 02) for the field semantics and the migration path.
 
 use std::collections::{BTreeMap, BTreeSet};

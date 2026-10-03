@@ -9,7 +9,7 @@
 //! `text_order = vec_index` so the deterministic ID generator can salt
 //! IDs from a stable, sortable scalar.
 //!
-//! See `docs/P2/core/handoffs/2026-05-09-A1-A2-semantic-tree-element.md`
+//! See the 2026-05-09 handoff (A1 A2 semantic tree element)
 //! for the design rationale.
 
 use crate::types::{
@@ -106,6 +106,7 @@ pub fn project_to_semantic_tree(elements: Vec<ParsedPdfElement>) -> Vec<Semantic
                 // through to the SemanticTreeElement. `0` for non-Section
                 // elements (the rule engine leaves them unscored).
                 confidence: parsed.confidence,
+                image: None,
             }
             .validate()
         })

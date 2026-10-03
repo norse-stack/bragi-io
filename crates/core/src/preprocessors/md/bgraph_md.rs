@@ -2,7 +2,7 @@
 //!
 //! Mirror of the forward emitter at
 //! `crate::graphs::serialization::markdown`. Wire-format spec at
-//! `docs/P2/core/architecture/08-bgraph-md-format.md` is the source of
+//! the bgraph.md format spec (architecture doc 08) is the source of
 //! truth; this module implements the parser side of the round-trip.
 //!
 //! **Single-convention parser (CR-57 / v2.1.0+).** Accepts only the
@@ -148,7 +148,7 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
                     }
                     "bgraph-paragraph" | "bgraph-header" | "bgraph-footer" | "bgraph-margin"
                     | "bgraph-code-block" | "bgraph-list" | "bgraph-block-quote"
-                    | "bgraph-table" | "bgraph-equation" => {
+                    | "bgraph-table" | "bgraph-equation" | "bgraph-image" => {
                         // v2.1.0+ single convention: body-outside for
                         // every content variant (including H/F/M; CR-48
                         // / Amendment H) and kebab-case for multi-word
@@ -239,6 +239,10 @@ pub fn parse(input: &str, opts: ParseOptions) -> Result<ParseResult, ParseError>
                 // reconstructed element carries the neutral 0 — it no
                 // longer feeds the node or the hash.
                 confidence: 0,
+                // CR-100: the image payload is in the forward hash;
+                // retaining it is what makes a with-images bgraph.md
+                // round-trip byte-identical.
+                image: p.metadata.image.clone(),
             }
             .validate(),
         );
@@ -426,7 +430,8 @@ fn scan_segments(input: &str) -> Result<Vec<Segment>, ParseError> {
 /// `bgraph-outline`, `bgraph-section`, `bgraph-paragraph`,
 /// `bgraph-header`, `bgraph-footer`, `bgraph-margin`, `bgraph-code-block`,
 /// `bgraph-list`, `bgraph-block-quote`, `bgraph-table`,
-/// `bgraph-equation` (schema 1.1.0, OCR S1). Any other
+/// `bgraph-equation` (schema 1.1.0, OCR S1), `bgraph-image`
+/// (schema 1.2.0, CR-100). Any other
 /// ` ```bgraph* ` line-start is rejected by the caller as a
 /// reserved-prefix violation.
 ///
@@ -452,6 +457,7 @@ pub(super) fn bgraph_fence_open_tag(line: &str) -> Option<String> {
         || info == "bgraph-block-quote"
         || info == "bgraph-table"
         || info == "bgraph-equation"
+        || info == "bgraph-image"
     {
         Some(info.to_string())
     } else if let Some(rest) = info.strip_prefix("bgraph") {
@@ -587,6 +593,14 @@ struct NodeMetadata {
     /// (with-style and without-style).
     #[serde(default)]
     style: Option<StyleMetadata>,
+    /// CR-100 (schema 1.2.0): the image payload on `Image` fences.
+    /// `#[serde(default)]` so every other variant (which omits the key)
+    /// parses to `None`, and so pre-1.2.0 fixtures stay readable. The
+    /// payload is in the forward hash, so it must be retained onto the
+    /// reconstructed node or a with-images document would never verify
+    /// — the same lesson CR-84 learned with the ref vecs.
+    #[serde(default)]
+    image: Option<crate::types::ImagePayload>,
 }
 
 /// A single parsed bgraph element — the body text plus its decoded
@@ -669,6 +683,8 @@ fn map_node_type_to_semantic(s: &str) -> Result<SemanticElementType, ParseError>
         "Table" => Ok(SemanticElementType::Table),
         // Schema 1.1.0 (OCR S1): display-math block.
         "Equation" => Ok(SemanticElementType::Equation),
+        // Schema 1.2.0 (CR-100): picture.
+        "Image" => Ok(SemanticElementType::Image),
         other => Err(ParseError::UnknownNodeType(other.to_string())),
     }
 }
@@ -726,6 +742,8 @@ mod tests {
                     "List" => SemanticElementType::List,
                     "Blockquote" => SemanticElementType::Blockquote,
                     "Table" => SemanticElementType::Table,
+                    // Schema 1.2.0 (CR-100).
+                    "Image" => SemanticElementType::Image,
                     other => panic!("unsupported test node type {other:?}"),
                 };
                 SemanticTreeElement {
@@ -735,10 +753,28 @@ mod tests {
                     text_order: *text_order,
                     physical_location: None,
                     style: None,
-                    token_count: text.split_whitespace().count(),
+                    // CR-100: an Image contributes no readable text.
+                    token_count: if element_type == SemanticElementType::Image {
+                        0
+                    } else {
+                        text.split_whitespace().count()
+                    },
                     internal_refs: vec![],
                     external_refs: vec![],
                     confidence: 0,
+                    image: (element_type == SemanticElementType::Image).then(|| {
+                        // The body ref is `![<id>](<id>)`; recover the id
+                        // so the fixture's payload names the same picture.
+                        let id = text
+                            .split_once("](")
+                            .map(|(_, rest)| rest.trim_end_matches(')').to_string())
+                            .unwrap_or_default();
+                        crate::types::ImagePayload {
+                            id,
+                            annotation: None,
+                            base64: Some("data:image/jpeg;base64,AAAA".to_string()),
+                        }
+                    }),
                 }
             })
             .collect();
@@ -1365,6 +1401,183 @@ mod tests {
         let result = parse(&md, ParseOptions::default()).expect("parses");
         let info = &result.graph.document_info;
         assert!(info.topology.is_none());
+    }
+
+    // ----- CR-100 (v1.2.0): the Image block's splitter contract -------
+    //
+    // bgraph.md must stay splittable into (body, fence) pairs by a line
+    // scanner with no markdown parser — that is the format's standing
+    // promise, and these tests are its executable form for the new
+    // block. The Image block introduces **no empty-body exception**:
+    // the ref line is its body, required by contract exactly as a
+    // Section requires its heading line.
+
+    /// A ref line as the emitter writes it.
+    fn img_ref(id: &str) -> String {
+        format!("![{id}]({id})")
+    }
+
+    #[test]
+    fn parse_consecutive_image_blocks_each_pair_with_their_own_ref_line() {
+        // Three pictures back to back — the case a naive scanner that
+        // buffers "the last free block" gets wrong by reusing one ref
+        // line for all three, or by pairing them off by one.
+        let refs: Vec<String> = ["img-0.jpeg", "img-1.jpeg", "img-2.jpeg"]
+            .iter()
+            .map(|id| img_ref(id))
+            .collect();
+        let original = build_synthetic_graph(
+            vec![
+                ("Image", refs[0].as_str(), 1, 0),
+                ("Image", refs[1].as_str(), 1, 1),
+                ("Image", refs[2].as_str(), 1, 2),
+            ],
+            Some("Plates"),
+            None,
+        );
+        let md = emit(&original);
+        // Every fence is immediately preceded by its own ref line.
+        let lines: Vec<&str> = md.lines().collect();
+        let fence_positions: Vec<usize> = lines
+            .iter()
+            .enumerate()
+            .filter(|(_, l)| **l == "```bgraph-image")
+            .map(|(i, _)| i)
+            .collect();
+        assert_eq!(fence_positions.len(), 3);
+        for (n, &pos) in fence_positions.iter().enumerate() {
+            assert_eq!(lines[pos - 1], refs[n], "fence {n} lost its ref line");
+        }
+        let result = parse(&md, ParseOptions::default()).expect("parses cleanly");
+        assert!(matches!(result.identity, ParseIdentity::Verified));
+        assert_eq!(canonical(&result.graph), canonical(&original));
+        // Each node kept its own picture — no cross-pairing.
+        let mut images: Vec<_> = result
+            .graph
+            .nodes
+            .values()
+            .filter(|n| n.node_type == "Image")
+            .collect();
+        images.sort_by_key(|n| n.text_order);
+        assert_eq!(images.len(), 3);
+        for (n, node) in images.iter().enumerate() {
+            assert_eq!(node.content.text, refs[n]);
+            assert_eq!(
+                node.image.as_ref().expect("payload").id,
+                format!("img-{n}.jpeg")
+            );
+        }
+    }
+
+    #[test]
+    fn parse_image_as_the_first_content_block_after_the_doc_level_fences() {
+        // A cover plate: the Image is the first thing after the
+        // doc-level + metadata fences, so its ref line is the first
+        // free block in the file. `pending_body` must not still be
+        // holding (or have discarded) anything from the metadata fences.
+        let r = img_ref("img-0.jpeg");
+        let original = build_synthetic_graph(
+            vec![("Image", r.as_str(), 1, 0), ("Paragraph", "After.", 1, 1)],
+            Some("Cover"),
+            None,
+        );
+        let md = emit(&original);
+        assert!(
+            md.contains("```\n\n![img-0.jpeg](img-0.jpeg)\n```bgraph-image\n"),
+            "the ref line must sit between the metadata fence close and the image fence; got:\n{md}"
+        );
+        let result = parse(&md, ParseOptions::default()).expect("parses cleanly");
+        assert!(matches!(result.identity, ParseIdentity::Verified));
+        assert_eq!(canonical(&result.graph), canonical(&original));
+    }
+
+    #[test]
+    fn parse_rejects_an_image_fence_with_no_preceding_ref_line() {
+        // The required-body-line contract, stated as an error. Strip the
+        // ref line out of a valid artifact and the parse must fail
+        // loudly — never invent an empty body, never silently drop the
+        // node.
+        let r = img_ref("img-0.jpeg");
+        let original = build_synthetic_graph(vec![("Image", r.as_str(), 1, 0)], Some("Doc"), None);
+        let md = emit(&original);
+        let tampered = md.replace(&format!("{r}\n```bgraph-image"), "```bgraph-image");
+        assert!(
+            !tampered.contains(&r),
+            "the ref line should be gone from the fixture"
+        );
+        let result = parse(&tampered, ParseOptions { accept_drift: true });
+        match result {
+            Err(ParseError::MalformedFence(msg)) => assert!(
+                msg.contains("bgraph-image") && msg.contains("no preceding body line"),
+                "the error must name the fence and the missing body line; got {msg:?}"
+            ),
+            other => panic!("expected MalformedFence, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parse_image_round_trip_is_byte_identical_on_re_emit() {
+        // Byte-in-byte-out through the new fence, both variants: with
+        // the base64 present, and with it nulled (the lean variant's
+        // exact wire shape).
+        let r = img_ref("img-0.jpeg");
+        let mut original = build_synthetic_graph(
+            vec![
+                ("Section", "Results", 1, 0),
+                ("Image", r.as_str(), 2, 1),
+                ("Paragraph", "Figure 1: the thing.", 2, 2),
+            ],
+            Some("Doc"),
+            None,
+        );
+        for variant_has_bytes in [true, false] {
+            let img_id = original
+                .nodes
+                .values()
+                .find(|n| n.node_type == "Image")
+                .map(|n| n.id)
+                .expect("image node");
+            original.nodes.get_mut(&img_id).unwrap().image = Some(crate::types::ImagePayload {
+                id: "img-0.jpeg".to_string(),
+                annotation: None,
+                base64: variant_has_bytes
+                    .then(|| "data:image/jpeg;base64,AAAA".to_string()),
+            });
+            let md1 = emit(&original);
+            assert_eq!(
+                md1.contains("\"base64\":null"),
+                !variant_has_bytes,
+                "the lean variant nulls `base64` and only that"
+            );
+            let result = parse(&md1, ParseOptions::default()).expect("round-trips");
+            assert!(matches!(result.identity, ParseIdentity::Verified));
+            assert_eq!(canonical(&result.graph), canonical(&original));
+            let md2 = emit_markdown(&result.graph, &result.provenance);
+            assert_eq!(md1, md2, "second emit must be byte-identical");
+        }
+    }
+
+    #[test]
+    fn imageless_documents_carry_no_image_key_at_all() {
+        // The control: the field is omitted (not `null`) for every other
+        // variant, so an imageless document's fence bytes — and its
+        // `bgraph_sha256` — are exactly what they were before the field
+        // existed. This is what keeps the standard PDF/Tika channel
+        // byte-identical across the 1.2.0 bump.
+        let graph = build_synthetic_graph(
+            vec![
+                ("Section", "Intro", 1, 0),
+                ("Paragraph", "Hello world.", 1, 1),
+                ("Table", "| a |\n|---|\n| 1 |", 1, 2),
+            ],
+            Some("Doc"),
+            None,
+        );
+        let md = emit(&graph);
+        assert!(
+            !md.contains("\"image\""),
+            "no `image` key may appear on an imageless document; got:\n{md}"
+        );
     }
 
     #[test]
