@@ -159,7 +159,7 @@ make serve      # http://localhost:8080
 ```
 ```bash
 curl -X POST http://localhost:8080/v1/parse/pdf --data-binary @attention.pdf
-# {"success": true, "graph": { "schema_version": "1.1.0", "nodes": [ ... ] }}
+# {"success": true, "graph": { "schema_version": "1.2.0", "nodes": [ ... ] }}
 ```
 
 Point the Python SDK at it and your parsing code doesn't change:

@@ -81,7 +81,7 @@ Everything below is one parse of the canonical example — *Attention Is All You
 {
   "schema_version": "1.2.0",
   "bgraph_sha256": "f6d2fcf0d4b647b973d83197aefc3f7c8dd948ef7f259bb3eda2a7a8b2470299",
-  "parse_provenance": { "bragi_version": "0.6.1", "source_format": "pdf", "...": "..." },
+  "parse_provenance": { "bragi_version": "0.7.0", "source_format": "pdf", "...": "..." },
   "nodes": [ ... ],
   "document_info": { ... },
   "structural_profile": { ... }
