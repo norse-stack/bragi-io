@@ -148,7 +148,7 @@ pub struct NodeTypeMergeConfig {
     pub ignore_region_label: bool,
 
     /// Stopgap for Tika's row-keyed `paragraph_number` in 2-column body layout
-    /// (see [CR-38](docs/P2/core/change-requests/CR-38-bbox-based-paragraph-detection.md)).
+    /// (see CR-38).
     ///
     /// When `Some(n)`, a pre-scan counts distinct `paragraph_number`s per
     /// `(page, element_type, region_label)`. If the count is `>= n` for a

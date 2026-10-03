@@ -61,6 +61,7 @@ impl DocumentGraph {
             root_id,
             kind: crate::types::default_kind(),
             document_metadata: DocumentMetadata::default(),
+            resolved_title: None,
             outline_data: None,
             flow_type: FlowType::default(),
             topology: None,
@@ -81,6 +82,7 @@ impl DocumentGraph {
             root_id: Uuid::new_v4(),
             kind: crate::types::default_kind(),
             document_metadata: DocumentMetadata::default(),
+            resolved_title: None,
             outline_data: None,
             flow_type: FlowType::default(),
             topology: None,
@@ -152,7 +154,7 @@ impl DocumentGraph {
             // Wall-clock time at which this graph was serialized to disk.
             // Lives on the wrapper so `DocumentGraph` stays time-free —
             // see canonical-input invariant in
-            // docs/P2/core/architecture/08-bgraph-md-format.md.
+            // the bgraph.md format spec (architecture doc 08).
             created_at: Utc::now(),
             parse_provenance: provenance.cloned(),
             nodes: nodes.into_iter().cloned().collect(),
@@ -167,17 +169,36 @@ impl DocumentGraph {
     /// Compute breadcrumbs for all nodes by walking the tree top-down.
     /// Sections contribute their text to the trail. Non-section nodes inherit
     /// their parent's breadcrumbs without adding to them.
-    /// If document metadata has a title, it becomes the first breadcrumb.
+    /// If the document has a title, it becomes the first breadcrumb.
+    ///
+    /// **Which title (CR-20, 2026-09-22):** `document_info.resolved_title`
+    /// when a producer resolved one, else `document_metadata.title` (the
+    /// supplier's verbatim `dc:title`) as before. Auto-opt-in by
+    /// existence — no channel in this crate populates `resolved_title`,
+    /// so every standard parse takes the second arm and its breadcrumbs
+    /// are byte-identical to the pre-CR-20 shape. Only the crumb changes
+    /// either way: node IDs exclude the root's crumb by construction (the
+    /// builder's `len() - 1`), so a resolved title never moves an id.
     pub fn compute_breadcrumbs(&mut self) {
         let root_id = self.document_info.root_id;
 
-        // Start with document title as first crumb if available
-        let root_breadcrumbs: Vec<String> = self
+        // Start with the document's title as first crumb if available.
+        // An empty `resolved_title` is no resolution at all and falls
+        // through to the supplier's title, exactly as an empty
+        // `dc:title` has always fallen through to no crumb.
+        let resolved = self
+            .document_info
+            .resolved_title
+            .as_ref()
+            .filter(|t| !t.is_empty());
+        let supplied = self
             .document_info
             .document_metadata
             .title
             .as_ref()
-            .filter(|t| !t.is_empty())
+            .filter(|t| !t.is_empty());
+        let root_breadcrumbs: Vec<String> = resolved
+            .or(supplied)
             .map(|t| vec![t.clone()])
             .unwrap_or_default();
 
@@ -264,5 +285,133 @@ impl DocumentGraph {
                 self._collect_subtree_recursive(child_node, collected);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod resolved_title_tests {
+    //! CR-20 (2026-09-22): the one additive core change — the
+    //! `resolved_title` slot and the breadcrumb preference it earns.
+    //! The standard path never populates it, so these tests are as much
+    //! about what does *not* move as about what does.
+
+    use super::*;
+    use crate::types::DocumentNode;
+    use uuid::Uuid;
+
+    /// A root with one Section child — the smallest graph whose
+    /// breadcrumbs have both a root crumb and an inherited trail.
+    fn tiny_graph() -> DocumentGraph {
+        let root_id = Uuid::new_v4();
+        let mut graph = DocumentGraph::new_with_root(root_id);
+        let mut root = DocumentNode::new("Document", String::new());
+        root.id = root_id;
+        let mut section = DocumentNode::new("Section", "Chapter One".to_string());
+        section.parent = Some(root_id);
+        let section_id = section.id;
+        root.children = vec![section_id];
+        graph.nodes.insert(root_id, root);
+        graph.nodes.insert(section_id, section);
+        graph
+    }
+
+    fn crumbs(graph: &DocumentGraph, node_type: &str) -> Vec<String> {
+        graph
+            .nodes
+            .values()
+            .find(|n| n.node_type == node_type)
+            .expect("node present")
+            .location
+            .semantic
+            .breadcrumbs
+            .clone()
+    }
+
+    /// The auto-opt-in proof, negative half: with `resolved_title`
+    /// absent — the standard path, always — the root crumb is the
+    /// supplier's `dc:title`, exactly as before the field existed.
+    #[test]
+    fn an_absent_resolved_title_leaves_breadcrumbs_exactly_as_before() {
+        let mut graph = tiny_graph();
+        graph.document_info.document_metadata.title = Some("Supplier Title".to_string());
+        assert!(graph.document_info.resolved_title.is_none());
+        graph.compute_breadcrumbs();
+        assert_eq!(
+            crumbs(&graph, "Document"),
+            vec!["Supplier Title".to_string()]
+        );
+        assert_eq!(
+            crumbs(&graph, "Section"),
+            vec!["Supplier Title".to_string(), "Chapter One".to_string()]
+        );
+    }
+
+    /// …and the positive half: present, it wins. The supplier's own
+    /// title is untouched in `document_metadata` — the consumer sees
+    /// both (DT-03 posture: supplier metadata stays verbatim).
+    #[test]
+    fn a_resolved_title_is_preferred_over_the_supplier_title() {
+        let mut graph = tiny_graph();
+        graph.document_info.document_metadata.title = Some("scan_0001.pdf".to_string());
+        graph.document_info.resolved_title = Some("The Real Title".to_string());
+        graph.compute_breadcrumbs();
+        assert_eq!(
+            crumbs(&graph, "Document"),
+            vec!["The Real Title".to_string()]
+        );
+        assert_eq!(
+            crumbs(&graph, "Section"),
+            vec!["The Real Title".to_string(), "Chapter One".to_string()]
+        );
+        assert_eq!(
+            graph.document_info.document_metadata.title.as_deref(),
+            Some("scan_0001.pdf"),
+            "the supplier's title is carried verbatim, never overwritten"
+        );
+    }
+
+    /// A resolved title with nothing in it is not a resolution: it falls
+    /// through to the supplier's, the same way an empty `dc:title` has
+    /// always fallen through to no crumb at all.
+    #[test]
+    fn an_empty_resolved_title_falls_through_to_the_supplier_title() {
+        let mut graph = tiny_graph();
+        graph.document_info.document_metadata.title = Some("Supplier Title".to_string());
+        graph.document_info.resolved_title = Some(String::new());
+        graph.compute_breadcrumbs();
+        assert_eq!(
+            crumbs(&graph, "Document"),
+            vec!["Supplier Title".to_string()]
+        );
+    }
+
+    /// The serde half of additive-within-minor (arch 08): `None`
+    /// serializes to no key at all, so a graph that never resolved a
+    /// title has byte-identical canonical bytes — and therefore an
+    /// unmoved `bgraph_sha256` — while an absent key still loads.
+    #[test]
+    fn the_slot_is_additive_on_the_wire() {
+        let graph = tiny_graph();
+        let json = serde_json::to_value(&graph.document_info).unwrap();
+        assert!(
+            json.get("resolved_title").is_none(),
+            "an unresolved title must add no key: {json}"
+        );
+
+        let with = {
+            let mut g = tiny_graph();
+            g.document_info.resolved_title = Some("Resolved".to_string());
+            serde_json::to_value(&g.document_info).unwrap()
+        };
+        assert_eq!(with.get("resolved_title").unwrap(), "Resolved");
+
+        // A document_info written before the field still loads.
+        let old = serde_json::json!({
+            "root_id": Uuid::new_v4(),
+            "kind": "document",
+            "document_metadata": {},
+        });
+        let parsed: crate::types::DocumentInfo = serde_json::from_value(old).unwrap();
+        assert!(parsed.resolved_title.is_none());
     }
 }

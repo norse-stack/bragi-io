@@ -85,6 +85,7 @@ fn build_synthetic_graph(nodes_in: Vec<(&str, &str, u32, u32)>) -> DocumentGraph
                 internal_refs: vec![],
                 external_refs: vec![],
                 confidence: 0,
+                image: None,
             }
         })
         .collect();

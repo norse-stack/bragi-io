@@ -64,6 +64,30 @@ pub struct DocumentInfo {
     pub kind: String,
     /// Metadata extracted from the source format (title, author, page count, etc.)
     pub document_metadata: DocumentMetadata,
+    /// The document's title as *resolved by a producer*, when one resolved
+    /// it — distinct from `document_metadata.title`, which is the
+    /// supplier's own `dc:title`, carried verbatim (DT-03).
+    ///
+    /// Added 2026-09-22 (CR-20) for title resolution: `dc:title` is junk
+    /// or empty on exactly the scanned documents that need help, and the
+    /// root node's human name is a
+    /// judgment about the document rather than a field the supplier
+    /// stamped. The slot keeps the two apart — supplier metadata stays
+    /// verbatim, the product's judgment gets its own key, and a consumer
+    /// sees both.
+    ///
+    /// **Auto-opt-in by existence.** [`crate::types::DocumentGraph`]'s
+    /// `compute_breadcrumbs` prefers this over `document_metadata.title`
+    /// when it is `Some` and non-empty. No standard parse populates it —
+    /// every channel in this crate leaves it `None` — so the standard
+    /// path's breadcrumbs, canonical json, and `bgraph_sha256` are
+    /// byte-identical to the pre-field shape with no switch and no config.
+    ///
+    /// Additive-within-minor (arch 08): `#[serde(default)]` so a graph.json
+    /// written before the field loads, and `skip_serializing_if` so an
+    /// unpopulated graph serializes exactly as it did before.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resolved_title: Option<String>,
     /// Navigational outline, when the source carries a standardized one
     /// (PDF `/Outlines` bookmarks; DOCX Table-of-Contents SDT — CR-81).
     /// `None` otherwise (the slot is conditional). Inner type names keep
@@ -106,8 +130,8 @@ pub struct DocumentInfo {
     pub topology: Option<String>,
     // CR-60 (2026-05-22) retracted `source_identity` and `supersedes`
     // here per the byte-in/byte-out schema-boundary principle
-    // (`docs/P2/core/architecture/11-byte-in-byte-out.md`,
-    //  `docs/P2/core/deliberate-tradeoffs/DT-04-byte-in-byte-out-schema-boundary.md`).
+    // (architecture doc 11 (byte in byte out),
+    //  DT-04).
     // Filesystem paths and URD addresses are stateful concepts owned by
     // the storage-layer adapter (URD), not the stateless parser.
     // `topology` stays — it's parser-known (channel decides) + immutable.
@@ -144,7 +168,7 @@ pub struct MessageMetadata {
 /// along as provenance documentation only — it no longer enters the
 /// node-ID namespace, so node IDs survive parser version bumps for
 /// the same `(source, config)`. See
-/// `docs/P2/core/architecture/08-bgraph-md-format.md` (v2.0.0 wire
+/// the bgraph.md format spec (architecture doc 08) (v2.0.0 wire
 /// format) for the consumer contract.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParseProvenance {
@@ -210,7 +234,7 @@ pub struct SortedDocumentGraph {
     /// Lives on the wrapper (not on `DocumentGraph`) so `canonical_json`
     /// is deterministic across runs of the same logical graph — see
     /// the canonical-input invariant in
-    /// `docs/P2/core/architecture/08-bgraph-md-format.md`.
+    /// the bgraph.md format spec (architecture doc 08).
     /// `#[serde(default)]` keeps pre-0.6.0 graph.json fixtures (which
     /// carried `created_at` on `StructuralProfile` instead) loadable;
     /// the default is the Unix epoch — a clearly "no real value"
@@ -278,6 +302,14 @@ pub struct DocumentNode {
     /// CR-62 (v2.3.0+): references to external locations.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub external_refs: Vec<ExternalRef>,
+    /// CR-100 (schema 1.2.0): the image payload, present **only** on
+    /// `Image` nodes. Omitted from the wire for every other variant
+    /// (`skip_serializing_if`), so a document with no pictures hashes
+    /// exactly as it did before this field existed — the standard
+    /// (PDF/Tika) channel stays byte-identical as the control. Inside
+    /// the content body, so `bgraph_sha256` attests the image bytes.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image: Option<ImagePayload>,
     // Schema 0.8.0 (Block A / Amendment M): the CR-78 `confidence`
     // schema-ahead placeholder is REMOVED outright — no
     // `skip_serializing_if` slot kept. A placeholder that is
@@ -313,6 +345,7 @@ impl DocumentNode {
             children: Vec::new(),
             internal_refs: vec![],
             external_refs: vec![],
+            image: None,
         }
     }
 
@@ -337,6 +370,7 @@ impl DocumentNode {
             children: Vec::new(),
             internal_refs: vec![],
             external_refs: vec![],
+            image: None,
         }
     }
 
@@ -381,7 +415,7 @@ pub struct NodeContent {
 /// bgraph.md spec § Reserved fence prefix. The bare-prefix match
 /// captures every suffix variant in one rule (`bgraph`, `bgraph-section`,
 /// `bgraph-anything-future`). See § Reserved-prefix escape contract
-/// in `docs/P2/core/architecture/08-bgraph-md-format.md` for the
+/// in the bgraph.md format spec (architecture doc 08) for the
 /// authoritative definition.
 const RESERVED_LINE_PREFIXES: &[&str] = &["```bgraph"];
 
@@ -425,9 +459,78 @@ pub enum NodeType {
     List,
     ListItem,
     Table,
-    Figure,
+    /// Schema 1.2.0 (CR-100): a picture in the document. Replaces the
+    /// dead `Figure` variant, which existed from the beginning and was
+    /// emitted by **zero** channels — "Image" is the generic thing it
+    /// is; "Figure" was paper/math lingo. Removed in the same bump, so
+    /// nothing can fail to deserialize (nothing ever serialized it).
+    Image,
     Header,
     Footer,
+}
+
+/// CR-100 (schema 1.2.0): the image payload carried by an `Image` node,
+/// serialized into the `bgraph-image` fence's JSON beside the standard
+/// node fields.
+///
+/// The node's **body** is the readable markdown ref
+/// (`![img-0.jpeg](img-0.jpeg)`) and its **bbox** is the node's standard
+/// `location.physical` — there is no parallel geometry channel here.
+/// What this struct adds is the supplier identity plus the two optional
+/// enrichments.
+///
+/// Why the base64 lives in the fence and never in the body: fences are
+/// already the machine channel, so grep/read of prose never wades
+/// through base64 and body-text concatenators (prompt assembly, search,
+/// embeddings) are safe **by default** — the bytes can only be reached
+/// by explicitly reading this payload. And because the payload is part
+/// of the hashed content body, `bgraph_sha256` attests the image bytes:
+/// the artifact vouches for its pictures.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct ImagePayload {
+    /// Content digest of the picture: `sha256:<hex>` over the **decoded**
+    /// image bytes (CR-100 amendment, 2026-09-21). Identity is the bytes,
+    /// not the supplier's label — a name can drift or lie, the bytes
+    /// cannot — and the digest survives the lean variant's `base64` strip,
+    /// so a skeleton artifact still *commits* to the exact picture it
+    /// withheld. The supplier's human label (`img-0.jpeg`) lives where
+    /// labels belong: the body ref line. Falls back to that label only
+    /// when there are no bytes to hash (supplier anomaly — an `image`
+    /// block whose page-level `images[]` entry is missing or undecodable).
+    pub id: String,
+    /// Mistral's `image_annotation`, when the supplier produced one.
+    /// Always present as a key (`null` when absent) so the field cannot
+    /// silently churn identity at absent→present.
+    pub annotation: Option<String>,
+    /// The data-URI payload (`data:image/jpeg;base64,…`). `null` in the
+    /// lean variant (`include_images=false`) — the one field the option
+    /// forks. Always present as a key, same reason as `annotation`.
+    pub base64: Option<String>,
+}
+
+impl ImagePayload {
+    /// The Image node's canonical id-content — what the CR-83 id walk
+    /// consumes as this node's "own content" in place of the body's ref
+    /// line (CR-100 amendment: hash content, not labels — the ref line
+    /// is a label).
+    ///
+    /// `id ‖ US ‖ annotation`: an image's content identity is its bytes
+    /// plus the supplier's reading of them — never styling or geometry.
+    /// An absent annotation contributes nothing after the separator, so
+    /// no-annotation and empty-annotation share one identity. The digest
+    /// stands in for the bytes deliberately: it survives the lean
+    /// variant's `base64` strip, so both `include_images` variants — and
+    /// every later `rekey_node_ids` pass (a re-level may run
+    /// one AFTER the strip) — derive identical ids from identical
+    /// inputs. Raw bytes here would break exactly that, and would make
+    /// a lean artifact's ids underivable from its own wire.
+    pub fn node_id_content(&self) -> String {
+        format!(
+            "{}\u{1f}{}",
+            self.id,
+            self.annotation.as_deref().unwrap_or("")
+        )
+    }
 }
 
 /// Verbatim Tika style projection — see DT-03 for why this is the right shape now.
@@ -747,7 +850,7 @@ pub struct BoundingBox {
 /// fields under named namespaces.
 ///
 /// Wire-format home: the `bgraph-metadata` doc-level fence
-/// (`docs/P2/core/architecture/08-bgraph-md-format.md` § Amendment I.3).
+/// (the bgraph.md format spec (architecture doc 08) § Amendment I.3).
 /// One per document; emitted whether or not any field is populated.
 ///
 /// Canonical fields read **source-native only** — no body-side fallback
@@ -881,19 +984,25 @@ pub struct OcrMetadata {
     /// `pages[].dimensions.dpi` of the first page carrying dimensions —
     /// the raster resolution the pixel bboxes were reported at.
     pub dpi: Option<u32>,
-    /// S2 companion linkage: sha256 of the companion PDF whose native-arm
-    /// metadata was grafted into this graph
-    /// ([`crate::preprocessors::ocr::graft_native_metadata`]). `None` on
+    /// The **supplier artifact's** identity: sha256 of the OCR payload
+    /// bytes (the supplier's `mist.json`) this graph was parsed from.
+    /// Set by the graft
+    /// ([`crate::preprocessors::ocr::graft_native_metadata`]); `None` on
     /// single-arm parses. Serialized absent-when-`None` (same convention as
-    /// the namespace slots on [`DocumentMetadata`]) so a no-companion parse
+    /// the namespace slots on [`DocumentMetadata`]) so a no-graft parse
     /// stays byte-identical to the S1 single-arm output — `document_metadata`
     /// is inside the hashed content body, and the graft must change nothing
-    /// it wasn't asked to. The PDF is a metadata *companion*, not a second
-    /// source: provenance keeps `source_format: "ocr"` / `source_sha256` =
-    /// the mist.json bytes, and the PDF's hash lives here in the `ocr`
-    /// namespace.
+    /// it wasn't asked to.
+    ///
+    /// CR-13 renamed this from `companion_pdf_sha256` and inverted what it
+    /// carries. Inside the channel nothing moved: provenance still says
+    /// `source_format: "ocr"` / `source_sha256` = these same bytes. What
+    /// changed is that a consumer may re-stamp the doc-level source
+    /// as its own input PDF — at which point the OCR payload's own
+    /// identity would be lost if it did not live here. Supplier-neutral by
+    /// name so swapping the OCR vendor is not a schema change.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub companion_pdf_sha256: Option<String>,
+    pub supplier_sha256: Option<String>,
     #[serde(default)]
     pub extras: BTreeMap<String, serde_json::Value>,
 }
@@ -918,6 +1027,33 @@ pub struct FontClass {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BookmarkData {
     pub sections: Vec<BookmarkSection>,
+}
+
+impl BookmarkData {
+    /// Assemble an outline from a document's Sections in emission order:
+    /// levels **rebased so the shallowest is 1** (the same semantic as
+    /// the DOCX ToC projection and the PDF `/Outlines` depth), `order` =
+    /// 0-based emission sequence. `None` when there are no Sections.
+    ///
+    /// The single home of section-derived outline assembly: the OCR
+    /// channel's build path
+    /// ([`crate::preprocessors::ocr::parse_ocr`]) and the graph transform
+    /// seam ([`crate::graphs::transform`]) both call it, so a re-derive
+    /// after a transform cannot drift from the original build.
+    pub fn from_leveled_sections<S: AsRef<str>>(sections: &[(S, u32)]) -> Option<Self> {
+        let min_level = sections.iter().map(|(_, lvl)| *lvl).min()?;
+        Some(Self {
+            sections: sections
+                .iter()
+                .enumerate()
+                .map(|(i, (title, lvl))| BookmarkSection {
+                    title: title.as_ref().to_string(),
+                    order: i as u32,
+                    level: lvl - min_level + 1,
+                })
+                .collect(),
+        })
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -1083,6 +1219,13 @@ pub struct SemanticTreeElement {
     /// home via its own honest major bump.
     #[serde(default)]
     pub confidence: u8,
+
+    /// CR-100 (schema 1.2.0): the image payload for `Image` elements,
+    /// `None` for every other variant. Carried through the channel
+    /// boundary so the builder can copy it onto `DocumentNode.image` —
+    /// the same path `style` and the ref vecs take.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub image: Option<ImagePayload>,
 }
 
 /// CR-62: A reference from an element to a location within the same document.
@@ -1217,6 +1360,17 @@ pub enum SemanticElementType {
     /// canonicalization). No other channel produces it today; the PDF
     /// channel renders equations to prose Paragraphs (DT-05).
     Equation,
+    /// Schema 1.2.0 (CR-100): a picture, produced by the OCR channel
+    /// from a supplier `image` block. Body is the readable markdown ref
+    /// verbatim (`![img-0.jpeg](img-0.jpeg)`) — **required by contract**,
+    /// exactly as a Section requires its heading line, even when the
+    /// payload's `annotation` and `base64` are both null. The image
+    /// bytes live in the fence payload ([`ImagePayload`]), never in the
+    /// body. Non-inline body, treated like [`Self::CodeBlock`]: the ref
+    /// is the supplier's bytes, not something to canonicalize. No other
+    /// channel produces it today — the PDF/Tika channel skips drawings,
+    /// and continues to.
+    Image,
     /// Orphan variant reserved for the future stream-topology design slice.
     ///
     /// CR-49 added the variant + wire-format support; CR-59 retracted the
@@ -1256,9 +1410,15 @@ impl SemanticElementType {
     pub fn body_is_markdown_inline(self) -> bool {
         match self {
             Self::Section | Self::Paragraph | Self::Header | Self::Footer | Self::Margin => true,
-            Self::CodeBlock | Self::List | Self::Blockquote | Self::Table | Self::Equation => {
-                false
-            }
+            // CR-100: `Image`'s body is the supplier's verbatim markdown
+            // ref — literal, like CodeBlock. No inline parser, no
+            // emphasis projection.
+            Self::CodeBlock
+            | Self::List
+            | Self::Blockquote
+            | Self::Table
+            | Self::Equation
+            | Self::Image => false,
             Self::Message => panic!(
                 "SemanticElementType::Message::body_is_markdown_inline called — \
                  Message is the orphan sentinel (CR-59); no wire-format domain. \
@@ -1534,6 +1694,7 @@ mod semantic_tree_element_validate_tests {
             internal_refs: vec![],
             external_refs: vec![],
             confidence: 0,
+            image: None,
         }
     }
 
@@ -1601,6 +1762,8 @@ mod semantic_tree_element_validate_tests {
         assert!(!SemanticElementType::Blockquote.body_is_markdown_inline());
         assert!(!SemanticElementType::Table.body_is_markdown_inline());
         assert!(!SemanticElementType::Equation.body_is_markdown_inline());
+        // CR-100: the Image body is the supplier's verbatim markdown ref.
+        assert!(!SemanticElementType::Image.body_is_markdown_inline());
     }
 
     #[test]
@@ -1616,6 +1779,10 @@ mod semantic_tree_element_validate_tests {
             SemanticElementType::Blockquote,
             SemanticElementType::Table,
             SemanticElementType::Equation,
+            // CR-100: the ref line is required by contract — an Image
+            // block with no preceding body line is a hard parse error,
+            // exactly as a Section with no heading line is.
+            SemanticElementType::Image,
         ] {
             assert!(
                 t.requires_non_empty_body(),

@@ -198,6 +198,7 @@ pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError
                                 internal_refs: vec![],
                                 external_refs: vec![],
                                 confidence: 0,
+                                image: None,
                             }
                             .validate(),
                         );
@@ -246,6 +247,7 @@ pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError
                                 internal_refs: vec![],
                                 external_refs: vec![],
                                 confidence: 0,
+                                image: None,
                             }
                             .validate(),
                         );
@@ -369,6 +371,7 @@ pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError
                                 internal_refs: vec![],
                                 external_refs: vec![],
                                 confidence: 0,
+                                image: None,
                             }
                             .validate(),
                         );
@@ -447,6 +450,7 @@ pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError
                             internal_refs: vec![],
                             external_refs: vec![],
                             confidence: 0,
+                            image: None,
                         }
                         .validate(),
                     );
@@ -469,6 +473,7 @@ pub fn parse(input: &str, _opts: ParseOptions) -> Result<ParseResult, ParseError
                             internal_refs: vec![],
                             external_refs: vec![],
                             confidence: 0,
+                            image: None,
                         }
                         .validate(),
                     );

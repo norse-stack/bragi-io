@@ -6,8 +6,8 @@
 #
 # It is DELIBERATELY SEPARATE from the schema/format axis
 # (BGRAPH_FORMAT_VERSION, currently 1.0.0). Code evolves on its own line
-# (bugfixes, formatting) without ever touching the customer-facing schema
-# shape. See P2/core/architecture/15-version-model.md.
+# (bugfixes, formatting) without ever touching the consumer-facing schema
+# shape. See architecture doc 15 (version model).
 #
 # Usage:  scripts/bump-version.sh <X.Y.Z>
 #         make bump-version V=<X.Y.Z>

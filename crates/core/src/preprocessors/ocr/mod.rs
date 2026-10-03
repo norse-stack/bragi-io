@@ -1,4 +1,4 @@
-//! OCR preprocessor (S1 of the OCR premium arc).
+//! OCR preprocessor (S1 of the OCR arc).
 //!
 //! ## Body channel
 //!
@@ -14,6 +14,16 @@
 //! majority of Section titles carry a numbering scheme, the numbering's
 //! rank replaces the per-page level (capped at
 //! `numbering::MAX_OUTLINE_DEPTH`). Unnumbered documents pass through
+//! byte-identical.
+//!
+//! [`furniture`] is the CR-99 repetition guard: OCR-4 labels blocks
+//! `header`/`footer` by page position, not content, so one-off body
+//! prose that touches the page edge (scholarly footnotes, cover-page
+//! blocks) can arrive supplier-labeled as furniture.
+//! The label survives only when its
+//! normalized text recurs on ≥ `furniture::FURNITURE_MIN_RECURRENCE_PAGES`
+//! distinct pages; non-repeating "furniture" reclassifies to Paragraph
+//! in body flow. Small docs (below the same page floor) pass through
 //! byte-identical.
 //!
 //! ## Payload contract
@@ -40,17 +50,18 @@
 //!
 //! ## Native metadata graft (S2)
 //!
-//! [`graft`] fills the gap on the premium path: the native arm's
+//! [`graft`] fills the gap on the two-arm path: the native arm's
 //! metadata extraction runs over a companion PDF and its doc-level
 //! fields merge into the OCR graph with a fixed precedence policy
 //! (native wins canonical fields; `pdf` namespace verbatim; `ocr`
-//! namespace untouched except `companion_pdf_sha256`).
+//! namespace untouched except `supplier_sha256`).
 //! [`graft::parse_ocr_with_pdf`] is the composed entry point
 //! (`jni-backend`); [`graft::graft_native_metadata`] is the pure,
 //! JVM-free merge. No companion → byte-identical to the single-arm
 //! output.
 
 pub mod body;
+mod furniture;
 pub mod graft;
 mod numbering;
 pub mod payload;
@@ -138,10 +149,11 @@ impl MetadataExtractor for OcrMetadataExtractor {
             pages_processed: self.pages_processed,
             doc_size_bytes: self.doc_size_bytes,
             dpi: self.dpi,
-            // S2 linkage — set only by the graft
+            // Supplier identity — set only by the graft
             // ([`super::ocr::graft_native_metadata`]), never by the
-            // single-arm extraction.
-            companion_pdf_sha256: None,
+            // single-arm extraction (whose doc-level `source` fence
+            // already names these very bytes).
+            supplier_sha256: None,
             extras: std::collections::BTreeMap::new(),
         })
     }

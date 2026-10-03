@@ -16,17 +16,31 @@
 //! | `list`                                            | List                |
 //! | `table`                                           | Table               |
 //! | `code`                                            | CodeBlock           |
-//! | `header` / `footer`                               | Header / Footer     |
+//! | `header` / `footer`                               | Header / Footer ¹   |
 //! | `equation`                                        | Equation (1.1.0)    |
 //! | `caption` / `references` / `aside_text` / `signature` | Paragraph (fold) |
-//! | `image`                                           | *skipped*           |
+//! | `image`                                           | Image (1.2.0) ²     |
 //! | anything else                                     | Paragraph (fold)    |
+//!
+//! ¹ Subject to the CR-99 repetition guard ([`super::furniture`]):
+//! OCR-4 assigns `header`/`footer` by page position, so the label is
+//! kept only when the block's normalized text recurs across enough
+//! distinct pages; non-repeating "furniture" reclassifies to Paragraph
+//! in body flow. Small docs pass through untouched.
+//!
+//! ² CR-100. The body is the block's `content` verbatim — the readable
+//! markdown ref, `![img-0.jpeg](img-0.jpeg)` — and the bytes ride in the
+//! node's [`ImagePayload`], joined from the page's `images[]` by
+//! `image_id`. `token_count: 0` by definition: token counts measure
+//! readable text, and a picture contributes none. Reading order is the
+//! block's position in the stream, like every other block. S1 skipped
+//! these ("no Figure variant"), so a payload's pictures were dropped
+//! until this variant arrived.
 //!
 //! Folds carry the body verbatim — promotion to dedicated variants waits
 //! on evidence. `code` content is **verbatim monospace, not necessarily
 //! source code** (rfc-quic's ASCII protocol diagrams arrive as `code`);
-//! no language inference. `image` blocks are skipped (no Figure variant
-//! in S1).
+//! no language inference.
 //!
 //! ## Fixed-flow physical location
 //!
@@ -74,12 +88,12 @@ use crate::graphs::builder::GraphBuilder;
 use crate::graphs::node_id::NodeIdGenerator;
 use crate::tokens::estimate_token_count;
 use crate::types::{
-    BookmarkData, BookmarkSection, BoundingBox, FlowType, PhysicalLocation, ParseProvenance,
+    BookmarkData, BoundingBox, FlowType, ImagePayload, PhysicalLocation, ParseProvenance,
     SemanticElementType, SemanticTreeElement,
 };
 
 use super::super::md::types::{ParseError, ParseIdentity, ParseOptions, ParseResult};
-use super::payload::{OcrBlock, OcrDocument};
+use super::payload::{OcrBlock, OcrDocument, OcrImage};
 
 /// Parse a Mistral OCR-4 JSON byte buffer into a `DocumentGraph`.
 ///
@@ -99,6 +113,12 @@ pub fn parse_ocr(bytes: &[u8], _opts: ParseOptions) -> Result<ParseResult, Parse
 
     // 2. Project blocks → elements.
     let mut projection = project_blocks(&doc);
+
+    // 2a. CR-99: furniture repetition guard. Runs BEFORE the graph
+    //     build, so node types on the wire are already corrected — the
+    //     graph never carries the supplier's positional lie. Type-only:
+    //     demoted blocks already sit at leaf level in body flow.
+    reclassify_transient_furniture(&mut projection, doc.pages.len() as u32);
 
     // 2b. CR-98: numbering-rank outline normalization. Runs after
     //     block→variant mapping and BEFORE the graph build + outline
@@ -172,7 +192,10 @@ struct Projection {
     outline: Vec<(String, u32)>,
     /// First observed `dimensions.dpi` — feeds `ocr:` metadata.
     dpi: Option<u32>,
-    /// Skipped `image` blocks (no Figure variant in S1).
+    /// `image` blocks that could not become Image nodes. CR-100 turned
+    /// the S1 blanket skip into a projection, so this now counts only
+    /// supplier anomalies: an `image` block with no ref text to use as
+    /// its (contract-required) body.
     #[allow(dead_code)] // read by tests; reported in the AAR.
     images_skipped: usize,
     /// Blocks skipped for empty/whitespace-only content (C-7a guard).
@@ -212,12 +235,62 @@ fn project_blocks(doc: &OcrDocument) -> Projection {
 
         for block in page.blocks.iter().flatten() {
             let block_type = block.block_type.as_deref().unwrap_or("text");
+            let content = block.content.as_deref().unwrap_or("");
+
             if block_type == "image" {
-                // No Figure variant in S1 — skip, counted for the AAR.
-                images_skipped += 1;
+                // CR-100: the picture becomes a node. Its body is the
+                // ref line, required by contract — an `image` block
+                // with no ref text has no legal body, so it is the one
+                // remaining skip (a supplier anomaly, counted).
+                let text = content.trim();
+                if text.is_empty() {
+                    images_skipped += 1;
+                    continue;
+                }
+                let label = image_id_for(text, block.image_id.as_deref());
+                let joined = join_page_image(page.images.as_deref(), label.as_deref());
+                let base64 = joined.and_then(|i| i.image_base64.clone());
+                // CR-100 amendment: identity is the bytes, not the
+                // label. The supplier's name stays the JOIN key (and
+                // the body ref keeps it as the human label), but the
+                // payload id is the content digest of the decoded
+                // bytes — falling back to the label only when there
+                // are no bytes to hash.
+                let payload_id = base64
+                    .as_deref()
+                    .and_then(image_digest)
+                    .unwrap_or_else(|| label.clone().unwrap_or_default());
+                elements.push(
+                    SemanticTreeElement {
+                        text: text.to_string(),
+                        element_type: SemanticElementType::Image,
+                        hierarchy_level: current_section_level + 1,
+                        text_order: elements.len() as u32,
+                        physical_location: Some(image_physical(
+                            block,
+                            joined,
+                            page_number,
+                            scale,
+                        )),
+                        style: None,
+                        // Zero by definition — an Image contributes no
+                        // readable text, so it must not move
+                        // `total_tokens` or the distribution.
+                        token_count: 0,
+                        internal_refs: vec![],
+                        external_refs: vec![],
+                        confidence: 0,
+                        image: Some(ImagePayload {
+                            id: payload_id,
+                            annotation: joined.and_then(|i| i.image_annotation.clone()),
+                            base64,
+                        }),
+                    }
+                    .validate(),
+                );
                 continue;
             }
-            let content = block.content.as_deref().unwrap_or("");
+
             if content.trim().is_empty() {
                 // C-7a: every wire variant requires a non-empty body.
                 empty_skipped += 1;
@@ -252,6 +325,7 @@ fn project_blocks(doc: &OcrDocument) -> Projection {
                     internal_refs: vec![],
                     external_refs: vec![],
                     confidence: 0,
+                    image: None,
                 }
                 .validate(),
             );
@@ -304,6 +378,55 @@ fn normalize_outline_by_numbering(projection: &mut Projection) {
             section_idx += 1;
         } else {
             element.hierarchy_level = current_section_level + 1;
+        }
+    }
+}
+
+/// CR-99 post-pass: demote supplier-labeled furniture that fails the
+/// repetition test. Headers and footers are separate pools; within each,
+/// [`super::furniture::keep_mask`] decides per block whether its
+/// normalized text recurs on enough distinct pages to license the
+/// "chrome" claim. Demotion is a type change only — the block was
+/// pushed at leaf level (`current_section_level + 1`) in text order, so
+/// as a Paragraph it rejoins body flow exactly where it stood.
+///
+/// Below the small-doc floor (`page_count <
+/// FURNITURE_MIN_RECURRENCE_PAGES`) the mask is `None` and the
+/// projection is left untouched — supplier labels are trusted as-is,
+/// and small documents come out byte-identical to pre-CR-99 output.
+fn reclassify_transient_furniture(projection: &mut Projection, page_count: u32) {
+    for kind in [SemanticElementType::Header, SemanticElementType::Footer] {
+        let indices: Vec<usize> = projection
+            .elements
+            .iter()
+            .enumerate()
+            .filter(|(_, e)| e.element_type == kind)
+            .map(|(i, _)| i)
+            .collect();
+        if indices.is_empty() {
+            continue;
+        }
+        let normalized: Vec<String> = indices
+            .iter()
+            .map(|&i| super::furniture::normalize_furniture(&projection.elements[i].text))
+            .collect();
+        let pages: Vec<u32> = indices
+            .iter()
+            .map(|&i| {
+                projection.elements[i]
+                    .physical_location
+                    .as_ref()
+                    .map(|p| p.page)
+                    .unwrap_or(0)
+            })
+            .collect();
+        let Some(mask) = super::furniture::keep_mask(&normalized, &pages, page_count) else {
+            continue;
+        };
+        for (&idx, &keep) in indices.iter().zip(&mask) {
+            if !keep {
+                projection.elements[idx].element_type = SemanticElementType::Paragraph;
+            }
         }
     }
 }
@@ -379,6 +502,7 @@ fn project_title_block(
                 internal_refs: vec![],
                 external_refs: vec![],
                 confidence: 0,
+                image: None,
             }
             .validate(),
         );
@@ -414,6 +538,91 @@ fn level_from_page_markdown(page_markdown: &str, title: &str) -> Option<u32> {
     None
 }
 
+/// CR-100: which picture does this `image` block name?
+///
+/// **The markdown ref is the truth, not the block's `image_id`.** The
+/// supplier gives two signals and they disagree: measured over the whole
+/// cached corpus (380 image blocks across 274 pages), the id inside the
+/// ref matches the page's `images[]` ids as a multiset on **every**
+/// page, 274/274 — while `image_id` disagrees with the ref on 3 blocks,
+/// each time naming a *later* image on the same page. Trusting
+/// `image_id` there would attach the wrong bytes to one node and orphan
+/// a real picture entirely, and the artifact's `bgraph_sha256` would
+/// then vouch for the mix-up. So the ref leads; `image_id` is the
+/// fallback for a block whose content is not a parseable ref.
+///
+/// Keeping the id the body already shows also means payload, body and
+/// bytes always name the same thing — a consumer reading the ref and a
+/// consumer reading the fence never disagree.
+fn image_id_for(ref_text: &str, image_id: Option<&str>) -> Option<String> {
+    ref_url(ref_text)
+        .map(str::to_string)
+        .or_else(|| image_id.map(str::to_string))
+}
+
+/// CR-100 amendment: the payload id is the content digest —
+/// `sha256:<hex>` over the **decoded** image bytes, so the id names the
+/// picture itself, not its transport framing (two encodings of the same
+/// bytes share an id) and not the supplier's label (labels can drift —
+/// the `image_id` field measurably does). `None` for anything that is
+/// not a decodable `…;base64,<payload>` data-URI (supplier anomaly:
+/// the caller falls back to the label, the only content that exists).
+fn image_digest(data_uri: &str) -> Option<String> {
+    use base64::Engine as _;
+    use sha2::{Digest as _, Sha256};
+    let payload = data_uri.split_once("base64,")?.1;
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(payload.trim())
+        .ok()?;
+    Some(format!("sha256:{:x}", Sha256::digest(&bytes)))
+}
+
+/// `![alt](url)` → `Some("url")`. `None` for anything that is not a
+/// single markdown image ref (no markdown parser: the ref shape is
+/// fixed by the supplier and this is a line scan, per the format's
+/// dogfooding rule).
+fn ref_url(text: &str) -> Option<&str> {
+    let rest = text.trim().strip_prefix("![")?;
+    let (_alt, rest) = rest.split_once("](")?;
+    let url = rest.strip_suffix(')')?;
+    (!url.is_empty()).then_some(url)
+}
+
+/// CR-100: find the page-level `images[]` entry an `image` block names.
+///
+/// The join is by id and by id alone — a block that names nothing, a
+/// page with no `images[]`, or an id that matches nothing all yield
+/// `None`, and the caller degrades to the block's own geometry with a
+/// null payload. Never a panic, never a positional guess: pairing the
+/// nth image block with the nth array entry would silently mis-attribute
+/// bytes the artifact's hash then vouches for.
+fn join_page_image<'a>(images: Option<&'a [OcrImage]>, id: Option<&str>) -> Option<&'a OcrImage> {
+    let id = id?;
+    images?.iter().find(|i| i.id.as_deref() == Some(id))
+}
+
+/// The Image node's bbox. The joined `images[]` entry is the source of
+/// truth when it carries a full set of corner coords (it is the entry
+/// that describes the picture); the block's own coords are the fallback
+/// when the join missed or the entry is partial. Both sides are absolute
+/// pixels at `dimensions.dpi`, top-left origin, so the same `72 / dpi`
+/// scale applies either way — and in every observed payload the two
+/// agree exactly.
+fn image_physical(
+    block: &OcrBlock,
+    joined: Option<&OcrImage>,
+    page_number: u32,
+    scale: f32,
+) -> PhysicalLocation {
+    let corners = joined.and_then(|i| {
+        Some((i.top_left_x?, i.top_left_y?, i.bottom_right_x?, i.bottom_right_y?))
+    });
+    let Some((tlx, tly, brx, bry)) = corners else {
+        return block_physical(block, page_number, scale);
+    };
+    scaled_box(tlx, tly, brx, bry, page_number, scale)
+}
+
 /// Convert a block's pixel corner coords to a PDF-point
 /// `PhysicalLocation` (top-left origin both sides; pure scale). Missing
 /// coords default to 0; a bottom-right that precedes top-left clamps the
@@ -423,6 +632,19 @@ fn block_physical(block: &OcrBlock, page_number: u32, scale: f32) -> PhysicalLoc
     let tly = block.top_left_y.unwrap_or(0.0);
     let brx = block.bottom_right_x.unwrap_or(tlx);
     let bry = block.bottom_right_y.unwrap_or(tly);
+    scaled_box(tlx, tly, brx, bry, page_number, scale)
+}
+
+/// Shared corner-coords → `PhysicalLocation` conversion, so the block
+/// and image-entry paths cannot drift in their scaling or clamping.
+fn scaled_box(
+    tlx: f32,
+    tly: f32,
+    brx: f32,
+    bry: f32,
+    page_number: u32,
+    scale: f32,
+) -> PhysicalLocation {
     PhysicalLocation {
         page: page_number,
         bounding_box: BoundingBox {
@@ -438,19 +660,12 @@ fn block_physical(block: &OcrBlock, page_number: u32, scale: f32) -> PhysicalLoc
 /// the shallowest is 1 (same semantic as the DOCX ToC projection and the
 /// PDF `/Outlines` depth), `order` = 0-based emission sequence. `None`
 /// when the document has no Sections.
+///
+/// Delegates to [`BookmarkData::from_leveled_sections`] — the shared home
+/// of this assembly, so the graph transform seam's re-derive
+/// ([`crate::graphs::transform`]) cannot drift from this build path.
 fn build_outline(sections: &[(String, u32)]) -> Option<BookmarkData> {
-    let min_level = sections.iter().map(|(_, lvl)| *lvl).min()?;
-    Some(BookmarkData {
-        sections: sections
-            .iter()
-            .enumerate()
-            .map(|(i, (title, lvl))| BookmarkSection {
-                title: title.clone(),
-                order: i as u32,
-                level: lvl - min_level + 1,
-            })
-            .collect(),
-    })
+    BookmarkData::from_leveled_sections(sections)
 }
 
 fn sha256_hex(bytes: &[u8]) -> String {
@@ -484,6 +699,25 @@ mod tests {
             r#"{{"top_left_x":10,"top_left_y":{y},"bottom_right_x":110,"bottom_right_y":{},"content":{},"type":"{t}"}}"#,
             y + 20.0,
             serde_json::to_string(content).unwrap(),
+        )
+    }
+
+    /// An `image` block: the ref line as `content`, plus the `image_id`
+    /// join key into the page's `images[]`.
+    fn image_block(id: &str, content: &str, y: f32) -> String {
+        format!(
+            r#"{{"top_left_x":10,"top_left_y":{y},"bottom_right_x":110,"bottom_right_y":{},"content":{},"type":"image","image_id":"{id}"}}"#,
+            y + 20.0,
+            serde_json::to_string(content).unwrap(),
+        )
+    }
+
+    /// A page-level `images[]` entry. `base64` / `annotation` are raw
+    /// JSON fragments so a test can pass `null`.
+    fn page_image(id: &str, y: f32, base64: &str, annotation: &str) -> String {
+        format!(
+            r#"{{"id":"{id}","top_left_x":10,"top_left_y":{y},"bottom_right_x":110,"bottom_right_y":{},"image_base64":{base64},"image_annotation":{annotation}}}"#,
+            y + 20.0,
         )
     }
 
@@ -550,10 +784,12 @@ mod tests {
     }
 
     #[test]
-    fn skips_image_blocks_and_empty_content() {
+    fn projects_image_blocks_and_skips_empty_content() {
+        // CR-100: the `image` block is a node now. `images_skipped`
+        // survives, counting only the payload-less supplier anomaly.
         let blocks = [
             block("text", "kept", 10.0),
-            block("image", "![img-0.jpeg](img-0.jpeg)", 30.0),
+            image_block("img-0.jpeg", "![img-0.jpeg](img-0.jpeg)", 30.0),
             block("text", "   ", 50.0),
             block("text", "", 70.0),
         ]
@@ -561,9 +797,27 @@ mod tests {
         let json = payload(&format!(r#"{{"index":0,"blocks":[{blocks}]}}"#));
         let doc: OcrDocument = serde_json::from_slice(&json).unwrap();
         let projection = project_blocks(&doc);
+        assert_eq!(projection.elements.len(), 2, "text + image");
+        assert_eq!(projection.images_skipped, 0);
+        assert_eq!(projection.empty_skipped, 2);
+    }
+
+    #[test]
+    fn image_block_with_no_ref_text_is_the_only_remaining_skip() {
+        // The ref line is the Image block's body, required by contract —
+        // a supplier `image` block with nothing to put there has no legal
+        // node, so it is skipped and counted.
+        let blocks = [
+            block("text", "kept", 10.0),
+            image_block("img-0.jpeg", "   ", 30.0),
+        ]
+        .join(",");
+        let json = payload(&format!(r#"{{"index":0,"blocks":[{blocks}]}}"#));
+        let doc: OcrDocument = serde_json::from_slice(&json).unwrap();
+        let projection = project_blocks(&doc);
         assert_eq!(projection.elements.len(), 1);
         assert_eq!(projection.images_skipped, 1);
-        assert_eq!(projection.empty_skipped, 2);
+        assert_eq!(projection.empty_skipped, 0);
     }
 
     // --- null tolerance ----------------------------------------------
@@ -739,6 +993,321 @@ mod tests {
         );
     }
 
+    // --- CR-100: image nodes ------------------------------------------
+
+    /// One page: a heading, a picture, a caption — the shape every
+    /// figure in the corpus arrives in.
+    fn page_with_image(base64: &str, annotation: &str) -> Vec<u8> {
+        let blocks = [
+            block("title", "# Results", 10.0),
+            image_block("img-0.jpeg", "![img-0.jpeg](img-0.jpeg)", 30.0),
+            block("caption", "Figure 1: the thing.", 60.0),
+        ]
+        .join(",");
+        let images = page_image("img-0.jpeg", 30.0, base64, annotation);
+        payload(&format!(
+            r#"{{"index":0,"dimensions":{{"dpi":72}},"images":[{images}],"blocks":[{blocks}]}}"#
+        ))
+    }
+
+    #[test]
+    fn image_block_becomes_an_image_node_joined_by_id() {
+        let json = page_with_image(r#""data:image/jpeg;base64,AAAA""#, r#""a chart""#);
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let images = nodes_of_type(&graph, "Image");
+        assert_eq!(images.len(), 1);
+        let n = images[0];
+        // Body is the readable ref, verbatim — no base64 anywhere in it.
+        assert_eq!(n.content.text, "![img-0.jpeg](img-0.jpeg)");
+        // Payload id is the content digest of the DECODED bytes ("AAAA"
+        // → three zero bytes), not the supplier's label — identity is
+        // the bytes; the label lives in the body ref line.
+        let payload = n.image.as_ref().expect("image payload");
+        assert_eq!(
+            payload.id,
+            "sha256:709e80c88487a2411e1ee4dfb9f22a861492d20c4765150c0c794abd70f8147c"
+        );
+        assert_eq!(payload.annotation.as_deref(), Some("a chart"));
+        assert_eq!(
+            payload.base64.as_deref(),
+            Some("data:image/jpeg;base64,AAAA")
+        );
+        // token_count is 0 by definition.
+        assert_eq!(n.token_count, 0);
+        // Reading order is the block's position in the stream.
+        assert_eq!(n.text_order, Some(1));
+        // The bbox rides the node's standard physical location.
+        let phys = n.location.physical.as_ref().expect("physical set");
+        assert_eq!(phys.page, 1);
+        assert_eq!(phys.bounding_box.y, 30.0);
+        assert_eq!(phys.bounding_box.height, 20.0);
+        // And the picture sits under the open Section, like any leaf.
+        assert_eq!(n.location.semantic.depth, 2);
+    }
+
+    /// One page, one picture, every knob a parameter — for the identity
+    /// tests below.
+    fn single_image_doc(name: &str, base64: &str, annotation: &str) -> Vec<u8> {
+        let blocks = [
+            block("title", "# Results", 10.0),
+            image_block(name, &format!("![{name}]({name})"), 30.0),
+        ]
+        .join(",");
+        let images = page_image(name, 30.0, base64, annotation);
+        payload(&format!(
+            r#"{{"index":0,"dimensions":{{"dpi":72}},"images":[{images}],"blocks":[{blocks}]}}"#
+        ))
+    }
+
+    /// CR-100 amendment: hash content, not labels. The node id derives
+    /// from bytes + annotation; the supplier's name and the data-URI's
+    /// mime framing are labels and must not bear identity.
+    #[test]
+    fn image_node_identity_is_bytes_plus_annotation_not_the_label() {
+        let id_of = |json: &[u8]| {
+            let graph = parse_ocr(json, opts()).expect("parses").graph;
+            nodes_of_type(&graph, "Image")[0].id
+        };
+        let a = id_of(&single_image_doc(
+            "img-0.jpeg",
+            r#""data:image/jpeg;base64,AAAA""#,
+            r#""a chart""#,
+        ));
+        // Same bytes, same annotation — different label AND different
+        // mime framing: identical identity.
+        let b = id_of(&single_image_doc(
+            "img-7.png",
+            r#""data:image/png;base64,AAAA""#,
+            r#""a chart""#,
+        ));
+        assert_eq!(a, b, "labels and framing must not bear identity");
+        // Different bytes rotate the id...
+        let c = id_of(&single_image_doc(
+            "img-0.jpeg",
+            r#""data:image/jpeg;base64,BBBB""#,
+            r#""a chart""#,
+        ));
+        assert_ne!(a, c, "different bytes are a different picture");
+        // ...and so does a different supplier reading of the same bytes.
+        let d = id_of(&single_image_doc(
+            "img-0.jpeg",
+            r#""data:image/jpeg;base64,AAAA""#,
+            r#""another reading""#,
+        ));
+        assert_ne!(a, d, "annotation is content, not styling");
+    }
+
+    /// The ordering wrinkle that shaped the amendment: a later
+    /// re-level runs `rekey_node_ids` AFTER the lean variant has nulled
+    /// `base64`. The digest survives the strip, so the re-key must not
+    /// move a single id.
+    #[test]
+    fn image_node_ids_survive_the_lean_strip_through_a_rekey() {
+        let json = page_with_image(r#""data:image/jpeg;base64,AAAA""#, r#""a chart""#);
+        let mut graph = parse_ocr(&json, opts()).expect("parses").graph;
+        for node in graph.nodes.values_mut() {
+            if let Some(image) = node.image.as_mut() {
+                image.base64 = None;
+            }
+        }
+        let outcome = crate::graphs::builder::rekey_node_ids(&mut graph);
+        assert_eq!(
+            outcome.ids_moved, 0,
+            "a lean-variant re-key must derive the same ids the full parse did"
+        );
+    }
+
+    /// `image_digest` names the decoded bytes, and only when they decode.
+    #[test]
+    fn image_digest_names_bytes_not_framing_and_rejects_junk() {
+        assert_eq!(
+            image_digest("data:image/jpeg;base64,AAAA"),
+            image_digest("data:image/png;base64,AAAA"),
+        );
+        assert!(image_digest("data:image/jpeg;base64,@@@@").is_none());
+        assert!(image_digest("no-data-uri-here").is_none());
+    }
+
+    #[test]
+    fn image_node_survives_a_null_annotation_and_null_base64() {
+        // The lean shape the supplier returns when base64 was withheld —
+        // structure present, bytes absent. Still a node, still a ref
+        // line, still a payload naming the picture.
+        let json = page_with_image("null", "null");
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let images = nodes_of_type(&graph, "Image");
+        assert_eq!(images.len(), 1);
+        let payload = images[0].image.as_ref().expect("image payload");
+        assert_eq!(payload.id, "img-0.jpeg");
+        assert!(payload.annotation.is_none());
+        assert!(payload.base64.is_none());
+    }
+
+    #[test]
+    fn unjoined_image_block_keeps_its_own_bbox_and_a_bare_payload() {
+        // No page-level `images[]` at all: the block still names itself
+        // and still carries its own geometry. No panic, no guess.
+        let blocks = [image_block("img-9.jpeg", "![img-9.jpeg](img-9.jpeg)", 30.0)].join(",");
+        let json = payload(&format!(
+            r#"{{"index":0,"dimensions":{{"dpi":72}},"images":null,"blocks":[{blocks}]}}"#
+        ));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let n = nodes_of_type(&graph, "Image")[0];
+        let payload = n.image.as_ref().expect("image payload");
+        assert_eq!(payload.id, "img-9.jpeg");
+        assert!(payload.base64.is_none());
+        let bb = &n.location.physical.as_ref().unwrap().bounding_box;
+        assert_eq!(bb.y, 30.0);
+    }
+
+    #[test]
+    fn image_join_is_by_id_never_by_position() {
+        // Two blocks, two entries, deliberately out of order in the
+        // array. A positional pairing would swap the bytes — and the
+        // artifact's hash would then vouch for the wrong picture.
+        let blocks = [
+            image_block("img-0.jpeg", "![img-0.jpeg](img-0.jpeg)", 30.0),
+            image_block("img-1.jpeg", "![img-1.jpeg](img-1.jpeg)", 90.0),
+        ]
+        .join(",");
+        let images = [
+            page_image("img-1.jpeg", 90.0, r#""data:image/jpeg;base64,ONE""#, "null"),
+            page_image("img-0.jpeg", 30.0, r#""data:image/jpeg;base64,ZERO""#, "null"),
+        ]
+        .join(",");
+        let json = payload(&format!(
+            r#"{{"index":0,"dimensions":{{"dpi":72}},"images":[{images}],"blocks":[{blocks}]}}"#
+        ));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let nodes = nodes_of_type(&graph, "Image");
+        assert_eq!(nodes.len(), 2);
+        assert_eq!(
+            nodes[0].image.as_ref().unwrap().base64.as_deref(),
+            Some("data:image/jpeg;base64,ZERO")
+        );
+        assert_eq!(
+            nodes[1].image.as_ref().unwrap().base64.as_deref(),
+            Some("data:image/jpeg;base64,ONE")
+        );
+    }
+
+    #[test]
+    fn markdown_ref_beats_a_drifting_supplier_image_id() {
+        // The measured supplier defect (3 blocks in the cached corpus,
+        // one of them in the demo-ocr golden): on a page with several
+        // pictures, `image_id` can name a *later* image than the block's
+        // own ref does. The array is `[img-1, img-2]`; a block whose ref
+        // says `img-1` but whose `image_id` says `img-2` must still get
+        // img-1's bytes — otherwise img-1 is orphaned, img-2 is attached
+        // twice, and the artifact's hash vouches for the mix-up.
+        let blocks = [
+            format!(
+                r#"{{"top_left_x":10,"top_left_y":30,"bottom_right_x":110,"bottom_right_y":50,"content":"![img-1.jpeg](img-1.jpeg)","type":"image","image_id":"img-2.jpeg"}}"#
+            ),
+            image_block("img-2.jpeg", "![img-2.jpeg](img-2.jpeg)", 90.0),
+        ]
+        .join(",");
+        let images = [
+            page_image("img-1.jpeg", 30.0, r#""data:image/jpeg;base64,ONE""#, "null"),
+            page_image("img-2.jpeg", 90.0, r#""data:image/jpeg;base64,TWO""#, "null"),
+        ]
+        .join(",");
+        let json = payload(&format!(
+            r#"{{"index":0,"dimensions":{{"dpi":72}},"images":[{images}],"blocks":[{blocks}]}}"#
+        ));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let nodes = nodes_of_type(&graph, "Image");
+        assert_eq!(nodes.len(), 2);
+        let first = nodes[0].image.as_ref().unwrap();
+        assert_eq!(first.id, "img-1.jpeg", "the ref names the picture");
+        assert_eq!(first.base64.as_deref(), Some("data:image/jpeg;base64,ONE"));
+        let second = nodes[1].image.as_ref().unwrap();
+        assert_eq!(second.id, "img-2.jpeg");
+        assert_eq!(second.base64.as_deref(), Some("data:image/jpeg;base64,TWO"));
+    }
+
+    #[test]
+    fn unparseable_ref_falls_back_to_the_block_image_id() {
+        // A block whose content is not a markdown ref at all still has a
+        // legal body (non-empty), so it is still a node — and `image_id`
+        // is the only id left to join on.
+        let blocks = [format!(
+            r#"{{"top_left_x":10,"top_left_y":30,"bottom_right_x":110,"bottom_right_y":50,"content":"see the plate","type":"image","image_id":"img-7.jpeg"}}"#
+        )]
+        .join(",");
+        let images = page_image("img-7.jpeg", 30.0, r#""data:image/jpeg;base64,SEVEN""#, "null");
+        let json = payload(&format!(
+            r#"{{"index":0,"dimensions":{{"dpi":72}},"images":[{images}],"blocks":[{blocks}]}}"#
+        ));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        let n = nodes_of_type(&graph, "Image")[0];
+        assert_eq!(n.content.text, "see the plate");
+        let payload = n.image.as_ref().unwrap();
+        assert_eq!(payload.id, "img-7.jpeg");
+        assert_eq!(payload.base64.as_deref(), Some("data:image/jpeg;base64,SEVEN"));
+    }
+
+    #[test]
+    fn images_contribute_nothing_to_the_token_total() {
+        // The token rule, end to end: adding pictures to a document must
+        // not move `total_tokens`.
+        let text_only = [
+            block("title", "# Results", 10.0),
+            block("caption", "Figure 1: the thing.", 60.0),
+        ]
+        .join(",");
+        let with_image = [
+            block("title", "# Results", 10.0),
+            image_block("img-0.jpeg", "![img-0.jpeg](img-0.jpeg)", 30.0),
+            block("caption", "Figure 1: the thing.", 60.0),
+        ]
+        .join(",");
+        let tokens = |blocks: &str| {
+            let json = payload(&format!(r#"{{"index":0,"blocks":[{blocks}]}}"#));
+            let graph = parse_ocr(&json, opts()).expect("parses").graph;
+            graph.nodes.values().map(|n| n.token_count).sum::<usize>()
+        };
+        assert_eq!(tokens(&text_only), tokens(&with_image));
+    }
+
+    #[test]
+    fn image_bearing_graph_roundtrips_verified_through_bgraph_md() {
+        let json = page_with_image(r#""data:image/jpeg;base64,AAAA""#, r#""a chart""#);
+        let result = parse_ocr(&json, opts()).expect("parses");
+        let md = crate::graphs::serialization::markdown::emit_markdown(
+            &result.graph,
+            &result.provenance,
+        );
+        // The base64 is in the fence, never in body prose: the only line
+        // mentioning it opens with the JSON metadata.
+        for line in md.lines() {
+            if line.contains("data:image/jpeg") {
+                assert!(
+                    line.starts_with('{'),
+                    "base64 escaped the fence onto a body line: {line:?}"
+                );
+            }
+        }
+        assert!(md.contains("![img-0.jpeg](img-0.jpeg)\n```bgraph-image\n"));
+        let back = crate::preprocessors::md::parse_markdown(&md, ParseOptions::default())
+            .expect("bgraph.md with an Image fence parses back");
+        assert!(
+            matches!(back.identity, ParseIdentity::Verified),
+            "image payload must be retained on reverse parse; got {:?}",
+            back.identity
+        );
+        let reparsed = back
+            .graph
+            .nodes
+            .values()
+            .find(|n| n.node_type == "Image")
+            .expect("Image node survives the round trip");
+        assert_eq!(
+            reparsed.image.as_ref().unwrap().base64.as_deref(),
+            Some("data:image/jpeg;base64,AAAA")
+        );
+    }
+
     // --- CR-98: numbering-rank outline normalization ------------------
 
     #[test]
@@ -882,6 +1451,115 @@ mod tests {
             .collect();
         assert_eq!(levels_before, levels_after);
         assert_eq!(outline_before, projection.outline);
+    }
+
+    // --- CR-99: furniture repetition guard ----------------------------
+
+    /// One page carrying a running masthead, a page-number footer, and a
+    /// page-edge "recital" header unique to the page.
+    fn oj_like_page(index: u32, recital: &str) -> String {
+        let blocks = [
+            block("header", "Official Journal of the European Union", 5.0),
+            block("header", recital, 25.0),
+            block("text", "article body", 50.0),
+            block("footer", &format!("{}", index + 1), 90.0),
+        ]
+        .join(",");
+        format!(r#"{{"index":{index},"blocks":[{blocks}]}}"#)
+    }
+
+    #[test]
+    fn transient_furniture_demotes_recurring_chrome_survives() {
+        // Recital prose must differ beyond digits — normalization strips
+        // numerics, so digit-only variation would read as recurrence.
+        let recitals_in = [
+            "(9) Harmonised rules applicable to the placing on the market",
+            "(10) In order to ensure a consistent level of protection",
+            "(11) This Regulation is without prejudice to national law",
+            "(12) Providers of general-purpose models bear obligations",
+        ];
+        let pages: Vec<String> = (0..4)
+            .map(|i| oj_like_page(i, recitals_in[i as usize]))
+            .collect();
+        let json = payload(&pages.join(","));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        // Mastheads recur on 4 pages → keep Header; page-number footers
+        // collapse to one normalized key → keep Footer.
+        let headers = nodes_of_type(&graph, "Header");
+        assert_eq!(headers.len(), 4);
+        assert!(headers
+            .iter()
+            .all(|n| n.content.text == "Official Journal of the European Union"));
+        assert_eq!(nodes_of_type(&graph, "Footer").len(), 4);
+        // The four unique recitals are Paragraphs in body flow.
+        let paras = nodes_of_type(&graph, "Paragraph");
+        let recitals: Vec<_> = paras
+            .iter()
+            .filter(|n| n.content.text.starts_with('('))
+            .collect();
+        assert_eq!(recitals.len(), 4);
+        // In place: the page-1 recital sits between the masthead and the
+        // article body in text order, at leaf depth like its neighbors.
+        assert_eq!(recitals[0].text_order, Some(1));
+        assert_eq!(recitals[0].location.semantic.depth, 1);
+    }
+
+    #[test]
+    fn small_doc_floor_trusts_supplier_labels() {
+        // 2 pages < FURNITURE_MIN_RECURRENCE_PAGES: even a one-off
+        // header keeps its label — recurrence detection is hollow here.
+        let pages: Vec<String> = (0..2)
+            .map(|i| oj_like_page(i, &format!("({}) unique text {}", i + 9, i)))
+            .collect();
+        let json = payload(&pages.join(","));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        assert_eq!(nodes_of_type(&graph, "Header").len(), 4);
+        assert_eq!(nodes_of_type(&graph, "Footer").len(), 2);
+    }
+
+    #[test]
+    fn headers_and_footers_are_separate_recurrence_pools() {
+        // The same text appears as header on 2 pages and footer on 2
+        // pages — 4 observations combined, but neither pool reaches K=3,
+        // so all four demote.
+        let mut pages: Vec<String> = Vec::new();
+        for i in 0..2u32 {
+            let b = block("header", "Duplex Chrome", 5.0);
+            pages.push(format!(r#"{{"index":{i},"blocks":[{b}]}}"#));
+        }
+        for i in 2..4u32 {
+            let b = block("footer", "Duplex Chrome", 90.0);
+            pages.push(format!(r#"{{"index":{i},"blocks":[{b}]}}"#));
+        }
+        let json = payload(&pages.join(","));
+        let graph = parse_ocr(&json, opts()).expect("parses").graph;
+        assert_eq!(nodes_of_type(&graph, "Header").len(), 0);
+        assert_eq!(nodes_of_type(&graph, "Footer").len(), 0);
+        assert_eq!(nodes_of_type(&graph, "Paragraph").len(), 4);
+    }
+
+    #[test]
+    fn guarded_graph_roundtrips_verified() {
+        // The demotion happens pre-build, so the emitted bgraph.md is
+        // internally consistent and self-verifies.
+        let recitals_in = [
+            "(9) Harmonised rules for the market",
+            "(10) A consistent level of protection",
+            "(11) Without prejudice to national law",
+            "(12) Obligations for model providers",
+        ];
+        let pages: Vec<String> = (0..4)
+            .map(|i| oj_like_page(i, recitals_in[i as usize]))
+            .collect();
+        let json = payload(&pages.join(","));
+        let result = parse_ocr(&json, opts()).expect("parses");
+        let md = crate::graphs::serialization::markdown::emit_markdown(
+            &result.graph,
+            &result.provenance,
+        );
+        let back = crate::preprocessors::md::parse_markdown(&md, ParseOptions::default())
+            .expect("bgraph.md parses back");
+        assert!(matches!(back.identity, ParseIdentity::Verified));
     }
 
     // --- flow / provenance / metadata / identity ----------------------

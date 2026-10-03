@@ -247,7 +247,14 @@ fn emit_node(node: &DocumentNode) -> Option<String> {
         // `Equation` (schema 1.1.0, OCR S1) joins the verbatim-body group:
         // its `$$…$$` / `\[ … \]` LaTeX is legitimate plain-markdown
         // display math, emitted as-is.
-        "Paragraph" | "CodeBlock" | "List" | "Blockquote" | "Table" | "Equation" => {
+        //
+        // `Image` (schema 1.2.0, CR-100) joins it too: the body IS the
+        // markdown ref (`![img-0.jpeg](img-0.jpeg)`), which renders in
+        // any viewer that has the file beside it. The base64 in the
+        // fence payload is deliberately dropped here — plain markdown is
+        // the lossy surface, and rewriting the ref to a data URI is the
+        // deferred `embed_images` emit option, not this path.
+        "Paragraph" | "CodeBlock" | "List" | "Blockquote" | "Table" | "Equation" | "Image" => {
             Some(node.content.text.clone())
         }
         "Header" | "Footer" | "Margin" => {
@@ -326,6 +333,7 @@ mod tests {
                     children: Vec::new(),
                     internal_refs: vec![],
                     external_refs: vec![],
+                    image: None,
                 },
             );
         }
@@ -353,6 +361,7 @@ mod tests {
                 children: child_ids,
                 internal_refs: vec![],
                 external_refs: vec![],
+                image: None,
             },
         );
 
@@ -362,6 +371,7 @@ mod tests {
                 root_id,
                 kind: crate::types::default_kind(),
                 document_metadata: DocumentMetadata::default(),
+                resolved_title: None,
                 outline_data: None,
                 flow_type: FlowType::default(),
                 topology: None,

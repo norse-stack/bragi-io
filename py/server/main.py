@@ -2,7 +2,7 @@
 
 Self-hosted parse API matching the hosted endpoint contract at
 `api.bragi-io.com`: a **raw request body** in, the **official response
-envelope** out. No auth, no billing — just document parsing.
+envelope** out. No auth, no accounts — just document parsing.
 
 Request/response contract (matches the hosted `/v1/parse/pdf` and the Python
 SDK's remote-mode client, `bragi.client._handle_response`):
@@ -13,8 +13,8 @@ SDK's remote-mode client, `bragi.client._handle_response`):
               or   `{"success": true, "bgraph_md": "<markdown>"}`
   * error   → 4xx/5xx `{"success": false, "error": {"code": "...", "message": "..."}}`
 
-The hosted response also carries `billing` and `pipeline_diagnostics`; those are
-hosted-only (this server has no billing) and are omitted here.
+The hosted response also carries account and `pipeline_diagnostics` objects;
+those are hosted-only and are omitted here.
 """
 
 from __future__ import annotations

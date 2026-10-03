@@ -1,4 +1,4 @@
-//! OCR native-metadata graft (S2 of the OCR premium arc).
+//! OCR native-metadata graft (S2 of the OCR arc).
 //!
 //! Pure-OCR's sharpest gap: `mist.json` reads the *render*, not the
 //! container, so S1's canonical metadata fields are all-`None` by
@@ -34,11 +34,15 @@
 //!   evolving.)
 //! - `pdf` namespace slot ← the extracted [`PdfMetadata`]
 //!   (`crate::types::PdfMetadata`), verbatim.
-//! - `ocr` namespace slot: untouched, except `companion_pdf_sha256` ←
-//!   sha256 of the companion PDF bytes (the companion linkage).
+//! - `ocr` namespace slot: untouched, except `supplier_sha256` ←
+//!   sha256 of this parse's own OCR payload bytes (the supplier
+//!   artifact). CR-13: the slot records the *OCR payload's* identity,
+//!   not the companion PDF's — a consumer that re-stamps the doc-level
+//!   source would otherwise lose it.
 //! - Provenance unchanged: `source_format: "ocr"`, `source_sha256` =
 //!   mist.json bytes. The PDF is a metadata companion, not a second
-//!   source.
+//!   source. (A consumer may re-stamp that fence to its own input
+//!   PDF after the graft — CR-13, outside this channel.)
 //!
 //! ## Graceful degradation, but explicit
 //!
@@ -54,7 +58,7 @@
 //!
 //! `(mist.json, pdf, config) → bgraph.md` stays a pure function; no
 //! companion → byte-identical to the S1 single-arm output (the
-//! `companion_pdf_sha256` key serializes absent-when-`None`, so a
+//! `supplier_sha256` key serializes absent-when-`None`, so a
 //! single-arm parse's hashed content body does not move).
 
 use sha2::{Digest, Sha256};
@@ -84,19 +88,24 @@ pub fn native_metadata_from_xhtml(xhtml: &str) -> DocumentMetadata {
 /// (a live seam extraction, a committed XHTML fixture, or metadata
 /// pulled from a frozen native-arm graph).
 ///
-/// `companion_pdf_sha256` is the hex sha256 of the companion PDF bytes
-/// (compute it with [`companion_sha256`]); it lands in the `ocr`
-/// namespace as the companion linkage.
+/// `supplier_sha256` is the hex sha256 of the **OCR payload bytes** this
+/// `result` was parsed from — i.e. `result.provenance.source_sha256`
+/// ([`parse_ocr_with_pdf`] passes exactly that). It lands in the `ocr`
+/// namespace so the OCR payload keeps a durable identity even where the
+/// doc-level source fence names something else (CR-13: a consumer may
+/// re-stamp that fence to its own input PDF).
 pub fn graft_native_metadata(
     result: &mut ParseResult,
     native: DocumentMetadata,
-    companion_pdf_sha256: String,
+    supplier_sha256: String,
 ) {
     let md = &mut result.graph.document_info.document_metadata;
 
     // Canonical fields: native arm wins; OCR-side value survives only
     // where the native arm has none.
-    md.title = native.title.or(md.title.take());
+    let title_before = md.title.take();
+    md.title = native.title.or(title_before.clone());
+    let title_changed = md.title != title_before;
     md.author = native.author.or(md.author.take());
     md.description = native.description.or(md.description.take());
     md.language = native.language.or(md.language.take());
@@ -107,14 +116,30 @@ pub fn graft_native_metadata(
     // exists" is visible, not silent).
     md.pdf = native.pdf;
 
-    // `ocr` namespace slot: untouched except the companion linkage.
+    // `ocr` namespace slot: untouched except the supplier identity.
     // `parse_ocr` always populates the slot; `get_or_insert_with` is
     // defensive against a hand-built ParseResult.
-    md.ocr.get_or_insert_with(Default::default).companion_pdf_sha256 = Some(companion_pdf_sha256);
+    md.ocr.get_or_insert_with(Default::default).supplier_sha256 = Some(supplier_sha256);
+
+    // The title is a breadcrumb input (`compute_breadcrumbs` seeds
+    // `breadcrumbs[0]` from it), and `parse_ocr` settled breadcrumbs
+    // before this graft ran. When the native title wins over a
+    // different body-inferred one, the settled crumbs no longer derive
+    // from the graph's own title — and the reverse parser re-derives
+    // them from the emitted title (CR-84's contract), so the emit would
+    // fail its own round-trip identity (CR-14, F9). Re-derive here so
+    // every graft consumer emits a self-consistent graph. Node IDs are
+    // unaffected: the title prefix is deliberately not an ID input.
+    if title_changed {
+        result.graph.compute_breadcrumbs();
+    }
 }
 
-/// Hex sha256 of the companion PDF bytes — the value
-/// [`graft_native_metadata`] records as the companion linkage.
+/// Hex sha256 of the companion PDF bytes. Since CR-13 the graft no
+/// longer records this in the graph (the `ocr` slot carries the
+/// *supplier* artifact's sha instead); it survives as the companion's
+/// content address — the key the committed C1-XHTML cache tier is
+/// laid out by.
 pub fn companion_sha256(pdf_bytes: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(pdf_bytes);
@@ -123,9 +148,9 @@ pub fn companion_sha256(pdf_bytes: &[u8]) -> String {
 
 /// The composition wrapper: [`super::parse_ocr`] (unchanged) + the
 /// native arm's metadata extraction over a companion PDF + the pure
-/// graft. This is the default premium path — in the API product flow
-/// the customer always sends the PDF, so canonical fields are
-/// effectively never null in premium output; single-arm [`super::parse_ocr`]
+/// graft. This is the two-arm path: with the source PDF at hand the
+/// canonical fields are effectively never null; single-arm
+/// [`super::parse_ocr`]
 /// survives as the degraded re-derive / raw-image path.
 ///
 /// `preprocessor` supplies the PDF → XHTML hop ([`Preprocessor`] —
@@ -159,7 +184,11 @@ pub fn parse_ocr_with_pdf<P: Preprocessor + ?Sized>(
             ParseError::CompanionPdf(format!("native metadata extraction failed: {e}"))
         })?;
     let native = native_metadata_from_xhtml(&xhtml);
-    graft_native_metadata(&mut result, native, companion_sha256(pdf_bytes));
+    // The supplier artifact is the OCR payload this parse read — which
+    // `parse_ocr` already hashed into its provenance. Reuse that value
+    // rather than re-hashing: the two can then never disagree.
+    let supplier_sha256 = result.provenance.source_sha256.clone();
+    graft_native_metadata(&mut result, native, supplier_sha256);
     Ok(result)
 }
 
@@ -210,6 +239,14 @@ mod tests {
         companion_sha256(&bytes)
     }
 
+    /// Sha256 of the demo-ocr payload bytes — the supplier artifact
+    /// behind [`parse_demo_ocr`], and what the graft must record.
+    fn demo_ocr_supplier_sha() -> String {
+        let bytes = std::fs::read(fixtures().join("golden/1.0.0/demo-ocr/source.json"))
+            .expect("demo-ocr source.json is committed");
+        companion_sha256(&bytes)
+    }
+
     // --- the attention-twin policy test (handoff §6) -------------------
 
     #[test]
@@ -218,7 +255,7 @@ mod tests {
         let native = frozen_native_metadata();
         let pdf_ns = native.pdf.clone().expect("frozen native carries pdf ns");
 
-        graft_native_metadata(&mut result, native, attention_pdf_sha());
+        graft_native_metadata(&mut result, native, demo_ocr_supplier_sha());
 
         let md = &result.graph.document_info.document_metadata;
         // Canonical: what the native arm knows, filled; what it doesn't,
@@ -239,14 +276,19 @@ mod tests {
         assert_eq!(pdf.page_count, Some(15));
         assert_eq!(pdf.producer.as_deref(), Some("pdfTeX-1.40.25"));
 
-        // `ocr` namespace: untouched except the linkage.
+        // `ocr` namespace: untouched except the supplier identity.
         let ocr = md.ocr.as_ref().expect("ocr namespace present");
         assert_eq!(ocr.model.as_deref(), Some("mistral-ocr-4-0"));
         assert_eq!(ocr.pages_processed, Some(15));
         assert_eq!(ocr.doc_size_bytes, Some(2_215_244));
         assert_eq!(ocr.dpi, Some(93));
         assert!(ocr.extras.is_empty());
-        assert_eq!(ocr.companion_pdf_sha256.as_deref(), Some(attention_pdf_sha().as_str()));
+        // CR-13: the supplier artifact's sha, NOT the companion PDF's.
+        assert_eq!(
+            ocr.supplier_sha256.as_deref(),
+            Some(demo_ocr_supplier_sha().as_str())
+        );
+        assert_ne!(demo_ocr_supplier_sha(), attention_pdf_sha());
 
         // Provenance unchanged — the PDF is a companion, not a source.
         assert_eq!(result.provenance.source_format, "ocr");
@@ -319,6 +361,78 @@ mod tests {
         );
     }
 
+    // --- CR-14 (F9): title graft re-derives breadcrumbs ----------------
+
+    /// When the native title wins over a different body-inferred one,
+    /// the graft must re-derive breadcrumbs — otherwise the emitted
+    /// artifact carries crumbs derived from a title it doesn't contain,
+    /// and the reverse parser's re-derivation (CR-84) recomputes a
+    /// different `bgraph_sha256`: the emit fails its own round-trip
+    /// identity. This is the plain graft path, the one the CLI's
+    /// `--companion-pdf` takes (a caller that rebuilds through the
+    /// transform seam never exposed it).
+    #[test]
+    fn title_winning_graft_rederives_breadcrumbs_and_round_trips_verified() {
+        use crate::graphs::serialization::markdown::emit_markdown;
+        use crate::preprocessors::md::{parse_markdown, ParseIdentity, ParseOptions};
+
+        let mut result = parse_demo_ocr();
+        let body_inferred = result
+            .graph
+            .document_info
+            .document_metadata
+            .title
+            .clone()
+            .expect("demo-ocr has a body-inferred title");
+        let native = DocumentMetadata {
+            title: Some("Native dc:title That Differs".to_string()),
+            ..Default::default()
+        };
+        graft_native_metadata(&mut result, native, "b".repeat(64));
+
+        // Every body node's crumb[0] must be the grafted title, not the
+        // stale body-inferred one.
+        for node in result.graph.nodes.values() {
+            let crumbs = &node.location.semantic.breadcrumbs;
+            if let Some(first) = crumbs.first() {
+                assert_eq!(
+                    first, "Native dc:title That Differs",
+                    "crumb[0] must derive from the grafted title (was body-inferred {body_inferred:?})"
+                );
+            }
+        }
+
+        // And the contract itself: emit → strict reverse parse verifies.
+        let md = emit_markdown(&result.graph, &result.provenance);
+        let reparsed = parse_markdown(&md, ParseOptions::default())
+            .expect("emitted artifact parses strict");
+        assert!(
+            matches!(reparsed.identity, ParseIdentity::Verified),
+            "grafted graph must round-trip Verified, got {:?}",
+            reparsed.identity
+        );
+    }
+
+    /// A graft that leaves the title untouched (native `None`) must not
+    /// move breadcrumbs — the no-op side of the CR-14 guard.
+    #[test]
+    fn title_preserving_graft_leaves_breadcrumbs_untouched() {
+        let mut result = parse_demo_ocr();
+        let before: std::collections::BTreeMap<_, _> = result
+            .graph
+            .nodes
+            .iter()
+            .map(|(id, n)| (*id, n.location.semantic.breadcrumbs.clone()))
+            .collect();
+        graft_native_metadata(&mut result, DocumentMetadata::default(), "c".repeat(64));
+        for (id, node) in &result.graph.nodes {
+            assert_eq!(
+                node.location.semantic.breadcrumbs, before[id],
+                "breadcrumbs must not move when the title doesn't"
+            );
+        }
+    }
+
     // --- metadata-less degradation (handoff §5) ------------------------
 
     #[test]
@@ -343,9 +457,9 @@ mod tests {
             serde_json::to_value(pdf).unwrap(),
             serde_json::to_value(PdfMetadata::default()).unwrap()
         );
-        // Linkage still recorded.
+        // Supplier identity still recorded.
         assert_eq!(
-            md.ocr.as_ref().unwrap().companion_pdf_sha256.as_deref(),
+            md.ocr.as_ref().unwrap().supplier_sha256.as_deref(),
             Some(sha.as_str())
         );
     }
@@ -360,8 +474,8 @@ mod tests {
         let canonical =
             crate::graphs::serialization::canonical::canonical_json(&result.graph);
         assert!(
-            !canonical.contains("companion_pdf_sha256"),
-            "single-arm parse must not serialize the companion key"
+            !canonical.contains("supplier_sha256"),
+            "single-arm parse must not serialize the supplier key"
         );
         // And the golden anchor: the sha must equal the frozen demo-ocr
         // golden's (the S1 output) — the graft changed nothing it wasn't
@@ -381,16 +495,19 @@ mod tests {
     }
 
     #[test]
-    fn companion_key_serializes_when_set_and_roundtrips() {
+    fn supplier_key_serializes_when_set_and_roundtrips() {
         let mut result = parse_demo_ocr();
-        graft_native_metadata(&mut result, frozen_native_metadata(), attention_pdf_sha());
+        graft_native_metadata(&mut result, frozen_native_metadata(), demo_ocr_supplier_sha());
         let md = &result.graph.document_info.document_metadata;
         let json = serde_json::to_string(md).unwrap();
-        assert!(json.contains("companion_pdf_sha256"));
+        assert!(json.contains("supplier_sha256"));
+        // CR-13 removed the old name outright — no released artifact
+        // carried it, so there is deliberately no serde alias.
+        assert!(!json.contains("companion_pdf_sha256"));
         let back: DocumentMetadata = serde_json::from_str(&json).unwrap();
         assert_eq!(
-            back.ocr.unwrap().companion_pdf_sha256,
-            md.ocr.as_ref().unwrap().companion_pdf_sha256
+            back.ocr.unwrap().supplier_sha256,
+            md.ocr.as_ref().unwrap().supplier_sha256
         );
     }
 
@@ -482,8 +599,18 @@ mod tests {
             let md = &result.graph.document_info.document_metadata;
             assert_eq!(md.title.as_deref(), Some("Wrapped Title"));
             assert!(md.pdf.is_some());
+            // The wrapper records the OCR payload's sha (== its own
+            // provenance), never the companion PDF's.
             assert_eq!(
-                md.ocr.as_ref().unwrap().companion_pdf_sha256.as_deref(),
+                md.ocr.as_ref().unwrap().supplier_sha256.as_deref(),
+                Some(result.provenance.source_sha256.as_str())
+            );
+            assert_eq!(
+                md.ocr.as_ref().unwrap().supplier_sha256.as_deref(),
+                Some(companion_sha256(&ocr_bytes()).as_str())
+            );
+            assert_ne!(
+                md.ocr.as_ref().unwrap().supplier_sha256.as_deref(),
                 Some(companion_sha256(pdf).as_str())
             );
         }

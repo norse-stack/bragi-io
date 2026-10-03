@@ -1,14 +1,17 @@
 //! Tolerant serde model of the Mistral OCR-4 JSON payload, plus the
 //! [`is_ocr_json`] content sniff.
 //!
-//! **`blocks[]` is the single source of truth.** The 2026-08-24 fixture
-//! experiment confirmed that every parallel page-level field is nullable
-//! enrichment: `confidence_scores` is null everywhere (both fixtures,
-//! 166 pages), page-level `header`/`footer` are null even where
-//! header/footer *blocks* exist, page-level `tables[]` is empty while
-//! `table` blocks carry the full grid inline, and `hyperlinks[]` is a
-//! bare URL list with no bbox/anchor. Accordingly this model declares
-//! only what the channel consumes — `pages[].blocks[]`,
+//! **`blocks[]` is the single source of truth — with one join.** The
+//! 2026-08-24 fixture experiment confirmed that every parallel
+//! page-level field is nullable enrichment: `confidence_scores` is null
+//! everywhere (both fixtures, 166 pages), page-level `header`/`footer`
+//! are null even where header/footer *blocks* exist, page-level
+//! `tables[]` is empty while `table` blocks carry the full grid inline,
+//! and `hyperlinks[]` is a bare URL list with no bbox/anchor.
+//! `images[]` is the exception (CR-100): an `image` block carries only
+//! the ref text plus an `image_id`, so the bytes and annotation must be
+//! joined from the page-level array. Accordingly this model declares
+//! what the channel consumes — `pages[].blocks[]`, `pages[].images[]`,
 //! `pages[].dimensions`, `pages[].markdown` (title-level inference
 //! fallback), `pages[].index`, and top-level `model` / `usage_info` —
 //! and every field except `pages` itself is `Option`/defaulted so a
@@ -39,10 +42,18 @@ pub struct OcrUsageInfo {
     pub doc_size_bytes: Option<u64>,
 }
 
-/// One page. Only the consumed fields are declared; the parallel
-/// page-level enrichment arrays (`images`, `tables`, `hyperlinks`,
-/// `header`, `footer`, `confidence_scores`) are deliberately absent from
-/// the model — serde drops them.
+/// One page. Only the consumed fields are declared; the remaining
+/// page-level enrichment arrays (`tables`, `hyperlinks`, `header`,
+/// `footer`, `confidence_scores`) are deliberately absent from the model
+/// — serde drops them.
+///
+/// **`images` is the one exception to "blocks are the single source of
+/// truth"** (CR-100). An `image` block carries the ref text, its bbox
+/// and an `image_id`, but the bytes and the annotation live only in this
+/// page-level array; the two are joined by id. The array is
+/// always populated — even a payload requested with
+/// `include_image_base64: false` carries every image's id, bbox and
+/// annotation, withholding only `image_base64`.
 #[derive(Debug, Clone, Deserialize, Default)]
 pub struct OcrPage {
     /// 0-based page index. Falls back to enumeration order when absent.
@@ -57,6 +68,35 @@ pub struct OcrPage {
     pub dimensions: Option<OcrDimensions>,
     #[serde(default)]
     pub blocks: Option<Vec<OcrBlock>>,
+    /// CR-100: the page's images, joined to their `image` blocks by id.
+    #[serde(default)]
+    pub images: Option<Vec<OcrImage>>,
+}
+
+/// One page-level image entry. Corner coords are absolute pixels at
+/// `dimensions.dpi`, top-left origin — the same convention
+/// [`OcrBlock`] uses, so the same `72 / dpi` scale applies.
+#[derive(Debug, Clone, Deserialize, Default)]
+pub struct OcrImage {
+    /// Supplier id, e.g. `img-0.jpeg`. Matches the carrying block's
+    /// `image_id`. Absent ids simply never join.
+    #[serde(default)]
+    pub id: Option<String>,
+    #[serde(default)]
+    pub top_left_x: Option<f32>,
+    #[serde(default)]
+    pub top_left_y: Option<f32>,
+    #[serde(default)]
+    pub bottom_right_x: Option<f32>,
+    #[serde(default)]
+    pub bottom_right_y: Option<f32>,
+    /// The data-URI payload (`data:image/jpeg;base64,…`). `None` when
+    /// the payload was requested without image bytes; the model stays
+    /// tolerant of either.
+    #[serde(default)]
+    pub image_base64: Option<String>,
+    #[serde(default)]
+    pub image_annotation: Option<String>,
 }
 
 /// Page raster dimensions. `dpi` drives the pixel → PDF-point bbox
@@ -89,6 +129,10 @@ pub struct OcrBlock {
     pub content: Option<String>,
     #[serde(default, rename = "type")]
     pub block_type: Option<String>,
+    /// CR-100: on an `image` block, the join key into the page's
+    /// `images[]`. `None` on every other block type.
+    #[serde(default)]
+    pub image_id: Option<String>,
 }
 
 /// Content-sniff: does this byte buffer look like a Mistral OCR-4 JSON

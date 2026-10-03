@@ -5,7 +5,7 @@
 //! signal, `ParseIdentity` is that signal, and `ParseError` is the
 //! typed error enum.
 //!
-//! Wire-format definition: `docs/P2/core/architecture/08-bgraph-md-format.md`.
+//! Wire-format definition: the bgraph.md format spec (architecture doc 08).
 
 use crate::types::{DocumentGraph, ParseProvenance};
 

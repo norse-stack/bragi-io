@@ -16,7 +16,7 @@
 //! projection exactly as S1 built it, byte-for-byte.
 //!
 //! The numbering pattern reuses the semantics of the CR-97 WP2 picker
-//! port (`bragi-api` `picker/scoring.rs`, `_tokens` numbering-strip
+//! port (the `_tokens` numbering-strip
 //! regex): star runs stripped first, then one anchored leading-numbering
 //! match; a single uppercase letter is numbering, multi-letter acronyms
 //! ("API", "RFC") are content.
@@ -52,7 +52,7 @@ static STAR_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\*+").unwrap());
 /// followed by at least one whitespace char (numbering must introduce a
 /// title, not BE the title). Single uppercase letters are numbering;
 /// multi-letter caps (acronyms like "API", "RFC") are not. Same pattern
-/// as `bragi-api` `picker/scoring.rs::NUMBERING_RE` (CR-97 WP2).
+/// as the CR-97 WP2 numbering-strip regex.
 static NUMBERING_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"^(?:\d+(?:\.\d+)*\.?|[A-Z](?:\.\d+(?:\.\d+)*)?\.?)\s+").unwrap()
 });

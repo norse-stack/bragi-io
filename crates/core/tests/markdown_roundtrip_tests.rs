@@ -6,7 +6,7 @@
 //! handful of edge cases the spec calls out explicitly.
 //!
 //! Wire-format definition:
-//! `docs/P2/core/architecture/08-bgraph-md-format.md` (v1.0.0).
+//! the bgraph.md format spec (architecture doc 08) (v1.0.0).
 
 use bragi_io_core::graphs::builder::GraphBuilder;
 use bragi_io_core::graphs::node_id::NodeIdGenerator;
@@ -73,6 +73,7 @@ fn build_synthetic_graph(
                 internal_refs: vec![],
                 external_refs: vec![],
                 confidence: 0,
+                image: None,
             }
         })
         .collect();
@@ -158,6 +159,7 @@ fn load_fixture_graph(name: &str) -> DocumentGraph {
                 // Block A / A3: DocumentNode no longer carries confidence;
                 // the element-side field stays parser-internal (neutral 0).
                 confidence: 0,
+                image: None,
             }
         })
         .collect();
@@ -569,17 +571,17 @@ fn doc_level_json(md: &str) -> serde_json::Value {
 
 #[test]
 fn block_c_emit_stamps_current_schema_in_both_serializations() {
-    // C.1 (updated for the 1.1.0 additive bump, OCR S1): both
-    // serializations advertise the current `1.x` edition.
+    // C.1 (updated for the 1.2.0 additive bump, CR-100 image nodes):
+    // both serializations advertise the current `1.x` edition.
     let graph = build_synthetic_graph(vec![("Section", "S", 1, 0)], Some("Doc"), None);
     let md = emit_markdown(&graph, &synthetic_provenance());
     let md_schema = doc_level_json(&md)["schema"].as_str().unwrap().to_string();
-    assert_eq!(md_schema, "1.1.0", "md doc-level `schema` must be 1.1.0");
+    assert_eq!(md_schema, "1.2.0", "md doc-level `schema` must be 1.2.0");
 
     let sorted = graph.to_sorted_graph(Some(&synthetic_provenance()));
     assert_eq!(
-        sorted.schema_version, "1.1.0",
-        "json `schema_version` must be 1.1.0"
+        sorted.schema_version, "1.2.0",
+        "json `schema_version` must be 1.2.0"
     );
 }
 

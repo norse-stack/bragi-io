@@ -109,13 +109,13 @@ struct ParseArgs {
     #[arg(long)]
     jar_path: Option<String>,
 
-    /// Companion PDF for the OCR channel (S2 premium graft): run the
+    /// Companion PDF for the OCR channel (the S2 metadata graft): run the
     /// native arm's metadata extraction over this PDF and merge its
     /// doc-level fields into the OCR graph (canonical fields fill from
     /// the container; `pdf.*` namespace grafted verbatim;
-    /// `companion_pdf_sha256` recorded in the `ocr.*` namespace). The
-    /// PDF is a metadata companion, not a second source — provenance
-    /// stays the OCR JSON's. OCR (.json) inputs only; requires the
+    /// `supplier_sha256` — the OCR payload's own sha — recorded in the
+    /// `ocr.*` namespace). The PDF is a metadata companion, not a second
+    /// source — provenance stays the OCR JSON's. OCR (.json) inputs only; requires the
     /// jni-backend feature (the graft rides the Tika path). Named
     /// `--companion-pdf` (not `--metadata-…`) because the companion
     /// carries S3 later (refs/links, bbox join).
@@ -225,6 +225,9 @@ const VALID_NODE_TYPES: &[&str] = &[
     "blockquote",
     "table",
     "equation",
+    // Schema 1.2.0 (CR-100): `--node-types image` removes each picture's
+    // ref line and fence as one block.
+    "image",
 ];
 
 /// clap value-parser for `--node-types`. Rejects unknown tags and the
@@ -344,7 +347,7 @@ fn run_parse(args: ParseArgs) -> Result<()> {
     // the lib's job — we just pass the bytes.
     let format = detect_input_format(Path::new(&args.input))?;
 
-    // `--companion-pdf` is the OCR channel's premium graft — on any other
+    // `--companion-pdf` belongs to the OCR channel's metadata graft — on any other
     // input it is a usage error, caught before any channel work starts.
     if args.companion_pdf.is_some() && !matches!(format, InputFormat::Ocr { .. }) {
         return Err(anyhow!(
@@ -538,7 +541,7 @@ fn run_parse_markdown(args: ParseArgs, content: String) -> Result<()> {
             recomputed_sha256,
         } => {
             eprintln!(
-                "⚠️  Graph reconstructed from drifted bgraph.md (--accept-drift):\n\
+                "⚠️  Graph reconstructed from drifted bgraph.md:\n\
                  \toriginal bgraph_sha256:   {original_sha256}\n\
                  \trecomputed bgraph_sha256: {recomputed_sha256}\n\
                  \tThe reconstructed graph is a derivative, not an identity round-trip."
@@ -705,7 +708,7 @@ fn run_parse_ocr(args: ParseArgs, bytes: Vec<u8>) -> Result<()> {
     emit_parsed_graph(&args, result.graph, result.provenance)
 }
 
-/// The S2 premium path: OCR parse + native-metadata graft from the
+/// The S2 graft path: OCR parse + native-metadata graft from the
 /// companion PDF via the Tika seam.
 #[cfg(feature = "jni-backend")]
 fn run_parse_ocr_grafted(
@@ -992,7 +995,6 @@ fn show_help() {
     println!("  --input <path>          Input file (PDF, .docx, OCR .json, .bgraph.md, or .md)");
     println!("  --output <path>         Output file path (auto-generated if not specified)");
     println!("  --output-format <fmt>   Output format: bgraph, sequential, flat, markdown, or bgraph-md");
-    println!("  --accept-drift          Accept hash-drifted bgraph.md input (returns derivative)");
     println!("  --minimal-parse         Enable minimal parse mode (PDF only)");
     println!("  --jre-path <path>       Path to JRE directory (default: auto-download)");
     println!("  --jar-path <path>       Path to Tika JAR file (default: bundled)");
@@ -1039,7 +1041,6 @@ fn show_help() {
     println!("  bragi parse -i document.md -f markdown -o roundtrip.md");
     println!("  bragi parse -i document.md -f bgraph -o document.json");
     println!("  bragi parse -i document.bgraph.md -o document.json");
-    println!("  bragi parse -i document.bgraph.md --accept-drift -o derived.json");
     println!(
         "  bragi strip -i document.bgraph.md -o document.md   # default: body+frontmatter"
     );
@@ -1193,6 +1194,7 @@ mod tests {
                     children: Vec::new(),
                     internal_refs: Vec::new(),
                     external_refs: Vec::new(),
+                    image: None,
                 },
             );
         }
@@ -1219,6 +1221,7 @@ mod tests {
                 children: child_ids,
                 internal_refs: Vec::new(),
                 external_refs: Vec::new(),
+                image: None,
             },
         );
         DocumentGraph {
@@ -1227,6 +1230,7 @@ mod tests {
                 root_id,
                 kind: bragi_io_core::types::default_kind(),
                 document_metadata: DocumentMetadata::default(),
+                resolved_title: None,
                 outline_data: None,
                 flow_type: FlowType::default(),
                 topology: None,

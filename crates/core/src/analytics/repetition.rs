@@ -2,7 +2,7 @@
 // where it appears. Used by `GeometryStats` to derive header/footer zones and
 // exposed for diagnostic / data-science use.
 //
-// See `docs/P2/core/design-flows/2026-04-28-document-analytics-and-header-footer-classification.md`
+// See the 2026-04-28 design flow (document analytics and header footer classification)
 // (Block 03). Block 03 fills in the observation and zone-derivation logic.
 
 use std::collections::HashMap;

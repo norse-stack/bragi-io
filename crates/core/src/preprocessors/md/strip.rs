@@ -16,7 +16,7 @@
 //! body content of unfiltered elements verbatim.
 //!
 //! Wire-format spec is the source of truth:
-//! `docs/P2/core/architecture/08-bgraph-md-format.md` (v2.0.0).
+//! the bgraph.md format spec (architecture doc 08) (v2.0.0).
 //!
 //! Reuses [`super::bgraph_md::bgraph_fence_open_tag`] and
 //! [`super::bgraph_md::is_bare_fence_close`] (both `pub(super)`) so
@@ -603,7 +603,7 @@ fn main() {}
     //
     // The 14 tests below pin the CR-55 surface. Test numbers map 1:1 to
     // the "Test plan / Unit" section in
-    // docs/P2/core/change-requests/CR-55-strip-node-types-cli.md.
+    // CR-55.
 
     /// CR-55 Test 1: default mode produces YAML frontmatter + plain body.
     /// Pin: output starts with `---\n`, contains parseable YAML round-
@@ -825,6 +825,77 @@ fn main() {}
         assert!(out.contains("First paragraph body."));
         assert!(out.contains("```bgraph-paragraph"));
         assert!(out.contains("Confidential")); // footer body preserved
+    }
+
+    /// CR-100 (v1.2.0): the Image block is one unit to a splitter that
+    /// has no markdown parser — `--node-types image` removes the ref
+    /// line and the fence together, base64 and all, and leaves every
+    /// neighbour byte-untouched. This is the routine-hygiene path a RAG
+    /// consumer takes when it wants prose without pictures.
+    fn sample_bgraph_md_with_images() -> String {
+        let mut lines: Vec<String> = sample_bgraph_md()
+            .lines()
+            .map(str::to_string)
+            .collect();
+        // Two consecutive plates, appended after the footer — the shape
+        // that catches a scanner pairing bodies to fences off by one.
+        for (n, id) in ["img-0.jpeg", "img-1.jpeg"].iter().enumerate() {
+            lines.push(format!("![{id}]({id})"));
+            lines.push("```bgraph-image".to_string());
+            lines.push(format!(
+                "{{\"id\":\"5555555{n}-5555-5555-8555-555555555555\",\"node_type\":\"Image\",\"location\":{{\"semantic\":{{\"path\":\"{}\",\"depth\":1,\"breadcrumbs\":[\"Sample\"]}},\"physical\":null}},\"text_order\":{},\"token_count\":0,\"image\":{{\"id\":\"{id}\",\"annotation\":null,\"base64\":\"data:image/jpeg;base64,AAAA\"}}}}",
+                n + 5,
+                n + 4,
+            ));
+            lines.push("```".to_string());
+            lines.push(String::new());
+        }
+        lines.join("\n")
+    }
+
+    #[test]
+    fn cr100_node_types_image_removes_ref_line_and_fence_as_one_block() {
+        let md = sample_bgraph_md_with_images();
+        let out = strip(&md, StripMode::NodeTypes(vec!["image".to_string()])).expect("strip OK");
+        assert!(
+            !out.contains("```bgraph-image"),
+            "image fences must be removed; got:\n{out}"
+        );
+        for id in ["img-0.jpeg", "img-1.jpeg"] {
+            assert!(
+                !out.contains(&format!("![{id}]({id})")),
+                "the {id} ref line (the Image block's body) must go with its fence; got:\n{out}"
+            );
+        }
+        assert!(
+            !out.contains("data:image"),
+            "no base64 may survive the strip; got:\n{out}"
+        );
+        // Every neighbour is untouched — body and fence alike.
+        assert!(out.contains("First paragraph body."));
+        assert!(out.contains("```bgraph-paragraph"));
+        assert!(out.contains("Running header"));
+        assert!(out.contains("Confidential"));
+        assert!(out.contains("```bgraph-footer"));
+        assert!(
+            !out.contains("\n\n\n"),
+            "no orphan-blank runs left behind; got:\n{out}"
+        );
+    }
+
+    #[test]
+    fn cr100_body_only_keeps_the_ref_line_and_drops_the_bytes() {
+        // The other hygiene path: strip the machine channel, keep the
+        // prose. The picture's readable ref survives as markdown; the
+        // base64 — which lived only in the fence — does not.
+        let md = sample_bgraph_md_with_images();
+        let out = strip(&md, StripMode::BodyOnly).expect("strip OK");
+        assert!(out.contains("![img-0.jpeg](img-0.jpeg)"));
+        assert!(out.contains("![img-1.jpeg](img-1.jpeg)"));
+        assert!(
+            !out.contains("data:image"),
+            "base64 lives in the fence and must not survive a body-only strip; got:\n{out}"
+        );
     }
 
     /// CR-55 Test 7: `--node-types` composed with `--mode body-only`.

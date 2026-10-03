@@ -30,7 +30,7 @@
 //!   test_fixtures/snapshots/{c1-xhtml,c2-preprocessor}/<sha>  — the cache
 //!
 //! Design-flow authority:
-//! `docs/P2/core/design-flows/2026-07-06-canonical-versioning-and-fixture-stability.md`
+//! the 2026-07-06 design flow (canonical versioning and fixture stability)
 //! (Block D). Purely additive: touches no core types, bumps no version,
 //! freezes only bgraph.md (bgraph.json is CR-88).
 
@@ -529,11 +529,11 @@ fn golden_freeze_demo_ocr_roundtrips_verified() {
 // =========================================================================
 // OCR S2 — the grafted golden (demo-ocr + companion PDF).
 //
-// The premium path: `parse_ocr_with_pdf` over `demo-ocr/source.json` and the
+// The two-arm graft path: `parse_ocr_with_pdf` over `demo-ocr/source.json` and the
 // attention PDF — the real attention twin (one source PDF behind both the
 // OCR payload and the native golden). Frozen as a SECOND pair in the
 // demo-ocr family (`document.graft.bgraph.md` / `.json`); the single-arm
-// pair above stays byte-identical (`companion_pdf_sha256` serializes
+// pair above stays byte-identical (`supplier_sha256` serializes
 // absent-when-None, so the graft changes nothing it wasn't asked to).
 //
 // JVM-free by the attention pattern (committed-cache replay): the wrapper's
@@ -702,7 +702,7 @@ fn golden_freeze_demo_ocr_graft_json_wire() {
 }
 
 /// The S2 exit criterion, pinned on the frozen artifact: canonical fields
-/// not all-null, both namespaces present, the companion linkage set — and
+/// not all-null, both namespaces present, the supplier identity set — and
 /// the single-arm invariants (provenance, `ocr:` run facts) untouched.
 ///
 /// Attention's PDF container carries no `dc:title`; the title below is the
@@ -733,20 +733,25 @@ fn golden_freeze_demo_ocr_graft_metadata_reads_true() {
     assert_eq!(ocr.model.as_deref(), Some("mistral-ocr-4-0"));
     assert_eq!(ocr.pages_processed, Some(15));
 
-    // Companion linkage = sha256 of the companion PDF bytes.
+    // CR-13: the supplier identity = sha256 of the OCR payload bytes,
+    // NOT the companion PDF's (which the graft no longer records).
+    let ocr_bytes = std::fs::read(light_dir(LightChannel::Ocr).join("source.json")).unwrap();
+    let supplier_sha = bragi_io_core::preprocessors::ocr::companion_sha256(&ocr_bytes);
+    assert_eq!(ocr.supplier_sha256.as_deref(), Some(supplier_sha.as_str()));
     let pdf_bytes = std::fs::read(graft_companion_pdf_path()).expect("companion pdf");
-    assert_eq!(
-        ocr.companion_pdf_sha256.as_deref(),
-        Some(bragi_io_core::preprocessors::ocr::companion_sha256(&pdf_bytes).as_str())
+    assert_ne!(
+        ocr.supplier_sha256.as_deref(),
+        Some(bragi_io_core::preprocessors::ocr::companion_sha256(&pdf_bytes).as_str()),
+        "the companion PDF's sha must no longer sit in the ocr slot"
     );
 
     // Provenance unchanged — the PDF is a companion, not a second source.
+    // (A consumer may re-stamp this fence to its own input PDF;
+    // the channel, used standalone, does not — CR-13.)
     assert_eq!(provenance.source_format, "ocr");
     assert_eq!(provenance.config_hash, "none");
-    let ocr_bytes = std::fs::read(light_dir(LightChannel::Ocr).join("source.json")).unwrap();
     assert_eq!(
-        provenance.source_sha256,
-        bragi_io_core::preprocessors::ocr::companion_sha256(&ocr_bytes),
+        provenance.source_sha256, supplier_sha,
         "source_sha256 stays the mist.json bytes"
     );
 }
@@ -814,7 +819,7 @@ fn golden_freeze_demo_ocr_outline_reads_true() {
 }
 
 // =========================================================================
-// JSON wire — the customer-facing envelope (B6 / CR-85 item 7).
+// JSON wire — the consumer-facing envelope (B6 / CR-85 item 7).
 //
 // bgraph.md is the human/git-friendly encoding; `graph.json`
 // (`SortedDocumentGraph`) is the machine wire — what the API serves and the
