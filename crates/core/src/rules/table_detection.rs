@@ -47,6 +47,7 @@ use crate::types::{ParsedElementType, ParsedPdfElement, PdfTextElement, StyleDat
 use anyhow::Result;
 use serde::Serialize;
 use std::collections::HashMap;
+use tracing::{debug, warn};
 
 /// One row of the off-wire debug dump — one body leaf and its table verdict.
 #[derive(Debug, Serialize)]
@@ -147,9 +148,9 @@ impl<'a> ParseRule for TableDetectionRule<'a> {
     fn apply(&self, elements: Vec<ParsedPdfElement>) -> Result<Vec<ParsedPdfElement>> {
         let cfg = &self.config.table_detection;
         if !cfg.enabled {
-            println!(
-                "   ⏭️  TableDetection disabled — passing through {} elements",
-                elements.len()
+            debug!(
+                elements = elements.len(),
+                "table detection disabled in config, elements passed through"
             );
             return Ok(elements);
         }
@@ -190,10 +191,7 @@ impl<'a> ParseRule for TableDetectionRule<'a> {
             })
             .collect();
 
-        println!(
-            "   📊 TableDetection: tagged {} region leaf/leaves as Table",
-            tagged_regions.len()
-        );
+        debug!(tables = tagged_regions.len(), "table detection complete");
 
         // Off-wire debug dump — every body leaf, with its verdict.
         if std::env::var("BRAGI_TABLE_DUMP")
@@ -202,7 +200,7 @@ impl<'a> ParseRule for TableDetectionRule<'a> {
         {
             if let Err(e) = self.emit_debug_dump(&lookup, cfg) {
                 // Non-fatal: the dump is a development surface, not the wire.
-                eprintln!("   ⚠️  TableDetection: debug dump failed: {e}");
+                warn!(error = %e, "table detection debug dump failed");
             }
         }
 
@@ -274,7 +272,7 @@ impl<'a> TableDetectionRule<'a> {
         let path = format!("{dir}/{stem}.table.json");
         let json = serde_json::to_string_pretty(&artifact).map_err(std::io::Error::other)?;
         std::fs::write(&path, json)?;
-        println!("🧾 CR-79: table debug dump → {path}");
+        debug!(path = %path, "table detection debug dump written");
         Ok(())
     }
 

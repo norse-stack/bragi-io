@@ -3,6 +3,7 @@ use crate::config::{ElementClusteringConfig, ParsingConfig};
 use crate::types::BoundingBox;
 use crate::types::*;
 use anyhow::Result;
+use tracing::{debug, trace};
 
 pub struct SpatialClusteringRule<'a> {
     config: &'a ParsingConfig,
@@ -16,11 +17,6 @@ impl<'a> SpatialClusteringRule<'a> {
 
 impl<'a> ParseRule for SpatialClusteringRule<'a> {
     fn apply(&self, elements: Vec<ParsedPdfElement>) -> Result<Vec<ParsedPdfElement>> {
-        println!(
-            "🧩 SpatialClustering rule applied - clustering {} elements by adjacency",
-            elements.len()
-        );
-
         if elements.is_empty() {
             return Ok(elements);
         }
@@ -29,25 +25,23 @@ impl<'a> ParseRule for SpatialClusteringRule<'a> {
         let mut clustered_elements = elements;
 
         // Step 1: Paragraph merging (if enabled)
-        if self.config.spatial_clustering.enable_paragraph_merging {
-            println!("   📝 Step 1: Paragraph merging enabled");
+        let paragraph_merging = self.config.spatial_clustering.enable_paragraph_merging;
+        if paragraph_merging {
             clustered_elements = self.cluster_paragraphs_elements(clustered_elements)?;
-        } else {
-            println!("   ⏭️  Step 1: Paragraph merging disabled");
         }
 
         // Step 2: Spatial adjacency clustering (if enabled)
-        if self.config.spatial_clustering.enable_spatial_adjacency {
-            println!("   🧩 Step 2: Spatial adjacency clustering enabled");
+        let spatial_adjacency = self.config.spatial_clustering.enable_spatial_adjacency;
+        if spatial_adjacency {
             clustered_elements = self.cluster_adjacent_elements(clustered_elements)?;
-        } else {
-            println!("   ⏭️  Step 2: Spatial adjacency clustering disabled");
         }
 
-        println!(
-            "   ✅ Clustered into {} elements (reduced from {})",
-            clustered_elements.len(),
-            original_count
+        debug!(
+            elements_in = original_count,
+            elements_out = clustered_elements.len(),
+            paragraph_merging,
+            spatial_adjacency,
+            "spatial clustering complete"
         );
 
         Ok(clustered_elements)
@@ -63,8 +57,6 @@ impl<'a> SpatialClusteringRule<'a> {
         &self,
         elements: Vec<ParsedPdfElement>,
     ) -> Result<Vec<ParsedPdfElement>> {
-        println!("🔗 Clustering paragraph segments by paragraph_number and page...");
-
         if elements.is_empty() {
             return Ok(elements);
         }
@@ -148,10 +140,10 @@ impl<'a> SpatialClusteringRule<'a> {
                 .then(a.reading_order.cmp(&b.reading_order))
         });
 
-        println!(
-            "   ✅ Clustered {} segments into {} paragraphs",
-            original_count,
-            clustered_elements.len()
+        trace!(
+            segments = original_count,
+            paragraphs = clustered_elements.len(),
+            "paragraph segments merged"
         );
 
         Ok(clustered_elements)
