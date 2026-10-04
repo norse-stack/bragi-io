@@ -21,7 +21,7 @@ import bragi
 
 bgraph = bragi.parse_pdf("attention.pdf")
 
-print(bgraph)                # <BragiGraph: 179 nodes, schema v1.0.0>
+print(bgraph)                # <BragiGraph: 179 nodes, schema v1.2.0>
 print(len(bgraph.sections))  # 30
 
 for section in bgraph.sections:
@@ -72,7 +72,7 @@ bgraph.paragraphs            # Paragraph nodes
 bgraph.root                  # the Document root
 bgraph.document_info         # metadata about the document
 bgraph.structural_profile    # node counts, token + depth distributions
-bgraph.schema_version        # "1.0.0"
+bgraph.schema_version        # "1.2.0"
 
 bgraph.get_node("7962788f-d2e7-50bc-8359-c47c4b37c03d")   # by id
 bgraph.nodes_by_page(1)                                    # all nodes on a page
