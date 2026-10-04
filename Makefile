@@ -35,7 +35,7 @@ GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 CANON_PDF := $(GOLDEN_DIR)/attention.pdf
 CANON_OUT := target/canon
 
-.PHONY: build-cli build-archive parse-canon serve golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke docs-check golden-bless test sync-python-fixture test-python build-python publish-python hooks bump-version version-check
+.PHONY: build-cli build-archive parse-canon serve golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke docs-check golden-bless test test-server sync-python-fixture test-python build-python publish-python hooks bump-version version-check
 
 # ---------------------------------------------------------------------------
 # Version — the CODE/release axis (crate::VERSION / cargo-publish + PyPI
@@ -192,9 +192,18 @@ golden-bless: ## Re-bless the golden family (md + json) in-place, JVM-free
 ## every green checkmark the repo printed. `make test` is what the mono's
 ## domain runner and CI both call; anything not reachable from here is not
 ## actually tested. Pair with `make test-downstream` (api + urd) in the mono.
-test: ## Run the full test suite — core + CLI + the Python SDK
+test: ## Run the full test suite — core + CLI + the Python SDK + the self-hosted server
 	cargo test -p bragi-io-core -p bragi-io
 	@$(MAKE) --no-print-directory test-python
+	@$(MAKE) --no-print-directory test-server
+
+## test-server: the self-hosted server's request-handling tests. uv supplies
+## the server's requirements plus pytest and httpx (FastAPI's TestClient) in a
+## throwaway environment, as `serve` does; no parser binary is needed.
+test-server: ## Run the self-hosted server's tests
+	@command -v uv >/dev/null 2>&1 || { echo "❌ uv not found — needed to run the server tests (see py/server/requirements.txt)"; exit 1; }
+	cd py/server && uv run --with-requirements requirements.txt --with pytest --with httpx \
+	  python -m pytest -q -p no:cacheprovider test_main.py
 
 # --- Python SDK ----------------------------------------------------------
 PY_DIR      := py/sdk

@@ -6,7 +6,8 @@ envelope** out. No auth, no accounts — just document parsing.
 
 Request/response contract (matches the hosted `/v1/parse/pdf` and the Python
 SDK's remote-mode client, `bragi.client._handle_response`):
-  * body    → the raw PDF bytes (`--data-binary @doc.pdf`), NOT multipart.
+  * body    → the raw PDF bytes (`--data-binary @doc.pdf`), NOT multipart; a
+              body that does not start with `%PDF` answers 400 `bad_request`.
   * ?format= → `json` (default, returns the graph) or `md`/`bgraph-md`/`bgraph`
                (returns the canonical bgraph.md text in `bgraph_md`).
   * success → 200 `{"success": true, "graph": <SortedDocumentGraph>}`
@@ -44,6 +45,16 @@ DEFAULT_CONFIG_PATH = os.environ.get("BRAGI_CONFIG_PATH")
 _MARKDOWN_FORMATS = {"md", "bgraph-md", "bgraph"}
 
 
+# A PDF file starts with this signature.
+_PDF_MAGIC = b"%PDF"
+
+# The refusal for a body that is not a raw PDF.
+_NOT_RAW_PDF_MESSAGE = (
+    "Request body must be a raw PDF (send the bytes with Content-Type: "
+    "application/pdf, not multipart/form-data)"
+)
+
+
 def _error(status_code: int, code: str, message: str) -> JSONResponse:
     """Official error envelope: `{"success": false, "error": {code, message}}`."""
     return JSONResponse(
@@ -66,6 +77,13 @@ async def parse_pdf(
     pdf_bytes = await request.body()
     if not pdf_bytes:
         return _error(400, "bad_request", "No PDF data provided")
+    # The body must be the PDF itself. A multipart upload (`curl -F
+    # file=@doc.pdf`) arrives as the whole form envelope, starting with
+    # `--<boundary>`; the parser would still find the PDF inside it and
+    # return a graph whose `source_sha256` hashes the envelope rather than
+    # the document. Refuse anything that does not start like a PDF.
+    if not pdf_bytes.startswith(_PDF_MAGIC):
+        return _error(400, "bad_request", _NOT_RAW_PDF_MESSAGE)
 
     want_md = (format or "json") in _MARKDOWN_FORMATS
 
