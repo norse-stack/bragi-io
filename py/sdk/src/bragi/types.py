@@ -1,7 +1,7 @@
 """Typed data model for Bragi document graphs.
 
 All dataclasses mirror the Rust types in ``crates/core/src/types.rs``
-(schema version 1.0.0). Designed for full IDE autocomplete.
+(schema version 1.2.0). Designed for full IDE autocomplete.
 """
 
 from __future__ import annotations
@@ -698,7 +698,7 @@ class BragiGraph:
 
     This is the return type for :func:`bragi.parse_pdf` and
     :func:`bragi.parse_pdf_async`. Mirrors the Rust
-    ``SortedDocumentGraph`` wrapper (schema 1.0.0).
+    ``SortedDocumentGraph`` wrapper (schema 1.2.0).
     """
 
     schema_version: str
