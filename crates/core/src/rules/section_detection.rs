@@ -38,7 +38,6 @@ impl<'a> SectionAndHierarchyDetectionRule<'a> {
 
 impl<'a> ParseRule for SectionAndHierarchyDetectionRule<'a> {
     fn apply(&self, elements: Vec<ParsedPdfElement>) -> Result<Vec<ParsedPdfElement>> {
-
         // If no elements provided, create initial elements from text_elements
         let input_elements = if elements.is_empty() {
             debug!("section detection: no input elements, bootstrapping from text elements");
@@ -105,7 +104,11 @@ impl<'a> ParseRule for SectionAndHierarchyDetectionRule<'a> {
             .iter()
             .filter(|e| e.element_type == ParsedElementType::Section)
             .count();
-        debug!(sections = sections_detected, elements = processed_elements.len(), "section detection complete");
+        debug!(
+            sections = sections_detected,
+            elements = processed_elements.len(),
+            "section detection complete"
+        );
         Ok(processed_elements)
     }
 

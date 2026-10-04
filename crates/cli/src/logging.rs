@@ -51,11 +51,7 @@ fn directives(verbosity: i8) -> &'static str {
 /// Install the global subscriber. `verbose` is the `-v` count, `quiet` the
 /// `-q` flag. Call once, before anything logs.
 pub fn init(verbose: u8, quiet: bool) {
-    let verbosity: i8 = if quiet {
-        -1
-    } else {
-        verbose.min(3) as i8
-    };
+    let verbosity: i8 = if quiet { -1 } else { verbose.min(3) as i8 };
 
     let from_env = std::env::var("RUST_LOG")
         .ok()

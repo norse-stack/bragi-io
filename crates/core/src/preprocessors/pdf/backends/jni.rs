@@ -17,6 +17,7 @@ use anyhow::{anyhow, Result};
 use jni::{InitArgsBuilder, JNIVersion, JavaVM};
 use std::path::Path;
 use std::sync::Arc;
+use tracing::debug;
 
 /// JNI-based Tika backend for PDF processing
 ///
@@ -93,13 +94,16 @@ impl TikaJniBackend {
             return Err(anyhow!("JAR not found at: {}", jar_path.display()));
         }
 
-        println!("🚀 TikaJniBackend initializing...");
-        println!("   JRE path: {}", jre_path.display());
-        println!("   JAR path: {}", jar_path.display());
+        let start = std::time::Instant::now();
 
         // Find libjvm
         let libjvm_path = Self::find_libjvm(jre_path)?;
-        println!("   Found libjvm at: {}", libjvm_path.display());
+        debug!(
+            jre = %jre_path.display(),
+            jar = %jar_path.display(),
+            libjvm = %libjvm_path.display(),
+            "creating JVM for Tika"
+        );
 
         // CRITICAL: Set JAVA_HOME so the jni crate's java-locator can find the JVM
         // This must be done before calling JavaVM::new()
@@ -130,7 +134,7 @@ impl TikaJniBackend {
 
         // Add extra JVM args
         for arg in extra_jvm_args {
-            println!("   JVM arg: {}", arg);
+            debug!(arg = %arg, "extra JVM arg");
             jvm_args_builder = jvm_args_builder.option(arg);
         }
 
@@ -141,7 +145,10 @@ impl TikaJniBackend {
         // Create JVM (only one allowed per process)
         let jvm = JavaVM::new(jvm_args).map_err(|e| anyhow!("Failed to create JVM: {:?}", e))?;
 
-        println!("✅ JVM created successfully");
+        debug!(
+            duration_ms = start.elapsed().as_millis() as u64,
+            "JVM created"
+        );
 
         Ok(Self {
             jvm: Arc::new(jvm),
@@ -252,7 +259,8 @@ impl PdfBackend for TikaJniBackend {
     /// - Output string is copied from Java heap to Rust
     /// - Java GC handles cleanup of Java objects
     fn extract_to_xhtml(&self, pdf_bytes: &[u8]) -> Result<String> {
-        println!("🔧 Processing {} bytes through JNI", pdf_bytes.len());
+        let start = std::time::Instant::now();
+        debug!(bytes = pdf_bytes.len(), "Tika extraction started");
 
         // Attach current thread to JVM
         // This is safe to call multiple times - returns existing env if already attached
@@ -306,9 +314,10 @@ impl PdfBackend for TikaJniBackend {
             .map_err(|e| anyhow!("Failed to convert Java string: {:?}", e))?
             .into();
 
-        println!(
-            "✅ JNI processing completed, output size: {} characters",
-            output.len()
+        debug!(
+            xhtml_bytes = output.len(),
+            duration_ms = start.elapsed().as_millis() as u64,
+            "Tika extraction complete"
         );
         Ok(output)
     }

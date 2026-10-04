@@ -49,10 +49,7 @@ impl GraphBuilder {
         elements: Vec<SemanticTreeElement>,
         id_gen: &NodeIdGenerator,
     ) -> Result<DocumentGraph> {
-        eprintln!(
-            "🏗️  Building document graph from {} elements",
-            elements.len()
-        );
+        let elements_in = elements.len();
 
         let mut graph = DocumentGraph::new_with_root(id_gen.root_id());
         let mut node_stack: Vec<NodeId> = Vec::new();
@@ -190,7 +187,11 @@ impl GraphBuilder {
             graph.document_info.root_id = final_root;
         }
 
-        eprintln!("✅ Graph built: {} nodes", graph.nodes.len());
+        tracing::debug!(
+            elements = elements_in,
+            nodes = graph.nodes.len(),
+            "graph built"
+        );
 
         Ok(graph)
     }

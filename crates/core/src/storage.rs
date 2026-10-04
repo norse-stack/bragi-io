@@ -406,7 +406,7 @@ impl DocumentStorage for FileStorage {
                 }
                 if count > 0 {
                     // Report as part of the output but not tied to a CachePoint
-                    println!("   Deleted: {} files from debug/", count);
+                    tracing::debug!(files = count, dir = "debug/", "cache files deleted");
                 }
             }
         }

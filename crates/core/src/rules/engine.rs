@@ -173,7 +173,7 @@ impl RuleEngine {
 
         for rule_config in &config.pipeline.rules {
             if !rule_config.enabled {
-                debug!(rule = %rule_config.name, "rule disabled, skipped");
+                debug!(rule = rule_config.name.as_str(), "rule disabled, skipped");
                 continue;
             }
 
@@ -216,7 +216,7 @@ impl RuleEngine {
         // Apply each enabled rule from the config
         for rule_config in &config.pipeline.rules {
             if !rule_config.enabled {
-                debug!(rule = %rule_config.name, "rule disabled, skipped");
+                debug!(rule = rule_config.name.as_str(), "rule disabled, skipped");
                 continue;
             }
 
@@ -470,7 +470,7 @@ impl RuleEngine {
             median_pt = median_size,
             body_pt = body_text_size,
             body_elements = max_frequency,
-            body_share = size_usage_ratio,
+            body_share = %format_args!("{size_usage_ratio:.3}"),
             "font analysis complete"
         );
         trace!(

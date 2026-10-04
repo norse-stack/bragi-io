@@ -39,6 +39,7 @@ use regex::Regex;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::LazyLock;
 use std::time::Instant;
+use tracing::debug;
 use unicode_normalization::UnicodeNormalization;
 
 // Pre-compiled regexes
@@ -85,18 +86,18 @@ pub fn parse_xhtml(xhtml: &str) -> Result<PreprocessorOutput> {
     let text_elements = extract_text_elements(xhtml, &style_data, &bookmark_data)?;
     let t4 = Instant::now();
 
-    println!(
-        "XHTML parsing complete: {} text elements, {} font classes, {} bookmarks (meta={}ms, style={}ms, bookmark={}ms, text={}ms)",
-        text_elements.len(),
-        style_data.font_classes.len(),
-        bookmark_data
+    debug!(
+        text_elements = text_elements.len(),
+        font_classes = style_data.font_classes.len(),
+        bookmarks = bookmark_data
             .as_ref()
             .map(|b| b.sections.len())
             .unwrap_or(0),
-        (t1 - t0).as_millis(),
-        (t2 - t1).as_millis(),
-        (t3 - t2).as_millis(),
-        (t4 - t3).as_millis(),
+        meta_ms = (t1 - t0).as_millis() as u64,
+        style_ms = (t2 - t1).as_millis() as u64,
+        bookmark_ms = (t3 - t2).as_millis() as u64,
+        text_ms = (t4 - t3).as_millis() as u64,
+        "xhtml parsed"
     );
 
     Ok(PreprocessorOutput {
@@ -444,10 +445,10 @@ fn extract_text_elements(
         );
     }
 
-    println!(
-        "Total extraction: {} text elements across {} pages",
-        all_elements.len(),
-        state.page_number
+    debug!(
+        text_elements = all_elements.len(),
+        pages = state.page_number,
+        "text elements extracted"
     );
 
     Ok(all_elements)
@@ -756,7 +757,7 @@ fn extract_style_data(xhtml: &str) -> Result<StyleData> {
         }
     }
 
-    println!("No CSS styles found in XHTML — returning empty StyleData");
+    debug!("no CSS styles found in XHTML, using empty style data");
     Ok(StyleData {
         font_classes: BTreeMap::new(),
     })

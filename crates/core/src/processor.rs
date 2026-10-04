@@ -17,6 +17,7 @@ use crate::storage::{
 use crate::types::*;
 use anyhow::Result;
 use std::time::{Duration, Instant};
+use tracing::{debug, info};
 
 /// Simple profiler that collects timings for pipeline steps
 pub struct StepProfiler {
@@ -45,31 +46,47 @@ impl StepProfiler {
         let elapsed = start.elapsed();
 
         self.timings.push((step_name.to_string(), elapsed));
-        println!("⏱️  {}: {:.0}ms", step_name, elapsed.as_millis());
+        debug!(
+            target: PROFILE_TARGET,
+            step = step_name,
+            duration_ms = elapsed.as_millis() as u64,
+            "step timed"
+        );
 
         result
     }
 
+    /// Emit the timing table: one `info` event per step, then the total, on
+    /// the `bragi_io_core::profile` target. Only called when profiling was
+    /// requested, so hosts can let that target through unconditionally.
     pub fn print_summary(&self) {
         if !self.enabled || self.timings.is_empty() {
             return;
         }
 
-        println!("\n📊 Performance Summary:");
         let total: Duration = self.timings.iter().map(|(_, d)| *d).sum();
 
         for (step, duration) in &self.timings {
             let percentage = (duration.as_secs_f64() / total.as_secs_f64()) * 100.0;
-            println!(
-                "   {:.<35} {:.0}ms ({:.1}%)",
+            info!(
+                target: PROFILE_TARGET,
+                "{:.<35} {:>6}ms ({:.1}%)",
                 step,
                 duration.as_millis(),
                 percentage
             );
         }
-        println!("   {:.<35} {:.0}ms", "Total", total.as_millis());
+        info!(
+            target: PROFILE_TARGET,
+            "{:.<35} {:>6}ms",
+            "Total",
+            total.as_millis()
+        );
     }
 }
+
+/// Tracing target for the `--profile` step timings.
+pub const PROFILE_TARGET: &str = "bragi_io_core::profile";
 
 pub struct DocumentProcessor {
     preprocessor: Box<dyn Preprocessor>,
@@ -141,7 +158,8 @@ impl DocumentProcessor {
         let pdf_bytes = std::fs::read(input_path)?;
         let pdf_hash = calculate_source_hash(&pdf_bytes);
 
-        println!("📄 Processing: {}", input_path);
+        info!(bytes = pdf_bytes.len(), "pdf parse started");
+        debug!(path = input_path, "pdf input");
 
         // Build the provenance record that identifies this parse run.
         // CR-83: `(source_sha256, config_hash)` no longer feed node-ID
@@ -173,9 +191,11 @@ impl DocumentProcessor {
         if fresh_from.should_use_cache(CachePoint::C3) {
             let cache_key = GraphCacheKey::new(pdf_hash.clone(), config_hash.clone());
             if let Some(cached) = self.storage.get_graph_output(&cache_key)? {
-                println!(
-                    "🎯 C3 graph cache hit ({:.3}s)",
-                    start_time.elapsed().as_secs_f64()
+                info!(
+                    nodes = cached.graph.nodes.len(),
+                    source = "c3 cache",
+                    duration_ms = start_time.elapsed().as_millis() as u64,
+                    "pdf parse complete"
                 );
                 return Ok((cached.graph, provenance));
             }
@@ -184,10 +204,11 @@ impl DocumentProcessor {
         let id_gen = NodeIdGenerator::new();
 
         // --- C2: Preprocessor cache check ---
-        let preprocessor_output = if fresh_from.should_use_cache(CachePoint::C2) {
+        let extract_start = Instant::now();
+        let (preprocessor_output, source) = if fresh_from.should_use_cache(CachePoint::C2) {
             if let Some(cached) = self.storage.get_preprocessor_output(&pdf_hash)? {
-                println!("🎯 C2 preprocessor cache hit — skipping extraction + parsing");
-                cached
+                debug!("c2 preprocessor cache hit, extraction skipped");
+                (cached, "c2 cache")
             } else {
                 self.extract_and_parse(
                     input_path,
@@ -208,6 +229,7 @@ impl DocumentProcessor {
                 &mut profiler,
             )?
         };
+        let extract_ms = extract_start.elapsed().as_millis() as u64;
 
         // --- Stages 2-5: Classification → Rules → Graph → Post-processing ---
         let graph = self.rules_and_graph(
@@ -218,12 +240,17 @@ impl DocumentProcessor {
             &pdf_hash,
             cache_defaults,
             &mut profiler,
+            ExtractSummary { source, extract_ms },
         )?;
 
         if enable_profiling {
             profiler.print_summary();
         }
-        println!("⏱️  Total: {:.0}ms", start_time.elapsed().as_millis());
+        info!(
+            nodes = graph.nodes.len(),
+            duration_ms = start_time.elapsed().as_millis() as u64,
+            "pdf parse complete"
+        );
 
         Ok((graph, provenance))
     }
@@ -264,6 +291,9 @@ impl DocumentProcessor {
     // =========================================================================
 
     /// Extract XHTML and parse to PreprocessorOutput, respecting C1 and C2 caches.
+    ///
+    /// Returns the output and where the XHTML came from (`"tika"` or
+    /// `"c1 cache"`), for the stage summary event.
     fn extract_and_parse(
         &mut self,
         _input_path: &str,
@@ -272,11 +302,13 @@ impl DocumentProcessor {
         fresh_from: &FreshFrom,
         cache_defaults: &CacheDefaults,
         profiler: &mut StepProfiler,
-    ) -> Result<PreprocessorOutput> {
+    ) -> Result<(PreprocessorOutput, &'static str)> {
         // --- C1: XHTML cache check ---
+        let mut source = "tika";
         let xhtml = if fresh_from.should_use_cache(CachePoint::C1) {
             if let Some(cached) = self.storage.get_xhtml(pdf_hash)? {
-                println!("🎯 C1 XHTML cache hit — skipping Tika extraction");
+                debug!("c1 xhtml cache hit, Tika skipped");
+                source = "c1 cache";
                 cached
             } else {
                 let markup = profiler.time_step("C1: PDF → XHTML (Tika)", || {
@@ -284,7 +316,7 @@ impl DocumentProcessor {
                 })?;
                 if cache_defaults.should_write(CachePoint::C1) {
                     self.storage.store_xhtml(pdf_hash, &markup)?;
-                    println!("💾 C1: XHTML cached ({} bytes)", markup.len());
+                    debug!(bytes = markup.len(), "c1 xhtml cached");
                 }
                 markup
             }
@@ -295,7 +327,7 @@ impl DocumentProcessor {
             })?;
             if cache_defaults.should_write(CachePoint::C1) {
                 self.storage.store_xhtml(pdf_hash, &markup)?;
-                println!("💾 C1: XHTML cached ({} bytes, refreshed)", markup.len());
+                debug!(bytes = markup.len(), "c1 xhtml cached (refreshed)");
             }
             markup
         };
@@ -308,10 +340,10 @@ impl DocumentProcessor {
 
         if cache_defaults.should_write(CachePoint::C2) {
             self.storage.store_preprocessor_output(pdf_hash, &output)?;
-            println!("💾 C2: PreprocessorOutput cached");
+            debug!("c2 preprocessor output cached");
         }
 
-        Ok(output)
+        Ok((output, source))
     }
 
     // =========================================================================
@@ -328,7 +360,10 @@ impl DocumentProcessor {
         pdf_hash: &str,
         cache_defaults: &CacheDefaults,
         profiler: &mut StepProfiler,
+        extract: ExtractSummary,
     ) -> Result<DocumentGraph> {
+        let rules_start = Instant::now();
+
         // Classification
         let classification = profiler.time_step("Classification", || {
             self.classifier.classify(preprocessor_output)
@@ -363,7 +398,7 @@ impl DocumentProcessor {
 
         // Rule processing
         let parsed_elements = if config.minimal_parse {
-            println!("🔄 Minimal parse mode — skipping rule processing");
+            debug!("minimal parse: rule processing skipped");
             self.rule_engine
                 .convert_text_elements_to_parsed(&text_elements)
         } else {
@@ -383,6 +418,8 @@ impl DocumentProcessor {
                 )
             })?
         };
+        let rules_ms = rules_start.elapsed().as_millis() as u64;
+        let elements = parsed_elements.len();
 
         // Infer title before graph build consumes elements
         let inferred_title = infer_title(&parsed_elements);
@@ -409,10 +446,23 @@ impl DocumentProcessor {
         // only; provenance stays a value in this scope and is threaded
         // where needed (evidence artifact below; emit/serialize by our
         // caller).
+        let graph_start = Instant::now();
         let mut graph = profiler.time_step("Graph Construction", || {
             self.graph_builder
                 .build_graph_deterministic(semantic_elements, id_gen)
         })?;
+
+        info!(
+            source = extract.source,
+            pages = page_count(preprocessor_output),
+            text_elements = preprocessor_output.text_elements.len(),
+            elements,
+            nodes = graph.nodes.len(),
+            extract_ms = extract.extract_ms,
+            rules_ms,
+            graph_ms = graph_start.elapsed().as_millis() as u64,
+            "pdf stages complete"
+        );
 
         // Post-processing: metadata, analysis, breadcrumbs. CR-57: direct
         // assignment replaces the old merge_extracted call (each channel
@@ -451,9 +501,10 @@ impl DocumentProcessor {
             crate::graphs::builder::rekey_node_ids(&mut graph)
         });
         if rekeyed.ids_moved > 0 || rekeyed.paths_moved > 0 {
-            println!(
-                "🔑 CR-84: finalized to post-sanity topology — {} node IDs re-keyed, {} paths re-derived",
-                rekeyed.ids_moved, rekeyed.paths_moved
+            debug!(
+                ids_moved = rekeyed.ids_moved,
+                paths_moved = rekeyed.paths_moved,
+                "node ids re-keyed to post-sanity topology"
             );
         }
 
@@ -477,6 +528,28 @@ impl DocumentProcessor {
 
         Ok(graph)
     }
+}
+
+/// Extraction-stage facts carried into the `pdf stages complete` event.
+struct ExtractSummary {
+    /// Where the elements came from: `"tika"`, `"c1 cache"` or `"c2 cache"`.
+    source: &'static str,
+    extract_ms: u64,
+}
+
+/// Page count for the stage summary: the PDF's declared page count when
+/// its metadata carries one, else the highest page number seen in the
+/// extracted text.
+fn page_count(output: &PreprocessorOutput) -> u32 {
+    let declared = output.metadata.pdf.as_ref().and_then(|p| p.page_count);
+    declared.unwrap_or_else(|| {
+        output
+            .text_elements
+            .iter()
+            .map(|e| e.placement.page_number)
+            .max()
+            .unwrap_or(0)
+    })
 }
 
 /// Run the document-analytics pre-pass over a slice of text elements.

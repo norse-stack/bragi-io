@@ -707,8 +707,7 @@ fn run_parse_ocr(args: ParseArgs, bytes: Vec<u8>) -> Result<()> {
         return run_parse_ocr_grafted(args, bytes, pdf_path, opts);
     }
 
-    let result =
-        parse_ocr(&bytes, opts).map_err(|e| anyhow!("OCR parse failed: {e}"))?;
+    let result = parse_ocr(&bytes, opts).map_err(|e| anyhow!("OCR parse failed: {e}"))?;
 
     emit_parsed_graph(&args, result.graph, result.provenance)
 }
@@ -1005,7 +1004,7 @@ fn show_help() {
     println!("  --companion-pdf <path>  Graft the PDF's native metadata into an OCR parse (OCR input only)");
 
     println!("\nDiagnostics (all subcommands; written to stderr):");
-    println!("  -v, -vv, -vvv           More detail: library summary, stage detail, per-item detail");
+    println!("  -v, -vv, -vvv           More detail: summary, stage detail, per-item detail");
     println!("  -q, --quiet             Errors only");
     println!("  RUST_LOG=<filter>       Overrides -v/-q (tracing EnvFilter syntax)");
 
