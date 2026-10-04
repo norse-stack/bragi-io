@@ -72,6 +72,10 @@ pulldown-cmark = { version = "0.10", default-features = false }
 # its own internal YAML engine, not a pluggable one).
 gray_matter = { version = "0.3", default-features = false, features = ["yaml"] }
 
+# Diagnostics are `tracing` events. The library never prints; the host
+# (CLI, server) installs a subscriber and decides what is shown (CR-102).
+tracing = "0.1"
+
 # JNI for Java interop (when jni-backend feature enabled)
 # Requires 'invocation' feature to create JVMs
 jni = { version = "0.21", features = ["invocation"], optional = true }

@@ -1,6 +1,10 @@
 use anyhow::{anyhow, Result};
 use clap::{Args as ClapArgs, Parser, Subcommand, ValueEnum};
 use std::path::Path;
+use tracing::{debug, error, info, warn};
+
+mod logging;
+use logging::fail;
 
 // Import from bragi-io-core
 use bragi_io_core::{
@@ -35,6 +39,16 @@ use bragi_io::JreManager;
 struct Cli {
     #[command(subcommand)]
     command: Command,
+
+    /// More diagnostic output on stderr: `-v` adds the library's per-parse
+    /// summary, `-vv` stage and rule detail, `-vvv` per-item detail.
+    /// `RUST_LOG`, when set, overrides this.
+    #[arg(short, long, action = clap::ArgAction::Count, global = true)]
+    verbose: u8,
+
+    /// Only errors on stderr.
+    #[arg(short, long, global = true, conflicts_with = "verbose")]
+    quiet: bool,
 }
 
 #[derive(Subcommand)]
@@ -286,6 +300,7 @@ impl From<CliStripMode> for bragi_io_core::preprocessors::md::StripMode {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    logging::init(cli.verbose, cli.quiet);
 
     match cli.command {
         Command::Parse(args) => run_parse(args),
@@ -298,7 +313,7 @@ fn main() -> Result<()> {
 // =========================================================================
 
 fn run_parse(args: ParseArgs) -> Result<()> {
-    println!("🦀 Bragi Document Parser");
+    debug!(version = env!("CARGO_PKG_VERSION"), "bragi parse");
 
     if args.show_configs {
         show_help();
@@ -307,7 +322,7 @@ fn run_parse(args: ParseArgs) -> Result<()> {
 
     // Resolve cache directory: CLI flag > env var > default
     let cache_dir = resolve_cache_dir(&args)?;
-    println!("📁 Cache: {}", cache_dir);
+    debug!(cache_dir = %cache_dir, "cache directory");
 
     // Handle --clear-cache (early exit, no processing)
     if let Some(ref clear_str) = args.clear_cache {
@@ -316,23 +331,23 @@ fn run_parse(args: ParseArgs) -> Result<()> {
         let label = from_point
             .map(|p| format!("{} (cascading)", p))
             .unwrap_or_else(|| "all".to_string());
-        println!("🗑️  Clearing cache from {}...", label);
+        info!("Clearing cache in {cache_dir} from {label}");
         let result =
             <bragi_io_core::storage::FileStorage as bragi_io_core::storage::DocumentStorage>::clear_cache(
                 &storage,
                 from_point,
             )?;
         for (point, count) in &result.deleted {
-            println!("   Deleted: {} files from {}/", count, point.dir_name());
+            info!("Deleted {count} files from {}/", point.dir_name());
         }
-        println!("✅ Cache cleared.");
+        info!("Cache cleared");
         return Ok(());
     }
 
-    // Check if input file exists
+    // Check if input file exists. A missing input is reported but exits 0
+    // (long-standing behaviour, kept as-is).
     if !Path::new(&args.input).exists() {
-        println!("⚠️  Input file not found at: {}", args.input);
-        println!("   Please check the file path.");
+        error!("input file not found: {}", args.input);
         return Ok(());
     }
 
@@ -365,7 +380,7 @@ fn run_parse(args: ParseArgs) -> Result<()> {
         InputFormat::Docx => run_parse_docx(args),
         InputFormat::Ocr { bytes } => run_parse_ocr(args, bytes),
         InputFormat::Unknown => Err(anyhow!(
-            "❌ Input format not recognized: {}\n\
+            "Input format not recognized: {}\n\
              \n\
              Supported formats:\n\
              \t.pdf            — PDF documents (full parsing pipeline)\n\
@@ -401,16 +416,16 @@ fn run_parse_pdf(args: ParseArgs, cache_dir: String) -> Result<()> {
                  https://docs.bragi-io.com/reference/config-reference/"
             )
         })?;
-        println!("📋 Loaded config from: {}", config_path);
+        info!("Loaded config from {config_path}");
         c
     } else {
         match serde_yaml::from_str::<ParsingConfig>(DEFAULT_CONFIG_YAML) {
             Ok(c) => {
-                println!("📋 Using built-in default config");
+                debug!("using built-in default config");
                 c
             }
             Err(e) => {
-                eprintln!("⚠️  Failed to parse embedded config: {e}, using fallback defaults");
+                warn!("failed to parse embedded config: {e}; using fallback defaults");
                 ParsingConfig::default()
             }
         }
@@ -443,7 +458,7 @@ fn run_parse_pdf(args: ParseArgs, cache_dir: String) -> Result<()> {
 
     let cache_defaults = CacheDefaults::default();
 
-    println!("📄 Processing: {}", args.input);
+    info!("Parsing PDF {}", args.input);
 
     // Process the document with cache point awareness
     match processor.process_document_with_cache(
@@ -454,8 +469,7 @@ fn run_parse_pdf(args: ParseArgs, cache_dir: String) -> Result<()> {
         args.profile,
     ) {
         Ok((graph, provenance)) => {
-            println!("✅ Successfully processed document");
-            println!("📊 Graph: {} nodes", graph.nodes.len());
+            info!("Graph: {} nodes", graph.nodes.len());
 
             // CR-86 / DT-12: style is gated at build time (the graph's
             // `style_info` values already reflect `config.include_style_info`).
@@ -471,10 +485,7 @@ fn run_parse_pdf(args: ParseArgs, cache_dir: String) -> Result<()> {
             #[cfg(not(feature = "jni-backend"))]
             Ok(())
         }
-        Err(e) => {
-            eprintln!("❌ Processing failed: {e}");
-            std::process::exit(1);
-        }
+        Err(e) => fail(1, format_args!("processing failed: {e}")),
     }
 }
 
@@ -499,9 +510,9 @@ fn run_parse_markdown(args: ParseArgs, content: String) -> Result<()> {
 
     let is_bgraph = is_bgraph_md(&content);
     if is_bgraph {
-        println!("📄 Parsing bgraph.md: {}", args.input);
+        info!("Parsing bgraph.md {}", args.input);
     } else {
-        println!("📄 Parsing generic markdown: {}", args.input);
+        info!("Parsing generic markdown {}", args.input);
     }
 
     let opts = ParseOptions {
@@ -512,9 +523,10 @@ fn run_parse_markdown(args: ParseArgs, content: String) -> Result<()> {
         Err(ParseError::HashMismatch {
             original,
             recomputed,
-        }) => {
-            eprintln!(
-                "\n❌ bgraph.md bgraph_sha256 mismatch.\n\
+        }) => fail(
+            2,
+            format_args!(
+                "bgraph.md bgraph_sha256 mismatch.\n\
                  \toriginal:   {original}\n\
                  \trecomputed: {recomputed}\n\
                  \n\
@@ -522,26 +534,22 @@ fn run_parse_markdown(args: ParseArgs, content: String) -> Result<()> {
                  This binary verifies identity by construction (compile-time\n\
                  strict-identity) and will not emit a drifted graph — there is\n\
                  no runtime override. Regenerate the bgraph.md from source, or\n\
-                 restore the original bytes.\n"
-            );
-            std::process::exit(2);
-        }
-        Err(e) => {
-            eprintln!("\n❌ markdown parse failed: {e}\n");
-            std::process::exit(1);
-        }
+                 restore the original bytes."
+            ),
+        ),
+        Err(e) => fail(1, format_args!("markdown parse failed: {e}")),
     };
 
     match result.identity {
         ParseIdentity::Verified => {
-            println!("✅ Round-trip identity verified (bgraph_sha256 matches).");
+            info!("Round-trip identity verified (bgraph_sha256 matches)");
         }
         ParseIdentity::Derivative {
             original_sha256,
             recomputed_sha256,
         } => {
-            eprintln!(
-                "⚠️  Graph reconstructed from drifted bgraph.md:\n\
+            warn!(
+                "graph reconstructed from drifted bgraph.md:\n\
                  \toriginal bgraph_sha256:   {original_sha256}\n\
                  \trecomputed bgraph_sha256: {recomputed_sha256}\n\
                  \tThe reconstructed graph is a derivative, not an identity round-trip."
@@ -560,7 +568,7 @@ fn run_parse_docx(args: ParseArgs) -> Result<()> {
     use bragi_io_core::preprocessors::docx::parse_docx;
     use bragi_io_core::preprocessors::md::ParseOptions;
 
-    println!("📄 Parsing DOCX: {}", args.input);
+    info!("Parsing DOCX {}", args.input);
 
     // The lib's `parse_docx` takes raw zip bytes (no pre-read in
     // `detect_input_format`, mirroring the PDF arm).
@@ -574,7 +582,7 @@ fn run_parse_docx(args: ParseArgs) -> Result<()> {
     let opts = ParseOptions {
         accept_drift: strict_accept_drift(),
     };
-    let result = parse_docx(&bytes, opts).map_err(|e| anyhow!("\n❌ DOCX parse failed: {e}\n"))?;
+    let result = parse_docx(&bytes, opts).map_err(|e| anyhow!("DOCX parse failed: {e}"))?;
 
     let graph = result.graph;
     let provenance = result.provenance;
@@ -599,7 +607,7 @@ fn emit_parsed_graph(
     graph: DocumentGraph,
     provenance: ParseProvenance,
 ) -> Result<()> {
-    println!("📊 Graph: {} nodes", graph.nodes.len());
+    info!("Graph: {} nodes", graph.nodes.len());
 
     // CR-86 / DT-12: style is a build-time value gate. The md/docx
     // channels parse an existing artifact, so the reconstructed graph's
@@ -645,8 +653,8 @@ fn run_strip(args: StripArgs) -> Result<()> {
             } else {
                 format!(" + --node-types={}", args.node_types.join(","))
             };
-            println!(
-                "💾 Stripped ({mode_label}{filter_label}, {} bytes) saved to: {path}",
+            info!(
+                "Wrote stripped markdown ({mode_label}{filter_label}, {} bytes) to {path}",
                 stripped.len()
             );
         }
@@ -665,14 +673,11 @@ fn run_strip_step(content: &str, mode: bragi_io_core::preprocessors::md::StripMo
     use bragi_io_core::preprocessors::md::{strip, ParseError};
     match strip(content, mode) {
         Ok(s) => s,
-        Err(ParseError::MalformedFence(msg)) => {
-            eprintln!("❌ strip failed: malformed bgraph fence — {msg}");
-            std::process::exit(1);
-        }
-        Err(e) => {
-            eprintln!("❌ strip failed: {e}");
-            std::process::exit(1);
-        }
+        Err(ParseError::MalformedFence(msg)) => fail(
+            1,
+            format_args!("strip failed: malformed bgraph fence — {msg}"),
+        ),
+        Err(e) => fail(1, format_args!("strip failed: {e}")),
     }
 }
 
@@ -684,7 +689,7 @@ fn run_parse_ocr(args: ParseArgs, bytes: Vec<u8>) -> Result<()> {
     use bragi_io_core::preprocessors::md::ParseOptions;
     use bragi_io_core::preprocessors::ocr::parse_ocr;
 
-    println!("📄 Parsing OCR JSON: {}", args.input);
+    info!("Parsing OCR JSON {}", args.input);
 
     // `ParseOptions` is shared with the markdown channel; `accept_drift`
     // is meaningless for OCR (no embedded `bgraph_sha256` to verify),
@@ -703,7 +708,7 @@ fn run_parse_ocr(args: ParseArgs, bytes: Vec<u8>) -> Result<()> {
     }
 
     let result =
-        parse_ocr(&bytes, opts).map_err(|e| anyhow!("\n❌ OCR parse failed: {e}\n"))?;
+        parse_ocr(&bytes, opts).map_err(|e| anyhow!("OCR parse failed: {e}"))?;
 
     emit_parsed_graph(&args, result.graph, result.provenance)
 }
@@ -720,7 +725,7 @@ fn run_parse_ocr_grafted(
     use bragi_io_core::preprocessors::ocr::parse_ocr_with_pdf;
     use bragi_io_core::preprocessors::pdf::PdfPreprocessor;
 
-    println!("🧬 Grafting native metadata from companion PDF: {pdf_path}");
+    info!("Grafting native metadata from companion PDF {pdf_path}");
 
     // Fail loud BEFORE spinning up a JVM: an unreadable or empty
     // companion can never silently produce a single-arm parse.
@@ -734,7 +739,7 @@ fn run_parse_ocr_grafted(
     let preprocessor = PdfPreprocessor::new_with_jni(&jre_path, &jar_path)?;
 
     let result = parse_ocr_with_pdf(&ocr_bytes, &pdf_bytes, opts, &preprocessor)
-        .map_err(|e| anyhow!("\n❌ OCR graft parse failed: {e}\n"))?;
+        .map_err(|e| anyhow!("OCR graft parse failed: {e}"))?;
 
     emit_parsed_graph(&args, result.graph, result.provenance)?;
 
@@ -940,11 +945,11 @@ fn resolve_cache_dir(args: &ParseArgs) -> Result<String> {
 fn resolve_jni_paths(args: &ParseArgs) -> Result<(std::path::PathBuf, std::path::PathBuf)> {
     // Get JRE path - either from args, JAVA_HOME, or auto-download
     let jre_path = if let Some(path) = &args.jre_path {
-        println!("🔧 Using specified JRE: {}", path);
+        debug!(jre = %path, "using JRE from --jre-path");
         std::path::PathBuf::from(path)
     } else if let Ok(java_home) = std::env::var("JAVA_HOME") {
         if !java_home.is_empty() {
-            println!("🔧 Using JAVA_HOME: {}", java_home);
+            debug!(jre = %java_home, "using JRE from JAVA_HOME");
             std::path::PathBuf::from(java_home)
         } else {
             let jre_manager = JreManager::new()?;
@@ -957,11 +962,11 @@ fn resolve_jni_paths(args: &ParseArgs) -> Result<(std::path::PathBuf, std::path:
 
     // Get JAR path - either from args or find bundled JAR
     let jar_path = if let Some(path) = &args.jar_path {
-        println!("🔧 Using specified JAR: {}", path);
+        debug!(jar = %path, "using Tika JAR from --jar-path");
         std::path::PathBuf::from(path)
     } else {
         let path = JreManager::find_jar_path()?;
-        println!("🔧 Using JAR: {}", path.display());
+        debug!(jar = %path.display(), "using Tika JAR");
         path
     };
 
@@ -972,7 +977,6 @@ fn resolve_jni_paths(args: &ParseArgs) -> Result<(std::path::PathBuf, std::path:
 #[cfg(feature = "jni-backend")]
 fn create_processor(args: &ParseArgs, cache_dir: &str) -> Result<DocumentProcessor> {
     let (jre_path, jar_path) = resolve_jni_paths(args)?;
-    println!("🚀 Using JNI backend");
     DocumentProcessor::new_cli_jni_with_cache(&jre_path, &jar_path, cache_dir)
 }
 
@@ -986,11 +990,11 @@ fn create_processor(_args: &ParseArgs, _cache_dir: &str) -> Result<DocumentProce
 }
 
 fn show_help() {
-    println!("\n📋 Subcommands:");
+    println!("\nSubcommands:");
     println!("  parse    Parse a PDF or bgraph.md into a graph (or back to markdown)");
     println!("  strip    Remove bgraph fences from a bgraph.md file");
 
-    println!("\n📋 `parse` options:");
+    println!("\n`parse` options:");
     println!("  --config <path>         Load custom config file (PDF only)");
     println!("  --input <path>          Input file (PDF, .docx, OCR .json, .bgraph.md, or .md)");
     println!("  --output <path>         Output file path (auto-generated if not specified)");
@@ -1000,27 +1004,32 @@ fn show_help() {
     println!("  --jar-path <path>       Path to Tika JAR file (default: bundled)");
     println!("  --companion-pdf <path>  Graft the PDF's native metadata into an OCR parse (OCR input only)");
 
-    println!("\n🗄️  Cache Control (PDF only):");
+    println!("\nDiagnostics (all subcommands; written to stderr):");
+    println!("  -v, -vv, -vvv           More detail: library summary, stage detail, per-item detail");
+    println!("  -q, --quiet             Errors only");
+    println!("  RUST_LOG=<filter>       Overrides -v/-q (tracing EnvFilter syntax)");
+
+    println!("\nCache control (PDF only):");
     println!("  --cache-dir <path>      Override cache directory");
     println!("  --fresh-from <point>    Reprocess from cache point: c0, c1, c2, c3");
     println!("  --clear-cache <point>   Clear cache (cascading): c0, c1, c2, c3, all");
     println!("  --skip-cache            Alias for --fresh-from c0");
 
-    println!("\n📄 Output Formats (parse):");
+    println!("\nOutput formats (parse):");
     println!("  bgraph      - Full graph structure with nodes and relationships (default)");
     println!("  sequential  - Ordered segments with level info (good for RAG + hierarchy)");
     println!("  flat        - Simple array of text chunks (minimal format)");
     println!("  markdown    - Plain markdown (generic) — B6, schema 0.7.0+");
     println!("  bgraph-md   - bgraph.md round-trip artifact (B2; was -f markdown in B5)");
 
-    println!("\n📥 Input Formats (parse, auto-detected):");
+    println!("\nInput formats (parse, auto-detected):");
     println!("  .pdf                    PDF channel (full pipeline)");
     println!("  .docx                   Word/OOXML channel (S10 Track C)");
     println!("  .json                   Mistral OCR-4 payload (OCR channel, content-sniffed)");
     println!("  .bgraph.md              bgraph.md round-trip artifact");
     println!("  .md / .markdown         Generic markdown (B6)");
 
-    println!("\n🪓 `strip` modes:");
+    println!("\n`strip` modes:");
     println!(
         "  --mode body-with-frontmatter  (default) Strip every fence; lift doc-level metadata to YAML frontmatter"
     );
@@ -1031,7 +1040,7 @@ fn show_help() {
         "  --node-types <list>     Comma-sep types to strip entirely via structural rule (e.g. header,footer,margin)"
     );
 
-    println!("\n📝 Usage Examples:");
+    println!("\nUsage examples:");
     println!("  bragi parse -i document.pdf");
     println!("  bragi parse -i document.docx");
     println!("  bragi parse -i mist.json -f bgraph-md -o document.bgraph.md");
@@ -1051,7 +1060,7 @@ fn show_help() {
 
     #[cfg(feature = "jni-backend")]
     {
-        println!("\n🔧 JNI Backend:");
+        println!("\nJNI backend:");
         println!(
             "  First run will auto-download Java Runtime (~60MB) to ~/.local/share/bragi/jre"
         );
@@ -1080,19 +1089,21 @@ fn save_graph(
             // exist in generic markdown source). Catch them here
             // with a clean error.
             if let Err(msg) = check_generic_md_compatible(graph) {
-                eprintln!(
-                    "\n❌ Cannot emit generic markdown: {msg}\n\
-                     \n\
-                     Tip: use `-f bgraph-md` instead to produce the bgraph.md\n\
-                     round-trip artifact, which carries Header/Footer/Margin\n\
-                     fences.\n"
+                fail(
+                    2,
+                    format_args!(
+                        "cannot emit generic markdown: {msg}\n\
+                         \n\
+                         Tip: use `-f bgraph-md` instead to produce the bgraph.md\n\
+                         round-trip artifact, which carries Header/Footer/Margin\n\
+                         fences."
+                    ),
                 );
-                std::process::exit(2);
             }
             let md =
                 bragi_io_core::graphs::serialization::markdown_generic::emit_markdown(graph);
             std::fs::write(output_path, md)?;
-            println!("💾 Markdown saved to: {}", output_path);
+            info!("Wrote markdown to {output_path}");
         }
         "bgraph-md" => {
             // CR-86 / DT-12: the emitter is dumb — it serializes exactly
@@ -1104,24 +1115,24 @@ fn save_graph(
                 graph, provenance,
             );
             std::fs::write(output_path, md)?;
-            println!("💾 bgraph.md saved to: {}", output_path);
+            info!("Wrote bgraph.md to {output_path}");
         }
         "sequential" => {
             graph.save_with_format(output_path, "sequential", Some(provenance))?;
-            println!("💾 Sequential format saved to: {}", output_path);
+            info!("Wrote sequential JSON to {output_path}");
         }
         "flat" => {
             graph.save_with_format(output_path, "flat", Some(provenance))?;
-            println!("💾 Flat format saved to: {}", output_path);
+            info!("Wrote flat JSON to {output_path}");
         }
         "bgraph" => {
             graph.save_with_format(output_path, "bgraph", Some(provenance))?;
-            println!("💾 bgraph saved to: {}", output_path);
+            info!("Wrote bgraph JSON to {output_path}");
         }
         other => {
-            println!("⚠️  Unknown output format '{other}', using default bgraph format");
+            warn!("unknown output format '{other}', using bgraph");
             graph.save_with_format(output_path, "bgraph", Some(provenance))?;
-            println!("💾 bgraph saved to: {}", output_path);
+            info!("Wrote bgraph JSON to {output_path}");
         }
     }
     Ok(())
