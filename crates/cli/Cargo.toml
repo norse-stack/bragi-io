@@ -1,6 +1,6 @@
 [package]
 name = "bragi-io"
-version = "0.7.0"
+version = "0.7.1"
 edition = "2021"
 description = "Parse PDFs into semantic document graphs with bounding boxes. Built for GraphRAG."
 license = "MIT OR Apache-2.0"
@@ -44,7 +44,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Core processing library - default to JNI backend
-bragi-io-core = { version = "0.7.0", path = "../core", package = "bragi-io-core", default-features = false }
+bragi-io-core = { version = "0.7.1", path = "../core", package = "bragi-io-core", default-features = false }
 
 [features]
 default = ["jni-backend", "strict-identity"]

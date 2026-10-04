@@ -143,7 +143,7 @@ dependencies = [
 
 [[package]]
 name = "bragi-io"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "anyhow",
  "bragi-io-core",
@@ -165,7 +165,7 @@ dependencies = [
 
 [[package]]
 name = "bragi-io-core"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "anyhow",
  "base64",

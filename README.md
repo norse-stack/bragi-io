@@ -24,7 +24,9 @@ bragi parse -i attention.pdf -o attention.bgraph.json
 ```
 
 ```
-✅ Graph: 179 nodes
+Parsing PDF attention.pdf
+Graph: 179 nodes
+Wrote bgraph JSON to attention.bgraph.json
 ```
 
 That graph is **179 nodes**: 1 document root, 30 sections, 147 paragraphs, 1 margin — 10,012 tokens, tree depth 5. Every node looks like this (abridged):
