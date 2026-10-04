@@ -32,7 +32,7 @@ from fastapi.responses import JSONResponse
 app = FastAPI(
     title="Bragi API — Self-Hosted",
     description="Local document parsing API powered by bragi",
-    version="0.7.1",
+    version="0.7.2",
 )
 
 CLI_PATH = os.environ.get("BRAGI_CLI_PATH", "/app/bin/bragi")
