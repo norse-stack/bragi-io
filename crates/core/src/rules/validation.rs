@@ -259,7 +259,7 @@ impl<'a> ValidationRule<'a> {
     fn log_validation_report(&self, report: &ValidationReport) {
         debug!(
             elements = report.total_elements,
-            quality_score = report.quality_score,
+            quality_score = %format_args!("{:.2}", report.quality_score),
             issues = report.issues.len(),
             "structural validation complete"
         );
