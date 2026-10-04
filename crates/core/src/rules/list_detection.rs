@@ -2,6 +2,7 @@ use crate::config::{ListDetectionConfig, ListValidationConfig, SequentialNumberi
 use crate::types::ListSequence;
 use anyhow::Result;
 use regex::Regex;
+use tracing::debug;
 
 use super::engine::{ParseRule, ParsedElement, ParsedElementType};
 
@@ -439,7 +440,7 @@ impl<'a> ListValidator<'a> {
         if self.config.minimum_size_check {
             let rule = MinimumSizeRule;
             if !rule.validate(list_items) {
-                // println!("   ❌ List rejected by {}: {} items", rule.name(), list_items.len());
+                // trace!(rule = rule.name(), items = list_items.len(), "list rejected: too few items");
                 return false;
             }
         }
@@ -449,7 +450,7 @@ impl<'a> ListValidator<'a> {
             let rule = FirstItemRule;
             if !rule.validate(list_items) {
                 if let Some(_first_item) = list_items.first() {
-                    // println!("   ❌ List rejected by {}: starts with '{}'", rule.name(), first_item.text.trim());
+                    // trace!(rule = rule.name(), "list rejected: starts with '{}'", first_item.text.trim());
                 }
                 return false;
             }
@@ -459,7 +460,7 @@ impl<'a> ListValidator<'a> {
         if self.config.parenthetical_context_check {
             let rule = ParentheticalContextRule;
             if !rule.validate(list_items) {
-                // println!("   ❌ List rejected by {}: invalid parenthetical context", rule.name());
+                // trace!(rule = rule.name(), "list rejected: invalid parenthetical context");
                 return false;
             }
         }
@@ -468,7 +469,7 @@ impl<'a> ListValidator<'a> {
         if self.config.sequential_numbering_check {
             let rule = SequentialNumberingRule::new(&self.config.sequential_numbering);
             if !rule.validate(list_items) {
-                // println!("   ❌ List rejected by {}: sequence gap detected", rule.name());
+                // trace!(rule = rule.name(), "list rejected: sequence gap detected");
                 return false;
             }
         }
@@ -477,7 +478,7 @@ impl<'a> ListValidator<'a> {
         if self.config.mathematical_context_check {
             let rule = MathematicalContextRule::new(&self.config.mathematical_context);
             if !rule.validate(list_items) {
-                // println!("   ❌ List rejected by {}: mathematical context detected", rule.name());
+                // trace!(rule = rule.name(), "list rejected: mathematical context detected");
                 return false;
             }
         }
@@ -486,7 +487,7 @@ impl<'a> ListValidator<'a> {
         if self.config.hyphen_context_check {
             let rule = HyphenContextRule::new(&self.config.hyphen_context);
             if !rule.validate(list_items) {
-                // println!("   ❌ List rejected by {}: invalid hyphen context", rule.name());
+                // trace!(rule = rule.name(), "list rejected: invalid hyphen context");
                 return false;
             }
         }
@@ -1099,13 +1100,12 @@ impl<'a> ParseRule for ListDetectionRule<'a> {
             return Ok(elements);
         }
 
-        println!("🔍 APPLYING ENHANCED LIST DETECTION...");
-        println!("   📊 Input: {} elements", elements.len());
-        println!(
-            "   ⚙️ Config: y_tolerance={}, sequence_lookahead={}, boundary_extension={}",
-            self.config.y_tolerance,
-            self.config.sequence_lookahead_elements,
-            self.config.sequence_boundary_extension
+        debug!(
+            elements = elements.len(),
+            y_tolerance = self.config.y_tolerance,
+            sequence_lookahead = self.config.sequence_lookahead_elements,
+            boundary_extension = self.config.sequence_boundary_extension,
+            "list detection started"
         );
 
         let processed_elements = self.detect_and_group_lists(elements);
@@ -1120,11 +1120,11 @@ impl<'a> ParseRule for ListDetectionRule<'a> {
             .filter(|e| e.element_type == ParsedElementType::ListItem)
             .count();
 
-        println!(
-            "   ✅ Detected {} lists and {} list items from {} elements",
-            list_count,
-            list_item_count,
-            processed_elements.len()
+        debug!(
+            lists = list_count,
+            list_items = list_item_count,
+            elements = processed_elements.len(),
+            "list detection complete"
         );
 
         Ok(processed_elements)

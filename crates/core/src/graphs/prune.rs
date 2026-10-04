@@ -68,7 +68,7 @@ pub fn prune_sections(
     // node_type isn't part of it). Default off; never part of bgraph.
     if cfg.emit_evidence_artifact {
         if let Err(e) = emit_evidence_artifact(graph, evidence, provenance) {
-            eprintln!("⚠️  CR-71: failed to write evidence artifact: {e}");
+            tracing::warn!(error = %e, "section prune: failed to write evidence artifact");
         }
     }
 
@@ -191,7 +191,7 @@ fn emit_evidence_artifact(
     let path = format!("{dir}/{stem}.evidence.json");
     let json = serde_json::to_string_pretty(&artifact).map_err(std::io::Error::other)?;
     std::fs::write(&path, json)?;
-    println!("🧾 CR-71A: evidence artifact → {path}");
+    tracing::debug!(path = %path, "section prune evidence artifact written");
     Ok(())
 }
 

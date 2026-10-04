@@ -2,6 +2,7 @@ use super::engine::ParseRule;
 use crate::config::ParsingConfig;
 use crate::types::*;
 use anyhow::Result;
+use tracing::{debug, trace};
 
 // ValidationRule - structural validation and consistency checks
 pub struct ValidationRule<'a> {
@@ -57,17 +58,11 @@ impl<'a> ValidationRule<'a> {
 
 impl<'a> ParseRule for ValidationRule<'a> {
     fn apply(&self, elements: Vec<ParsedPdfElement>) -> Result<Vec<ParsedPdfElement>> {
-        println!("🔍 APPLYING STRUCTURAL VALIDATION...");
-        println!(
-            "   🔍 Validating {} elements for structural consistency",
-            elements.len()
-        );
-
         // Perform validation checks and generate report
         let validation_report = self.validate_structure(&elements);
 
-        // Print validation results
-        self.print_validation_report(&validation_report);
+        // Report the results (CR-102: one debug summary, per-issue detail at trace)
+        self.log_validation_report(&validation_report);
 
         // For now, return elements unchanged (pure validation)
         // In the future, we could optionally fix some issues if needed
@@ -259,78 +254,82 @@ impl<'a> ValidationRule<'a> {
         }
     }
 
-    /// Print validation report to console
-    fn print_validation_report(&self, report: &ValidationReport) {
-        println!("   📊 Validation Report:");
-        println!("      📈 Quality Score: {:.2}/1.00", report.quality_score);
-        println!("      🔍 Issues Found: {}", report.issues.len());
+    /// Log the validation report: one `debug` summary (quality score and
+    /// issue count), then one `trace` event per issue.
+    fn log_validation_report(&self, report: &ValidationReport) {
+        debug!(
+            elements = report.total_elements,
+            quality_score = %format_args!("{:.2}", report.quality_score),
+            issues = report.issues.len(),
+            "structural validation complete"
+        );
 
-        if report.issues.is_empty() {
-            println!("      ✅ No structural issues detected!");
-        } else {
-            println!("      ⚠️  Issues detected:");
-            for issue in &report.issues {
-                match issue {
-                    ValidationIssue::HierarchyJump {
+        for issue in &report.issues {
+            match issue {
+                ValidationIssue::HierarchyJump {
+                    from_level,
+                    to_level,
+                    from_pos,
+                    to_pos,
+                } => {
+                    trace!(
                         from_level,
                         to_level,
                         from_pos,
                         to_pos,
-                    } => {
-                        println!(
-                            "         📊 Hierarchy jump: Level {} → {} (positions {}-{})",
-                            from_level, to_level, from_pos, to_pos
-                        );
-                    }
-                    ValidationIssue::OrphanedElement {
+                        "validation: hierarchy jump"
+                    );
+                }
+                ValidationIssue::OrphanedElement {
+                    level,
+                    position,
+                    text_preview,
+                } => {
+                    trace!(
                         level,
                         position,
-                        text_preview,
-                    } => {
-                        println!(
-                            "         🏝️  Orphaned element: Level {} at position {} (\"{}\")",
-                            level, position, text_preview
-                        );
-                    }
-                    ValidationIssue::SuspiciousSection {
+                        "validation: orphaned element \"{text_preview}\""
+                    );
+                }
+                ValidationIssue::SuspiciousSection {
+                    position,
+                    text,
+                    reason,
+                } => {
+                    trace!(
                         position,
-                        text,
-                        reason,
-                    } => {
-                        println!(
-                            "         🤔 Suspicious section at {}: \"{}\" ({})",
-                            position, text, reason
-                        );
-                    }
-                    ValidationIssue::ReadingOrderInconsistency {
+                        reason = %reason,
+                        "validation: suspicious section \"{text}\""
+                    );
+                }
+                ValidationIssue::ReadingOrderInconsistency {
+                    position,
+                    expected_order,
+                    actual_order,
+                } => {
+                    trace!(
                         position,
                         expected_order,
                         actual_order,
-                    } => {
-                        println!(
-                            "         📖 Reading order issue at {}: expected ~{}, got {}",
-                            position, expected_order, actual_order
-                        );
-                    }
-                    ValidationIssue::PageInconsistency {
+                        "validation: reading order issue"
+                    );
+                }
+                ValidationIssue::PageInconsistency {
+                    position,
+                    page,
+                    issue,
+                } => {
+                    trace!(position, page, issue = %issue, "validation: page issue");
+                }
+                ValidationIssue::InvalidPosition {
+                    position,
+                    coordinates,
+                } => {
+                    trace!(
                         position,
-                        page,
-                        issue,
-                    } => {
-                        println!(
-                            "         📄 Page issue at {} (page {}): {}",
-                            position, page, issue
-                        );
-                    }
-                    ValidationIssue::InvalidPosition {
-                        position,
-                        coordinates,
-                    } => {
-                        println!(
-                            "         📍 Invalid coordinates at {}: {}",
-                            position, coordinates
-                        );
-                    }
+                        coordinates = %coordinates,
+                        "validation: invalid coordinates"
+                    );
                 }
             }
         }

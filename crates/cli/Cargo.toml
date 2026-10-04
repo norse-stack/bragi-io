@@ -38,6 +38,11 @@ tar = "0.4"             # tar extraction
 zip = "0.6"             # Windows zip extraction  
 dirs = "5.0"            # Cross-platform data directories
 
+# Diagnostics: a tracing subscriber renders the CLI's progress lines and the
+# core library's events on stderr; results go to files or stdout (CR-102).
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
 # Core processing library - default to JNI backend
 bragi-io-core = { version = "0.7.0", path = "../core", package = "bragi-io-core", default-features = false }
 

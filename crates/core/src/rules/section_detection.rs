@@ -4,6 +4,7 @@ use crate::config::{ParsingConfig, SectionAndHierarchyConfig};
 use crate::types::*;
 use crate::types::{PdfTextElement, StyleData};
 use anyhow::Result;
+use tracing::debug;
 
 // SectionAndHierarchyDetectionRule - detects sections and assigns contextual hierarchy levels to all elements
 pub struct SectionAndHierarchyDetectionRule<'a> {
@@ -37,11 +38,9 @@ impl<'a> SectionAndHierarchyDetectionRule<'a> {
 
 impl<'a> ParseRule for SectionAndHierarchyDetectionRule<'a> {
     fn apply(&self, elements: Vec<ParsedPdfElement>) -> Result<Vec<ParsedPdfElement>> {
-        println!("📝 Applying section detection and contextual hierarchy assignment to {} existing elements...", elements.len());
-
         // If no elements provided, create initial elements from text_elements
         let input_elements = if elements.is_empty() {
-            println!("   📋 No input elements, creating initial elements from TextElements");
+            debug!("section detection: no input elements, bootstrapping from text elements");
             self.text_elements
                 .iter()
                 .enumerate()
@@ -105,8 +104,11 @@ impl<'a> ParseRule for SectionAndHierarchyDetectionRule<'a> {
             .iter()
             .filter(|e| e.element_type == ParsedElementType::Section)
             .count();
-        println!("   ✅ Detected {} sections and assigned contextual hierarchy levels to all {} elements",
-                sections_detected, processed_elements.len());
+        debug!(
+            sections = sections_detected,
+            elements = processed_elements.len(),
+            "section detection complete"
+        );
         Ok(processed_elements)
     }
 

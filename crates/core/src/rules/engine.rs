@@ -3,6 +3,7 @@ use crate::config::{ConfigManager, ParsingConfig};
 use crate::types::*;
 use anyhow::Result;
 use regex::Regex;
+use tracing::{debug, trace, warn};
 
 // Import rule types (only active rules)
 use super::node_type_clustering::NodeTypeClusteringRule;
@@ -66,10 +67,10 @@ pub fn debug_pipeline_elements(
         .collect();
 
     if !matching_elements.is_empty() {
-        println!(
-            "🔍 [{}] {} matching elements:",
-            rule_name,
-            matching_elements.len()
+        debug!(
+            rule = rule_name,
+            matches = matching_elements.len(),
+            "pipeline debug: elements matching filter"
         );
         for (index, element) in matching_elements {
             let text_preview = if element.text.len() > 50 {
@@ -77,16 +78,15 @@ pub fn debug_pipeline_elements(
             } else {
                 element.text.clone()
             };
-            println!(
-                "  Element {}: \"{}\" ({:?}, depth: {}, text_order: {})",
+            debug!(
+                rule = rule_name,
                 index,
-                text_preview,
-                element.element_type,
-                element.hierarchy_level,
-                element.position
+                element_type = ?element.element_type,
+                depth = element.hierarchy_level,
+                text_order = element.position,
+                "pipeline debug: \"{text_preview}\""
             );
         }
-        println!();
     }
 }
 
@@ -118,9 +118,8 @@ impl RuleEngine {
     }
 
     pub fn load_custom_config(&mut self, config_path: &str) -> Result<()> {
-        println!("📁 Loading custom config from: {config_path}");
         self.config_manager.load_config_from_file(config_path)?;
-        println!("✅ Custom config loaded successfully");
+        debug!(config_path, "custom config loaded");
         Ok(())
     }
 
@@ -140,51 +139,44 @@ impl RuleEngine {
         font_size_analysis: &FontSizeAnalysis,
         style_data: &StyleData,
     ) -> Result<Vec<ParsedPdfElement>> {
-        // Create a minimal StyleData from the text elements for backward compatibility
-        println!(
-            "⚙️  Applying enhanced parsing rules with SEQUENTIAL PIPELINE for: {:?}",
-            classification.document_type
-        );
-        println!("📊 Available text elements: {}", text_elements.len());
-
         // Get the appropriate config for this document type
         let config = self
             .config_manager
             .get_config(&classification.document_type);
-        println!(
-            "📝 Using config thresholds: large={:.1}%, medium={:.1}%, small={:.1}%",
-            config.section_and_hierarchy.large_header_threshold * 100.0,
-            config.section_and_hierarchy.medium_header_threshold * 100.0,
-            config.section_and_hierarchy.small_header_threshold * 100.0
+        debug!(
+            document_type = ?classification.document_type,
+            text_elements = text_elements.len(),
+            large_header_threshold = config.section_and_hierarchy.large_header_threshold,
+            medium_header_threshold = config.section_and_hierarchy.medium_header_threshold,
+            small_header_threshold = config.section_and_hierarchy.small_header_threshold,
+            "rule pipeline started"
         );
 
         // STEP 1: Always do base conversion first (TextElement → ParsedElement)
-        println!("🔧 Applying BaseConversion...");
         // Use enhanced conversion pipeline for rich semantic data
         let mut elements = self.convert_text_elements_to_parsed(text_elements);
         debug_pipeline_elements("BaseConversion", &elements, &self.debug_config);
-        println!("   ✅ {} elements after BaseConversion", elements.len());
 
         // STEP 2: Check for minimal parse bypass (CLI override takes precedence)
         let minimal_parse = self.minimal_parse_override.unwrap_or(config.minimal_parse);
         if minimal_parse {
-            println!("⚡ Minimal parse mode enabled - bypassing all rule processing");
+            debug!(
+                elements = elements.len(),
+                "minimal parse: rule processing skipped"
+            );
             return Ok(elements);
         }
 
         // STEP 3: Apply rules in sequence based on config
-        println!("🔗 Executing config-driven rule pipeline...");
-
         // Clear previous timings
         self.rule_timings.borrow_mut().clear();
 
         for rule_config in &config.pipeline.rules {
             if !rule_config.enabled {
-                println!("   ⏭️  Skipping disabled rule: {}", rule_config.name);
+                debug!(rule = rule_config.name.as_str(), "rule disabled, skipped");
                 continue;
             }
 
-            println!("🔧 Applying rule: {}", rule_config.name);
             elements = self.apply_rule_by_name(
                 &rule_config.name,
                 elements,
@@ -194,11 +186,6 @@ impl RuleEngine {
                 font_size_analysis,
                 style_data,
             )?;
-            println!(
-                "   ✅ {} elements after {}",
-                elements.len(),
-                rule_config.name
-            );
         }
 
         Ok(elements)
@@ -214,23 +201,25 @@ impl RuleEngine {
         style_data: &StyleData,
         config: &ParsingConfig,
     ) -> Result<Vec<ParsedPdfElement>> {
-        println!(
-            "⚙️  Applying rules with config flow for: {:?}",
-            classification.document_type
+        let pipeline_start = std::time::Instant::now();
+        debug!(
+            document_type = ?classification.document_type,
+            text_elements = text_elements.len(),
+            "rule pipeline started"
         );
-        println!("📊 Available text elements: {}", text_elements.len());
 
         // Convert text elements to parsed elements as starting point
         let mut elements = self.convert_text_elements_to_parsed(text_elements);
+        let elements_in = elements.len();
+        let mut rules_applied = 0usize;
 
         // Apply each enabled rule from the config
         for rule_config in &config.pipeline.rules {
             if !rule_config.enabled {
-                println!("   ⏭️ Skipping disabled rule: {}", rule_config.name);
+                debug!(rule = rule_config.name.as_str(), "rule disabled, skipped");
                 continue;
             }
 
-            println!("   🔄 Applying rule: {}", rule_config.name);
             elements = self.apply_rule_by_name(
                 &rule_config.name,
                 elements,
@@ -240,12 +229,16 @@ impl RuleEngine {
                 font_size_analysis,
                 style_data,
             )?;
-            println!(
-                "   ✅ {} elements after {}",
-                elements.len(),
-                rule_config.name
-            );
+            rules_applied += 1;
         }
+
+        debug!(
+            rules = rules_applied,
+            elements_in,
+            elements_out = elements.len(),
+            duration_ms = pipeline_start.elapsed().as_millis() as u64,
+            "rule pipeline complete"
+        );
 
         Ok(elements)
     }
@@ -266,7 +259,6 @@ impl RuleEngine {
             "NodeTypeClustering" | "ParagraphClustering" => {
                 // Accept the legacy "ParagraphClustering" pipeline name for
                 // backward compatibility with older config.yaml files.
-                println!("🧩 APPLYING NODE TYPE CLUSTERING...");
                 let rule = NodeTypeClusteringRule::new(
                     self,
                     text_elements,
@@ -280,21 +272,18 @@ impl RuleEngine {
                 Ok(result)
             }
             "SpatialClustering" => {
-                println!("🧩 APPLYING SPATIAL CLUSTERING...");
                 let spatial_rule = SpatialClusteringRule::new(config);
                 let result = spatial_rule.apply(elements)?;
                 debug_pipeline_elements("SpatialClustering", &result, &self.debug_config);
                 Ok(result)
             }
             "Validation" => {
-                println!("🔍 APPLYING VALIDATION...");
                 let validation_rule = ValidationRule::new(config);
                 let result = validation_rule.apply(elements)?;
                 debug_pipeline_elements("Validation", &result, &self.debug_config);
                 Ok(result)
             }
             "SectionDetection" => {
-                println!("📝 DETECTING SECTIONS AND ASSIGNING HIERARCHY...");
                 let section_rule = SectionAndHierarchyDetectionRule::new(
                     self,
                     text_elements,
@@ -308,7 +297,6 @@ impl RuleEngine {
                 Ok(result)
             }
             "TableDetection" => {
-                println!("📊 DETECTING TABLES (CR-79 Tier 1 — RegionSignature tag)...");
                 let rule = TableDetectionRule::new(
                     self,
                     text_elements,
@@ -322,7 +310,6 @@ impl RuleEngine {
                 Ok(result)
             }
             "SectionDetectionV2" => {
-                println!("📝 DETECTING SECTIONS (V2 — candidate-then-refine)...");
                 let rule = SectionDetectionV2Rule::new(
                     self,
                     text_elements,
@@ -335,37 +322,29 @@ impl RuleEngine {
                 debug_pipeline_elements("SectionDetectionV2", &result, &self.debug_config);
                 Ok(result)
             }
-            "PatternBasedSectionDetection" => {
-                println!("🔍 PATTERN-BASED SECTION DETECTION (DISABLED - WILL BE REWRITTEN)");
-                println!(
-                    "   ⏭️  Passing through {} elements unchanged",
-                    elements.len()
-                );
-                Ok(elements)
-            }
-            "ListDetection" => {
-                println!("📝 LIST DETECTION (DISABLED - WILL BE REWRITTEN)");
-                println!(
-                    "   ⏭️  Passing through {} elements unchanged",
-                    elements.len()
-                );
-                Ok(elements)
-            }
-            "SizeEnforcer" => {
-                println!("🔪 SIZE ENFORCEMENT (DISABLED - WILL BE REWRITTEN)");
-                println!(
-                    "   ⏭️  Passing through {} elements unchanged",
-                    elements.len()
+            // Not implemented yet: elements pass through unchanged.
+            "PatternBasedSectionDetection" | "ListDetection" | "SizeEnforcer" => {
+                debug!(
+                    rule = rule_name,
+                    "rule not implemented, elements passed through"
                 );
                 Ok(elements)
             }
             _ => {
-                println!("⚠️  Unknown rule: {rule_name}. Skipping...");
+                warn!(rule = rule_name, "unknown rule in pipeline config, skipped");
                 Ok(elements)
             }
         };
 
         let rule_duration = rule_start.elapsed();
+        if let Ok(out) = &result {
+            debug!(
+                rule = rule_name,
+                elements = out.len(),
+                duration_ms = rule_duration.as_millis() as u64,
+                "rule applied"
+            );
+        }
         self.rule_timings
             .borrow_mut()
             .push((rule_name.to_string(), rule_duration));
@@ -483,27 +462,23 @@ impl RuleEngine {
         // STEP 9: Determine body text size (most semantic)
         let body_text_size = most_common_size; // The most frequently used size is body text
 
-        println!("🎯 Semantic Font Analysis Results:");
-        println!(
-            "   📊 {} unique classes, {} total elements",
-            class_usage_counts.len(),
-            total_elements
+        debug!(
+            font_classes = class_usage_counts.len(),
+            elements = total_elements,
+            min_pt = min_size,
+            max_pt = max_size,
+            median_pt = median_size,
+            body_pt = body_text_size,
+            body_elements = max_frequency,
+            body_share = %format_args!("{size_usage_ratio:.3}"),
+            "font analysis complete"
         );
-        println!(
-            "   📏 Size range: {:.1}pt - {:.1}pt (median: {:.1}pt)",
-            min_size, max_size, median_size
+        trace!(
+            potential_headers = ?potential_header_sizes,
+            hierarchy_levels = ?hierarchy_levels,
+            rare_large_sizes = ?rare_large_sizes,
+            "font analysis size ladders"
         );
-        println!(
-            "   📝 Body text: {:.1}pt ({} elements, {:.1}% usage)",
-            body_text_size,
-            max_frequency,
-            size_usage_ratio * 100.0
-        );
-        println!("   🎯 Potential headers: {:?}", potential_header_sizes);
-        println!("   📚 Hierarchy levels: {:?}", hierarchy_levels);
-        if !rare_large_sizes.is_empty() {
-            println!("   ⭐ Rare large sizes: {:?}", rare_large_sizes);
-        }
 
         FontSizeAnalysis {
             median_size,

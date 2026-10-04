@@ -5,8 +5,9 @@
 
 use anyhow::{anyhow, Context, Result};
 use std::fs::{self, File};
-use std::io::{self, BufReader, Read, Write};
+use std::io::{BufReader, Read, Write};
 use std::path::{Path, PathBuf};
+use tracing::{debug, info};
 
 /// JRE version to download (LTS version for stability)
 const JRE_VERSION: &str = "21";
@@ -108,7 +109,7 @@ impl JreManager {
 
         let jar_path = data_dir.join(TIKA_JAR_FILENAME);
 
-        println!("📦 Tika JAR not found, downloading (~4.5 MB)...");
+        info!("Tika JAR not found, downloading (~4.5 MB)");
 
         // Download to a temp file first, then rename for atomicity
         let temp_path = data_dir.join("blazing-tika-jni.jar.tmp");
@@ -123,7 +124,7 @@ impl JreManager {
         fs::rename(&temp_path, &jar_path)
             .with_context(|| "Failed to move downloaded JAR to final location")?;
 
-        println!("✅ Tika JAR installed at: {}", jar_path.display());
+        info!("Tika JAR installed at {}", jar_path.display());
         Ok(jar_path)
     }
 
@@ -145,14 +146,11 @@ impl JreManager {
         let jre_path = self.jre_path();
 
         if self.is_jre_installed() {
-            println!("✅ JRE found at: {}", jre_path.display());
+            debug!(jre = %jre_path.display(), "using installed JRE");
             return Ok(jre_path);
         }
 
-        println!(
-            "📦 JRE not found, downloading Eclipse Temurin {}...",
-            JRE_VERSION
-        );
+        info!("JRE not found, downloading Eclipse Temurin {JRE_VERSION}");
         self.download_and_install_jre()?;
 
         Ok(jre_path)
@@ -170,18 +168,16 @@ impl JreManager {
 
         // Detect platform
         let platform = Platform::detect()?;
-        println!("   Platform: {}-{}", platform.os, platform.arch);
-
         // Build download URL
         let url = platform.adoptium_url(JRE_VERSION);
-        println!("   URL: {}", url);
+        debug!(os = %platform.os, arch = %platform.arch, url = %url, "JRE download");
 
         // Download to temp file
         let temp_path = self.data_dir.join("jre_download.tmp");
         self.download_file(&url, &temp_path)?;
 
         // Extract archive
-        println!("📂 Extracting JRE...");
+        info!("Extracting JRE");
         let jre_path = self.jre_path();
 
         // Remove existing JRE directory if it exists (partial install)
@@ -197,7 +193,7 @@ impl JreManager {
 
         // Verify installation
         if self.is_jre_installed() {
-            println!("✅ JRE installed successfully at: {}", jre_path.display());
+            info!("JRE installed at {}", jre_path.display());
             Ok(())
         } else {
             Err(anyhow!(
@@ -233,25 +229,21 @@ impl JreManager {
             file.write_all(&buffer[..bytes_read])?;
             downloaded += bytes_read as u64;
 
-            // Print progress every 10%
+            // One progress line per 25%.
             if let Some(total) = total_size {
                 let progress = ((downloaded * 100) / total) as usize;
-                if progress >= last_progress + 10 {
-                    print!(
-                        "\r   Downloading: {}% ({:.1} MB)",
+                if progress >= last_progress + 25 {
+                    info!(
+                        "Downloading: {}% ({:.1} MB)",
                         progress,
                         downloaded as f64 / 1_000_000.0
                     );
-                    io::stdout().flush()?;
                     last_progress = progress;
                 }
             }
         }
 
-        if total_size.is_some() {
-            println!("\r   Downloading: 100%                    ");
-        }
-
+        debug!(bytes = downloaded, "download complete");
         Ok(())
     }
 

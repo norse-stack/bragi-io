@@ -23,6 +23,7 @@ use crate::config::{
 use crate::preprocessors::pdf::xhtml_parser::normalize_for_match;
 use crate::types::{BoundingBox, DocumentGraph, DocumentNode, NodeId, ParseProvenance};
 use std::collections::{HashMap, HashSet, VecDeque};
+use tracing::{debug, info};
 
 /// Per-node record of a depth invariant violation.
 #[derive(Debug, Clone)]
@@ -217,8 +218,9 @@ pub fn apply(
             }
         }
         if demoted > 0 {
-            eprintln!(
-                "🎚️  CR-78 min_confidence={min_conf}: demoted {demoted} low-confidence sections"
+            debug!(
+                min_confidence = min_conf,
+                demoted, "low-confidence sections demoted to Paragraph"
             );
         }
     }
@@ -240,65 +242,41 @@ pub fn apply(
         } else {
             sp_summary.bad_fonts.join(",")
         };
-        println!(
-            "🧾 CR-71 SectionPrune: {} flagged, {} pruned{}, main_font={}, bad_fonts={}",
-            sp_summary.flagged,
-            sp_summary.pruned,
-            if sp_summary.prune_on_detection {
-                ""
-            } else {
-                " (observe-only)"
-            },
-            sp_summary.main_font.as_deref().unwrap_or("?"),
-            bad,
+        debug!(
+            flagged = sp_summary.flagged,
+            pruned = sp_summary.pruned,
+            observe_only = !sp_summary.prune_on_detection,
+            main_font = sp_summary.main_font.as_deref().unwrap_or("?"),
+            bad_fonts = %bad,
+            "section prune complete"
         );
     }
 
-    if !report.is_clean() {
-        let rebalance_summary = report
-            .topology_rebalance
-            .as_ref()
-            .map(|r| {
-                format!(
-                    ", topology rebalance: {} re-parented, {} depths changed, {} spurious levels collapsed, {} restart-nested{}",
-                    r.reparented,
-                    r.depths_changed,
-                    r.spurious_levels_collapsed,
-                    r.restart_nested,
-                    if r.corrected { " (applied)" } else { "" },
-                )
-            })
-            .unwrap_or_default();
-        println!(
-            "🩺 GraphSanity: {} depth violations{}, {} orphan nodes, {} section-height violations{}, {} section-overlap violations{}, {} section-overlap-count violations{}{}",
-            report.depth_violations.len(),
-            if dc.correct && !report.depth_violations.is_empty() {
-                " (corrected)"
-            } else {
-                ""
-            },
-            report.orphan_nodes.len(),
-            report.section_height_violations.len(),
-            if sh.correct && !report.section_height_violations.is_empty() {
-                " (demoted to Paragraph)"
-            } else {
-                ""
-            },
-            report.section_overlap_violations.len(),
-            if so.correct && !report.section_overlap_violations.is_empty() {
-                " (demoted to Paragraph)"
-            } else {
-                ""
-            },
-            report.section_overlap_count_violations.len(),
-            if soc.correct && !report.section_overlap_count_violations.is_empty() {
-                " (demoted to Paragraph)"
-            } else {
-                ""
-            },
-            rebalance_summary,
-        );
-    }
+    // One info event per graph with the sanity outcome (violation counts);
+    // the debug event after it says which invariants corrected rather than
+    // only reported.
+    let rebalance = report.topology_rebalance.as_ref();
+    info!(
+        clean = report.is_clean(),
+        depth_violations = report.depth_violations.len(),
+        orphan_nodes = report.orphan_nodes.len(),
+        section_height_violations = report.section_height_violations.len(),
+        section_overlap_violations = report.section_overlap_violations.len(),
+        section_overlap_count_violations = report.section_overlap_count_violations.len(),
+        reparented = rebalance.map_or(0, |r| r.reparented),
+        depths_changed = rebalance.map_or(0, |r| r.depths_changed),
+        "graph sanity complete"
+    );
+    debug!(
+        depth_corrected = dc.correct,
+        section_height_corrected = sh.correct,
+        section_overlap_corrected = so.correct,
+        section_overlap_count_corrected = soc.correct,
+        rebalance_applied = rebalance.is_some_and(|r| r.corrected),
+        spurious_levels_collapsed = rebalance.map_or(0, |r| r.spurious_levels_collapsed),
+        restart_nested = rebalance.map_or(0, |r| r.restart_nested),
+        "graph sanity detail"
+    );
 
     report
 }

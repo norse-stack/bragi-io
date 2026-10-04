@@ -1,6 +1,7 @@
 use crate::config::ParsingConfig;
 use anyhow::Result;
 use regex::Regex;
+use tracing::{debug, trace};
 
 use super::engine::{ParseRule, ParsedElement, ParsedElementType};
 
@@ -25,15 +26,14 @@ impl<'a> PatternBasedSectionDetectionRule<'a> {
 impl<'a> ParseRule for PatternBasedSectionDetectionRule<'a> {
     fn apply(&self, elements: Vec<ParsedElement>) -> Result<Vec<ParsedElement>> {
         if !self.config.section_and_hierarchy.pattern_detection.enabled {
-            println!("   ⏭️  Pattern detection disabled, skipping");
+            debug!("pattern detection disabled, skipped");
             return Ok(elements);
         }
 
-        println!("🔍 APPLYING PATTERN-BASED SECTION DETECTION...");
-        println!(
-            "   📝 Checking {} patterns against {} elements",
-            self.patterns.len(),
-            elements.len()
+        debug!(
+            patterns = self.patterns.len(),
+            elements = elements.len(),
+            "pattern-based section detection started"
         );
 
         let mut promoted_count = 0;
@@ -43,8 +43,8 @@ impl<'a> ParseRule for PatternBasedSectionDetectionRule<'a> {
             if element.element_type == ParsedElementType::Paragraph
                 && self.should_be_section(&element)
             {
-                println!(
-                    "   🔼 Pattern matched: '{}' -> Section",
+                trace!(
+                    "pattern matched, promoted to section: '{}'",
                     element.text.chars().take(50).collect::<String>()
                 );
                 element.element_type = ParsedElementType::Section;
@@ -53,7 +53,10 @@ impl<'a> ParseRule for PatternBasedSectionDetectionRule<'a> {
             result_elements.push(element);
         }
 
-        println!("   ✅ Promoted {promoted_count} elements to sections based on patterns");
+        debug!(
+            promoted = promoted_count,
+            "pattern-based section detection complete"
+        );
         Ok(result_elements)
     }
 

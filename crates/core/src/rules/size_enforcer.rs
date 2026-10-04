@@ -3,6 +3,7 @@ use crate::rules::engine::{ParseRule, ParsedElement, ParsedElementType};
 use crate::types::BoundingBox;
 use anyhow::Result;
 use regex::Regex;
+use tracing::debug;
 
 pub struct SizeEnforcerRule {
     config: SizeEnforcerConfig, // Optimized: stores by value for lifetime simplicity
@@ -372,13 +373,12 @@ impl ParseRule for SizeEnforcerRule {
             return Ok(elements);
         }
 
-        println!("🔪 APPLYING SIZE ENFORCEMENT...");
-        println!(
-            "   ⚙️ Config: max_size={}, unit={}, preserve_sentences={}, recursive={}",
-            self.config.max_size,
-            self.config.size_unit,
-            self.config.preserve_sentences,
-            self.config.recursive
+        debug!(
+            max_size = self.config.max_size,
+            unit = %self.config.size_unit,
+            preserve_sentences = self.config.preserve_sentences,
+            recursive = self.config.recursive,
+            "size enforcement started"
         );
 
         let input_count = elements.len();
@@ -395,7 +395,12 @@ impl ParseRule for SizeEnforcerRule {
         };
 
         let output_count = result.len();
-        println!("   ✅ Split {oversized_count} oversized elements into {output_count} total elements ({input_count}→{output_count})");
+        debug!(
+            oversized = oversized_count,
+            elements_in = input_count,
+            elements_out = output_count,
+            "size enforcement complete"
+        );
 
         Ok(result)
     }

@@ -26,6 +26,7 @@ use crate::config::{NodeTypeMergeConfig, ParsingConfig};
 use crate::types::{BoundingBox, FontClass, ParsedElementType, ParsedPdfElement};
 use anyhow::Result;
 use std::collections::HashMap;
+use tracing::debug;
 
 // ─── Bbox helpers ─────────────────────────────────────────────────────────────
 
@@ -420,9 +421,9 @@ impl<'a> NodeTypeClusteringRule<'a> {
         // the key.
         let overflow_regions = compute_overflow_regions(&elements, |ty| self.cfg_for_type(cfg, ty));
         if !overflow_regions.is_empty() {
-            println!(
-                "   ↪️  NodeTypeClustering: {} region(s) hit paragraph-overflow threshold (CR-38 fallback active)",
-                overflow_regions.len()
+            debug!(
+                regions = overflow_regions.len(),
+                "node type clustering: paragraph-overflow fallback active"
             );
         }
 
@@ -484,13 +485,13 @@ impl<'a> NodeTypeClusteringRule<'a> {
 
         merged.sort_by_key(|el| el.reading_order);
 
-        println!(
-            "   📦 NodeTypeClustering: {} input elements, {} buckets, {} groups",
-            input_count,
-            partition_order.len(),
-            total_groups,
+        debug!(
+            elements_in = input_count,
+            buckets = partition_order.len(),
+            groups = total_groups,
+            elements_out = merged.len(),
+            "node type clustering complete"
         );
-        println!("   ✅ NodeTypeClustering: {} output elements", merged.len(),);
 
         Ok(merged)
     }

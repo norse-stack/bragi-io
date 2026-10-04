@@ -204,6 +204,8 @@ fn cli_roundtrip_markdown_to_graph_canonical_bytes_match() {
             "-f",
             "graph",
         ])
+        // The progress line is filtered by RUST_LOG; pin the default filter.
+        .env_remove("RUST_LOG")
         .output()
         .expect("CLI binary spawns");
     assert!(
@@ -214,10 +216,16 @@ fn cli_roundtrip_markdown_to_graph_canonical_bytes_match() {
         String::from_utf8_lossy(&output.stderr),
     );
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
+    // Diagnostics go to stderr (CR-102); stdout carries results only.
+    let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(
-        stdout.contains("Round-trip identity verified"),
-        "expected verified-identity log line in stdout; got:\n{stdout}"
+        stderr.contains("Round-trip identity verified"),
+        "expected verified-identity log line in stderr; got:\n{stderr}"
+    );
+    assert!(
+        output.stdout.is_empty(),
+        "parse with -o should print nothing to stdout; got:\n{}",
+        String::from_utf8_lossy(&output.stdout)
     );
 
     let original_canonical = canonical_json(&original);

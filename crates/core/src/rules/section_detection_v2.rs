@@ -52,6 +52,7 @@ use crate::types::*;
 use anyhow::Result;
 use regex::Regex;
 use std::sync::LazyLock;
+use tracing::debug;
 
 /// Sb8 — leading multi-level numbering token ("3.5.2", "4.1"): at least one dot,
 /// so single-level list markers ("1.", "2.") never match. Used by
@@ -1242,14 +1243,9 @@ impl<'a> SectionDetectionV2Rule<'a> {
 
 impl<'a> ParseRule for SectionDetectionV2Rule<'a> {
     fn apply(&self, elements: Vec<ParsedPdfElement>) -> Result<Vec<ParsedPdfElement>> {
-        println!(
-            "📝 [V2] Applying section detection V2 to {} elements...",
-            elements.len()
-        );
-
         // If no elements provided, bootstrap from text_elements (same as V1)
         let input_elements = if elements.is_empty() {
-            println!("   📋 [V2] No input elements — bootstrapping from text_elements");
+            debug!("section detection v2: no input elements, bootstrapping from text elements");
             self.text_elements
                 .iter()
                 .enumerate()
@@ -1331,10 +1327,10 @@ impl<'a> ParseRule for SectionDetectionV2Rule<'a> {
             .iter()
             .filter(|e| e.element_type == ParsedElementType::Section)
             .count();
-        println!(
-            "   ✅ [V2] Detected {} sections across {} elements",
+        debug!(
             sections,
-            out.len()
+            elements = out.len(),
+            "section detection v2 complete"
         );
         Ok(out)
     }

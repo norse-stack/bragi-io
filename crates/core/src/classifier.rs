@@ -18,8 +18,6 @@ impl DocumentClassifier {
         &self,
         _preprocessor_output: &PreprocessorOutput,
     ) -> Result<ClassificationResult> {
-        println!("🔍 Classifying document type...");
-
         // TODO: There is a large question we want to answer here.
         // Would we like the classifyer to work on the TextElement Vec
         // Or work on the markuplanuage directly? It is very possilbe that
@@ -39,7 +37,7 @@ impl DocumentClassifier {
         let doc_type = DocumentType::Generic;
         let confidence = 0.9;
 
-        println!("📋 Classified as: {doc_type:?} (confidence: {confidence:.2})");
+        tracing::debug!(document_type = ?doc_type, confidence = %format_args!("{confidence:.2}"), "document classified");
 
         Ok(ClassificationResult {
             document_type: doc_type,
