@@ -203,4 +203,6 @@ Bragi core is open, under both licenses at your option:
 - Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
 - MIT license ([LICENSE-MIT](LICENSE-MIT))
 
+The licences cover the code, not the names: see [TRADEMARKS.md](TRADEMARKS.md). For bug reports, feature requests and the current policy on pull requests, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
 An open format needs an open producer: the guarantee you build on is that you can always make and read a bgraph yourself.
