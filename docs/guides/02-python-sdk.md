@@ -138,7 +138,7 @@ children = node.get_children(bgraph)  # list[DocumentNode]
 ### Plain
 
 ```python
-section = bgraph.sections[0]
+section = next(s for s in bgraph.sections if s.content.text == "Abstract")
 print(section.render(bgraph))
 ```
 
@@ -149,9 +149,9 @@ print(section.render(bgraph, breadcrumbs=True))
 ```
 
 ```
-[From Local to Global: A GraphRAG Approach to Query-Focused Summarization > From Local to Global: A GraphRAG Approach to Query-Focused Summarization]
+[From Local to Global: A GraphRAG Approach to Query-Focused Summarization > From Local to Global: A GraphRAG Approach to Query-Focused Summarization > Abstract]
 
-...the section's text, and its descendants...
+The use of retrieval-augmented generation (RAG) to retrieve relevant informa- tion from an external knowledge source enables large language models (LLMs) to answer questions over private and/or previously unseen document collections. ...
 ```
 
 ### With node types
@@ -161,11 +161,9 @@ print(section.render(bgraph, node_types=True))
 ```
 
 ```
-[Section] From Local to Global: A GraphRAG Approach to Query-Focused Summarization
+[Section] Abstract
 
-[Section] Darren Edge 1† Ha Trinh 1† Newman Cheng 2 Joshua Bradley 2 Alex Chao 3
-
-...
+[Paragraph] The use of retrieval-augmented generation (RAG) to retrieve relevant informa- tion from an external knowledge source enables large language models (LLMs) to answer questions over private and/or previously unseen document collections. ...
 ```
 
 ### Full document
