@@ -1,0 +1,13 @@
+# Sources of the sample documents
+
+These documents are test fixtures and samples. Each third-party PDF is redistributed unmodified. Each document stays under the terms of its source; only the report in the last row is covered by this repository's MIT or Apache-2.0 licences.
+
+| File | Document | Source | Basis for redistribution |
+|------|----------|--------|--------------------------|
+| `pdfs/rfc-quic.pdf` | RFC 9000, *QUIC: A UDP-Based Multiplexed and Secure Transport* (Iyengar, Thomson, 2021) | <https://www.rfc-editor.org/rfc/rfc9000> | IETF Trust Legal Provisions: an RFC may be copied and distributed in full, unmodified. |
+| `pdfs/elements_of_euclid.pdf` | *The First Six Books of the Elements of Euclid* (John Casey), Project Gutenberg eBook #21076 | <https://www.gutenberg.org/ebooks/21076> | Public domain in the United States; distributed under the Project Gutenberg License included in the file. |
+| `golden/1.0.0/graphrag/graphrag.pdf`, `sample_pdfs/graphrag-local-to-global.pdf` (the same file) | *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge, Trinh, Cheng, Bradley, Chao, Mody, Truitt, Metropolitansky, Ness, Larson; Microsoft), arXiv:2404.16130v2 | <https://arxiv.org/abs/2404.16130> | CC BY 4.0, as stated on the arXiv abstract page. It is also the source of the OCR fixture `golden/1.0.0/demo-ocr/source.json`, a Mistral OCR transcript of this PDF, and of the parse outputs frozen beside it. |
+| `sample_rust_book_ownership.md` (not in this repository; a sample document at <https://bragi-io.com/app/>) | *The Rust Programming Language*, chapter 4.1, "What Is Ownership?" (Steve Klabnik, Carol Nichols, with contributions from the Rust community) | <https://doc.rust-lang.org/book/ch04-01-what-is-ownership.html> | MIT or Apache-2.0, the book's own licences. Changed: the chapter is rendered as one Markdown file, with its code listings inlined, its figures omitted and their captions kept, its boxed aside made a plain section and its underscore emphasis written with asterisks. A source line at the foot of the file says so. |
+| `sample_skidbladnir_risk_assessment.docx` (not in this repository; a sample document at <https://bragi-io.com/app/>) | *Knowledge Base Modernisation: Risk Assessment and Rollout Plan, FY2026*, by the fictional Skidbladnir Logistics AB | written for this project | Our own work. The company and the report are fictional. It is covered by this repository's MIT or Apache-2.0 licences. |
+
+Paths in the first column are relative to `crates/core/test_fixtures/`, except `sample_pdfs/` (at the repository root) and the two files that are not in this repository.

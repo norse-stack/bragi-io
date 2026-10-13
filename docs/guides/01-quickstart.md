@@ -60,7 +60,7 @@ import bragi
 
 bgraph = bragi.parse_pdf("document.pdf")
 
-print(bgraph)                # <BragiGraph: 179 nodes, schema v1.2.0>
+print(bgraph)                # <BragiGraph: 368 nodes, schema v1.2.0>
 print(len(bgraph.sections))
 
 for section in bgraph.sections:
@@ -73,14 +73,14 @@ The CLI's default output and the SDK's graph are the same `bgraph.json`.
 
 ## Understand the output
 
-Everything below is one parse of the canonical example — *Attention Is All You Need* — with the default config. That graph is **179 nodes**: 1 document root, 30 sections, 147 paragraphs, 1 margin (10,012 tokens, tree depth 5).
+Everything below is one parse of the canonical example — *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge et al., Microsoft, arXiv:2404.16130, CC BY 4.0) — with the default config. That graph is **368 nodes**: 1 document root, 54 sections, 312 paragraphs, 1 margin (21,601 tokens, tree depth 5).
 
 ### The graph
 
 ```json
 {
   "schema_version": "1.2.0",
-  "bgraph_sha256": "f6d2fcf0d4b647b973d83197aefc3f7c8dd948ef7f259bb3eda2a7a8b2470299",
+  "bgraph_sha256": "8ec7010f61d6e3aab72b4d6722c028f7a09f0dbc66c1b77941b8789c150e4b9e",
   "parse_provenance": { "bragi_version": "0.7.2", "source_format": "pdf", "...": "..." },
   "nodes": [ ... ],
   "document_info": { ... },
@@ -103,23 +103,23 @@ The tree's root is a `Document` node; its descendants are `Section` and `Paragra
 
 ```json
 {
-  "id": "7962788f-d2e7-50bc-8359-c47c4b37c03d",
+  "id": "97488a75-0154-50d2-a24a-66b52e793154",
   "node_type": "Section",
   "location": {
     "semantic": {
-      "path": "2",
+      "path": "1",
       "depth": 1,
-      "breadcrumbs": ["Attention Is All You Need", "Attention Is All You Need"]
+      "breadcrumbs": ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"]
     },
     "physical": {
       "page": 1,
-      "bounding_box": { "x": 211.5, "y": 149.1, "width": 188.4, "height": 16.5 }
+      "bounding_box": { "x": 121.7, "y": 100.1, "width": 368.7, "height": 36.5 }
     }
   },
-  "content": { "text": "Attention Is All You Need" },
-  "token_count": 6,
-  "parent": "6b149bb8-87e8-5e54-8e0f-b5fae9cba8f6",
-  "children": ["ab92b870-4886-5a62-98bf-8be145f22d82", "..."]
+  "content": { "text": "From Local to Global: A GraphRAG Approach to Query-Focused Summarization" },
+  "token_count": 17,
+  "parent": "042eaee9-abb9-5230-903e-2d67ff3a2918",
+  "children": ["0696d509-1b6e-50a5-97e6-09da4e414e2a", "..."]
 }
 ```
 
@@ -130,7 +130,7 @@ Every node has a **location** with two parts:
 - **Semantic** (always present) — `path` (hierarchical position, `"2.4.1"`), `depth`, and `breadcrumbs` (a human-readable trail).
 - **Physical** (PDFs) — `page` and `bounding_box` (`x`, `y`, `width`, `height` in PDF points).
 
-This is the human-AI bridge: a person says "the title, page 1"; a machine says `path: "2", page: 1, bbox: {x: 211.5, y: 149.1}`. Both point at the same content, and the physical coordinate lets you ground an answer back on the original page (highlights, jump-to-content, overlays).
+This is the human-AI bridge: a person says "the title, page 1"; a machine says `path: "1", page: 1, bbox: {x: 121.7, y: 100.1}`. Both point at the same content, and the physical coordinate lets you ground an answer back on the original page (highlights, jump-to-content, overlays).
 
 ---
 

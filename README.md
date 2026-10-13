@@ -17,43 +17,43 @@ Two convergences meet on that one picture, and both are real:
 
 ## A real bgraph
 
-Everything below is one parse of one file — *Attention Is All You Need*, the canonical example — with the default config:
+Everything below is one parse of one file — *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge et al., Microsoft, arXiv:2404.16130, CC BY 4.0), the canonical example ([sources](crates/core/test_fixtures/pdfs/SOURCES.md)) — with the default config:
 
 ```bash
-bragi parse -i attention.pdf -o attention.bgraph.json
+bragi parse -i graphrag.pdf -o graphrag.bgraph.json
 ```
 
 ```
-Parsing PDF attention.pdf
-Graph: 179 nodes
-Wrote bgraph JSON to attention.bgraph.json
+Parsing PDF graphrag.pdf
+Graph: 368 nodes
+Wrote bgraph JSON to graphrag.bgraph.json
 ```
 
-That graph is **179 nodes**: 1 document root, 30 sections, 147 paragraphs, 1 margin — 10,012 tokens, tree depth 5. Every node looks like this (abridged):
+That graph is **368 nodes**: 1 document root, 54 sections, 312 paragraphs, 1 margin — 21,601 tokens, tree depth 5. Every node looks like this (abridged):
 
 ```json
 {
-  "id": "7962788f-d2e7-50bc-8359-c47c4b37c03d",
+  "id": "97488a75-0154-50d2-a24a-66b52e793154",
   "node_type": "Section",
   "location": {
     "semantic": {
-      "path": "2",
+      "path": "1",
       "depth": 1,
-      "breadcrumbs": ["Attention Is All You Need", "Attention Is All You Need"]
+      "breadcrumbs": ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"]
     },
     "physical": {
       "page": 1,
-      "bounding_box": { "x": 211.5, "y": 149.1, "width": 188.4, "height": 16.5 }
+      "bounding_box": { "x": 121.7, "y": 100.1, "width": 368.7, "height": 36.5 }
     }
   },
-  "content": { "text": "Attention Is All You Need" },
-  "token_count": 6,
-  "parent": "6b149bb8-87e8-5e54-8e0f-b5fae9cba8f6",
-  "children": ["ab92b870-4886-5a62-98bf-8be145f22d82", "47b86b72-a5b1-54b3-b4cc-6f24b31b6fd6", "..."]
+  "content": { "text": "From Local to Global: A GraphRAG Approach to Query-Focused Summarization" },
+  "token_count": 17,
+  "parent": "042eaee9-abb9-5230-903e-2d67ff3a2918",
+  "children": ["0696d509-1b6e-50a5-97e6-09da4e414e2a", "92daf96a-3dd4-5244-adb7-c7a0e5964037", "..."]
 }
 ```
 
-Two locations on every node — a **semantic** one (where it sits in the tree) and a **physical** one (where it sits on the page). A human says "the title, page 1"; a machine says `path: "2", page: 1, bbox: {x: 211.5, y: 149.1}`. Both point at the same content, and the physical coordinate lets you ground an answer back on the original page.
+Two locations on every node — a **semantic** one (where it sits in the tree) and a **physical** one (where it sits on the page). A human says "the title, page 1"; a machine says `path: "1", page: 1, bbox: {x: 121.7, y: 100.1}`. Both point at the same content, and the physical coordinate lets you ground an answer back on the original page.
 
 ---
 
@@ -62,8 +62,8 @@ Two locations on every node — a **semantic** one (where it sits in the tree) a
 One graph, two serializations — not two formats:
 
 ```bash
-bragi parse -i attention.pdf -o attention.bgraph.json          # bgraph.json  (default output)
-bragi parse -i attention.pdf -f bgraph-md -o attention.bgraph.md   # bgraph.md
+bragi parse -i graphrag.pdf -o graphrag.bgraph.json          # bgraph.json  (default output)
+bragi parse -i graphrag.pdf -f bgraph-md -o graphrag.bgraph.md   # bgraph.md
 ```
 
 - **`bgraph.md` is canonical.** It's Markdown — you can open it, read it, and diff it like any document. The structure rides in the syntax, with each node's metadata in a fenced block beside its text.
@@ -160,7 +160,7 @@ A small FastAPI server wraps the same binary, for parsing over HTTP:
 make serve      # http://localhost:8080
 ```
 ```bash
-curl -X POST http://localhost:8080/v1/parse/pdf --data-binary @attention.pdf
+curl -X POST http://localhost:8080/v1/parse/pdf --data-binary @graphrag.pdf
 # {"success": true, "graph": { "schema_version": "1.2.0", "nodes": [ ... ] }}
 ```
 

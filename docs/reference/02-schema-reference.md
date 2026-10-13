@@ -5,7 +5,7 @@ Complete field-by-field documentation of the Bragi output format (`bgraph.json`)
 **Schema version:** `1.2.0`
 **Source of truth:** [`types.rs`](../../crates/core/src/types.rs)
 
-All examples are from processing Claude Shannon's *A Mathematical Theory of Communication* (55 pages).
+All examples are from processing *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge et al., Microsoft, arXiv:2404.16130, CC BY 4.0) (26 pages).
 
 ---
 
@@ -16,7 +16,7 @@ The root object of the `bgraph.json` output.
 ```json
 {
   "schema_version": "1.2.0",
-  "bgraph_sha256": "f6d2fcf0…",
+  "bgraph_sha256": "8ec7010f…",
   "created_at": "1970-01-01T00:00:00Z",
   "parse_provenance": { ... },
   "nodes": [ ... ],
@@ -45,8 +45,8 @@ How the graph was produced — the inputs that determine it.
 {
   "bragi_version": "0.7.2",
   "source_format": "pdf",
-  "source_sha256": "bdfaa68d…",
-  "config_hash": "6daf2782…"
+  "source_sha256": "730f1a9f…",
+  "config_hash": "3a9f217e…"
 }
 ```
 
@@ -65,17 +65,17 @@ Every element in the `nodes` array is a `DocumentNode`.
 
 ```json
 {
-  "id": "17113498-be4b-4bb5-88dd-80978ee00266",
+  "id": "97488a75-0154-50d2-a24a-66b52e793154",
   "node_type": "Section",
   "location": {
-    "semantic": { "path": "2", "depth": 1, "breadcrumbs": ["shannon1948.dvi", "A Mathematical Theory of Communication"] },
-    "physical": { "page": 1, "bounding_box": { "x": 181.0, "y": 127.9, "width": 265.5, "height": 8.0 } }
+    "semantic": { "path": "1", "depth": 1, "breadcrumbs": ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"] },
+    "physical": { "page": 1, "bounding_box": { "x": 121.7, "y": 100.1, "width": 368.7, "height": 36.5 } }
   },
-  "text_order": 1,
-  "content": { "text": "A Mathematical Theory of Communication" },
-  "token_count": 9,
-  "parent": "f49c0604-3794-41aa-a7d3-20e4a194a7eb",
-  "children": ["d1ea207e-...", "480f520b-...", "..."]
+  "text_order": 0,
+  "content": { "text": "From Local to Global: A GraphRAG Approach to Query-Focused Summarization" },
+  "token_count": 17,
+  "parent": "042eaee9-abb9-5230-903e-2d67ff3a2918",
+  "children": ["0696d509-...", "92daf96a-...", "..."]
 }
 ```
 
@@ -145,13 +145,13 @@ Every node has a location with two components: where it sits in the document tre
 ```json
 {
   "semantic": {
-    "path": "2.3",
-    "depth": 2,
-    "breadcrumbs": ["shannon1948.dvi", "A Mathematical Theory of Communication"]
+    "path": "1.4.1",
+    "depth": 3,
+    "breadcrumbs": ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "Abstract"]
   },
   "physical": {
     "page": 1,
-    "bounding_box": { "x": 91.9, "y": 585.9, "width": 427.5, "height": 164.2 }
+    "bounding_box": { "x": 143.9, "y": 404.6, "width": 324.3, "height": 194.1 }
   }
 }
 ```
@@ -196,7 +196,7 @@ Coordinates are in PDF points (1 point = 1/72 inch). Origin is top-left of the p
 
 ```json
 {
-  "text": "The fundamental problem of communication is that of reproducing at one point either exactly or approximately a message selected at another point..."
+  "text": "The use of retrieval-augmented generation (RAG) to retrieve relevant informa- tion from an external knowledge source enables large language models (LLMs) to answer questions over private and/or previously unseen document collections..."
 }
 ```
 
@@ -215,7 +215,7 @@ Document-level metadata. Not a node in the tree — information *about* the docu
 ```json
 {
   "document_info": {
-    "root_id": "f49c0604-3794-41aa-a7d3-20e4a194a7eb",
+    "root_id": "042eaee9-abb9-5230-903e-2d67ff3a2918",
     "kind": "document",
     "document_metadata": { ... },
     "outline_data": { ... },
@@ -238,20 +238,20 @@ Universal fields sit at the top; format-specific metadata lives in a channel nam
 
 ```json
 {
-  "title": "shannon1948.dvi",
+  "title": "From Local to Global: A GraphRAG Approach to Query-Focused Summarization",
   "author": null,
   "description": null,
   "language": null,
-  "created": "1998-07-16T10:14:40Z",
+  "created": "2025-02-20T01:38:02Z",
   "pdf": {
-    "version": "1.2",
-    "producer": "Acrobat Distiller Command 3.01 for Solaris 2.3 and later (SPARC)",
-    "creator_tool": "dvipsk 5.58f Copyright 1986, 1994 Radical Eye Software",
+    "version": "1.5",
+    "producer": "pdfTeX-1.40.25",
+    "creator_tool": "LaTeX with hyperref",
     "publisher": null,
-    "page_count": 55,
+    "page_count": 26,
     "encrypted": false,
     "has_marked_content": false,
-    "modified": null,
+    "modified": "2025-02-20T01:38:02Z",
     "extras": { "pdf:hasXMP": "false", "...": "..." }
   }
 }
@@ -303,8 +303,8 @@ Statistical properties of the document graph. Deterministic — computed mechani
 {
   "structural_profile": {
     "document_type": "Generic",
-    "total_nodes": 94,
-    "total_tokens": 35647,
+    "total_nodes": 368,
+    "total_tokens": 21601,
     "token_distribution": { ... },
     "node_type_distribution": { ... },
     "depth_distribution": { ... }
@@ -327,8 +327,8 @@ Statistical properties of the document graph. Deterministic — computed mechani
 
 ```json
 {
-  "counts": { "Document": 1, "Section": 6, "Paragraph": 87 },
-  "percentages": { "Document": 1.06, "Section": 6.38, "Paragraph": 92.55 }
+  "counts": { "Document": 1, "Margin": 1, "Paragraph": 312, "Section": 54 },
+  "percentages": { "Document": 0.27, "Margin": 0.27, "Paragraph": 84.78, "Section": 14.67 }
 }
 ```
 
@@ -341,9 +341,9 @@ Statistical properties of the document graph. Deterministic — computed mechani
 
 ```json
 {
-  "max_depth": 3,
-  "depth_counts": { "0": 1, "1": 6, "2": 87 },
-  "avg_depth": 2.37
+  "max_depth": 5,
+  "depth_counts": { "0": 1, "1": 1, "2": 20, "3": 149, "4": 172, "5": 25 },
+  "avg_depth": 3.54
 }
 ```
 
@@ -362,16 +362,16 @@ Per-type and overall token count histograms. Useful for understanding chunk size
   "by_node_type": {
     "Paragraph": {
       "bins": [
-        { "range_start": 0, "range_end": 100, "count": 30, "token_sum": 1500 },
-        { "range_start": 100, "range_end": 200, "count": 25, "token_sum": 3750 },
+        { "range_start": 1, "range_end": 72, "count": 231, "token_sum": 5847 },
+        { "range_start": 72, "range_end": 143, "count": 36, "token_sum": 3733 },
         ...
       ],
-      "total_count": 87,
-      "total_tokens": 35000,
-      "mean": 402.3,
-      "median": 350.0,
-      "mode": 100,
-      "variance": 45000.0
+      "total_count": 312,
+      "total_tokens": 21232,
+      "mean": 68.05,
+      "median": 37.0,
+      "mode": 1,
+      "variance": 9595.56
     }
   },
   "overall": { ... }
@@ -411,7 +411,7 @@ The graph is a tree rooted at the `Document` node. Every node has `parent` and `
 nodes = {n["id"]: n for n in graph["nodes"]}
 
 # Get any node by ID
-node = nodes["17113498-be4b-4bb5-88dd-80978ee00266"]
+node = nodes["97488a75-0154-50d2-a24a-66b52e793154"]
 
 # Walk children
 for child_id in node["children"]:

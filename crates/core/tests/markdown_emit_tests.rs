@@ -55,9 +55,9 @@ fn load_fixture_graph(name: &str) -> (DocumentGraph, Value) {
 }
 
 #[test]
-fn emit_matches_node_counts_for_shannon_fixture() {
-    let (graph, raw) = load_fixture_graph("claude_shannon_paper");
-    let md = emit_markdown(&graph, &fixture_provenance("claude_shannon_paper"));
+fn emit_matches_node_counts_for_euclid_fixture() {
+    let (graph, raw) = load_fixture_graph("elements_of_euclid");
+    let md = emit_markdown(&graph, &fixture_provenance("elements_of_euclid"));
 
     // First line should be the document-level fence open.
     let first_line = md.lines().next().expect("non-empty output");

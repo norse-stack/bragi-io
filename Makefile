@@ -18,9 +18,9 @@ CLI_BIN     := target/release/bragi
 # ---------------------------------------------------------------------------
 # Golden freeze family (Block D — the cold-tier reconstruction anchor).
 # ---------------------------------------------------------------------------
-GOLDEN_DIR    := crates/core/test_fixtures/golden/1.0.0/attention
+GOLDEN_DIR    := crates/core/test_fixtures/golden/1.0.0/graphrag
 GOLDEN_CACHE  := crates/core/test_fixtures/snapshots
-GOLDEN_PDF    := $(GOLDEN_DIR)/attention.pdf
+GOLDEN_PDF    := $(GOLDEN_DIR)/graphrag.pdf
 GOLDEN_CONFIG := $(GOLDEN_DIR)/config.yaml
 GOLDEN_MD     := $(GOLDEN_DIR)/document.bgraph.md
 GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
@@ -28,11 +28,11 @@ GOLDEN_SHA    := $(GOLDEN_DIR)/PRODUCED_BY
 # ---------------------------------------------------------------------------
 # Canon parse — the ONE command behind every number in the public docs
 # (public-docs-generator). A DEFAULT-config parse of the canon document
-# (attention) to both serializations; the docs cite THESE numbers and show the
+# (graphrag) to both serializations; the docs cite THESE numbers and show the
 # bare command form. Env-wired to the vendored JRE+JAR so it runs without the
 # first-use auto-download. Output is scratch under target/ (gitignored).
 # ---------------------------------------------------------------------------
-CANON_PDF := $(GOLDEN_DIR)/attention.pdf
+CANON_PDF := $(GOLDEN_DIR)/graphrag.pdf
 CANON_OUT := target/canon
 
 .PHONY: build-cli build-archive parse-canon serve golden-generate golden-generate-docs golden-generate-all golden-test jvm-smoke docs-check golden-bless test test-server sync-python-fixture test-python build-python publish-python hooks bump-version version-check
@@ -59,13 +59,13 @@ hooks: ## Enable the repo's secret-scanning git hooks (see .githooks/README.md)
 build-cli: ## Build the JNI CLI (release) — needed to run a fresh Tika parse
 	cargo build --release -p bragi-io
 
-parse-canon: build-cli ## Parse the canon doc (attention) → json + bgraph.md — the docs' number source
+parse-canon: build-cli ## Parse the canon doc (graphrag) → json + bgraph.md — the docs' number source
 	@mkdir -p $(CANON_OUT)
 	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
-	  ./$(CLI_BIN) parse -i $(CANON_PDF) -o $(CANON_OUT)/attention.json
+	  ./$(CLI_BIN) parse -i $(CANON_PDF) -o $(CANON_OUT)/graphrag.json
 	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
-	  ./$(CLI_BIN) parse -i $(CANON_PDF) -f bgraph-md -o $(CANON_OUT)/attention.bgraph.md
-	@echo "✅ canon → $(CANON_OUT)/attention.json + attention.bgraph.md"
+	  ./$(CLI_BIN) parse -i $(CANON_PDF) -f bgraph-md -o $(CANON_OUT)/graphrag.bgraph.md
+	@echo "✅ canon → $(CANON_OUT)/graphrag.json + graphrag.bgraph.md"
 	@ls -la $(CANON_OUT)
 
 ## build-archive: build the release CLI for one target triple and package the
@@ -172,9 +172,9 @@ serve: build-cli ## Run the self-hosted parse API at http://localhost:8080 (GET 
 	    uvicorn main:app --app-dir py/server --host 0.0.0.0 --port 8080
 
 ## golden-bless: re-freeze the ENTIRE golden family in-place, JVM-free — every
-## channel's `document.bgraph.md` AND `document.bgraph.json`, plus the attention
+## channel's `document.bgraph.md` AND `document.bgraph.json`, plus the graphrag
 ## `PRODUCED_BY` + materialized `config.yaml`. Replays the committed C2 cache
-## (attention) and re-parses the light sources (demo-md/docx); no Tika. Use
+## (graphrag) and re-parses the light sources (demo-md/docx); no Tika. Use
 ## after an INTENDED output change (a version bump or a deliberate schema move),
 ## then `make golden-test` must be green and the `git diff` must be only what you
 ## expect. If the PIPELINE changed (not just the version), run a fresh Tika parse
@@ -222,7 +222,7 @@ sync-python-fixture: build-cli ## Regenerate the Python SDK 1.0.0 graph.json fix
 	@mkdir -p $(PY_FIXTURES)
 	PREPROCESSOR_JRE_PATH=$(JRE_PATH) PREPROCESSOR_JAR_PATH=$(JAR_PATH) JAVA_HOME=$(JRE_PATH) \
 	./$(CLI_BIN) parse -i $(GOLDEN_PDF) -f bgraph --include-style-info \
-		-c $(GOLDEN_CONFIG) -o $(PY_FIXTURES)/attention_graph.json \
+		-c $(GOLDEN_CONFIG) -o $(PY_FIXTURES)/graphrag_graph.json \
 		--cache-dir $(GOLDEN_CACHE) --fresh-from c2
 	./$(CLI_BIN) parse -i $(GOLDEN_1_0_0)/demo-md/source.md -f bgraph \
 		-o $(PY_FIXTURES)/demo_md_graph.json

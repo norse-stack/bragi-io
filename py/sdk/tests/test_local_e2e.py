@@ -3,7 +3,7 @@
 This is the test that validates the SDK's core value proposition — local PDF
 parsing via the auto-located ``bragi`` binary and the Tika JVM bridge.
 Unlike ``test_local.py`` (which mocks ``subprocess``), this runs the actual
-pipeline against the golden ``attention.pdf`` and deserializes the real output.
+pipeline against the golden ``graphrag.pdf`` and deserializes the real output.
 
 Pre-B7 (no published GitHub release), it points ``BRAGI_CLI_PATH`` at the
 locally-built ``target/release/bragi`` (search-order step 1 in
@@ -28,15 +28,15 @@ _CLI_BIN = _SUBMODULE_ROOT / "target" / "release" / "bragi"
 _TIKA_JAR = (
     _SUBMODULE_ROOT / "crates" / "core" / "deps" / "tika" / "jni-jars" / "blazing-tika-jni.jar"
 )
-_ATTENTION_PDF = (
+_GRAPHRAG_PDF = (
     _SUBMODULE_ROOT
     / "crates"
     / "core"
     / "test_fixtures"
     / "golden"
     / "1.0.0"
-    / "attention"
-    / "attention.pdf"
+    / "graphrag"
+    / "graphrag.pdf"
 )
 
 
@@ -58,13 +58,13 @@ def _resolve_jre() -> str | None:
 _JRE = _resolve_jre()
 
 pytestmark = pytest.mark.skipif(
-    not (_CLI_BIN.exists() and _TIKA_JAR.exists() and _ATTENTION_PDF.exists() and _JRE),
+    not (_CLI_BIN.exists() and _TIKA_JAR.exists() and _GRAPHRAG_PDF.exists() and _JRE),
     reason="e2e needs a locally-built CLI + Tika JAR + a JRE (run `make build-cli`)",
 )
 
 
 def test_local_parse_pdf_end_to_end(monkeypatch, tmp_path) -> None:
-    """A real Tika-backed parse of attention.pdf through the SDK's local path."""
+    """A real Tika-backed parse of graphrag.pdf through the SDK's local path."""
     monkeypatch.setenv("BRAGI_CLI_PATH", str(_CLI_BIN))
     monkeypatch.setenv("JAVA_HOME", _JRE)
     monkeypatch.setenv("PREPROCESSOR_JRE_PATH", _JRE)
@@ -73,7 +73,7 @@ def test_local_parse_pdf_end_to_end(monkeypatch, tmp_path) -> None:
     # leaves no artifacts in the working tree.
     monkeypatch.setenv("BRAGI_CACHE_DIR", str(tmp_path / "cache"))
 
-    graph = _local_parse_pdf(str(_ATTENTION_PDF))
+    graph = _local_parse_pdf(str(_GRAPHRAG_PDF))
 
     assert isinstance(graph, BragiGraph)
     assert graph.schema_version == "1.2.0"

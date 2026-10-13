@@ -16,17 +16,17 @@
 //! Two tests:
 //!   * **A — reproduction (freeze):** regenerate bgraph.md JVM-free from the
 //!     committed C2 cache and assert it is **byte-identical** to the frozen
-//!     `golden/1.0.0/attention/document.bgraph.md`. Under `BLESS_GOLDEN=1`,
+//!     `golden/1.0.0/graphrag/document.bgraph.md`. Under `BLESS_GOLDEN=1`,
 //!     re-freeze (write the md + refresh `PRODUCED_BY`) instead of asserting.
 //!   * **B — roundtrip:** `parse_markdown` the frozen md and assert the
 //!     identity verdict is `Verified` (doc-level `bgraph_sha256`
 //!     self-consistency).
 //!
 //! Family layout (all committed):
-//!   test_fixtures/golden/1.0.0/attention/attention.pdf        — the source
-//!   test_fixtures/golden/1.0.0/attention/config.yaml          — the config
-//!   test_fixtures/golden/1.0.0/attention/document.bgraph.md   — the freeze
-//!   test_fixtures/golden/1.0.0/attention/PRODUCED_BY          — codebase sha
+//!   test_fixtures/golden/1.0.0/graphrag/graphrag.pdf         — the source
+//!   test_fixtures/golden/1.0.0/graphrag/config.yaml          — the config
+//!   test_fixtures/golden/1.0.0/graphrag/document.bgraph.md   — the freeze
+//!   test_fixtures/golden/1.0.0/graphrag/PRODUCED_BY          — codebase sha
 //!   test_fixtures/snapshots/{c1-xhtml,c2-preprocessor}/<sha>  — the cache
 //!
 //! Design-flow authority:
@@ -63,7 +63,7 @@ impl Preprocessor for NoJvmPreprocessor {
             "Tika/JVM extraction was invoked — the golden freeze must replay from the \
              committed C2 preprocessor cache (a C2 hit skips extraction). A cache miss here \
              means the committed C2 tier is absent or its pdf_hash no longer matches \
-             attention.pdf. Rebuild the family with `make golden-generate`."
+             graphrag.pdf. Rebuild the family with `make golden-generate`."
         );
     }
 
@@ -91,7 +91,7 @@ impl Preprocessor for NoJvmPreprocessor {
 // =========================================================================
 
 fn golden_dir() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test_fixtures/golden/1.0.0/attention")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("test_fixtures/golden/1.0.0/graphrag")
 }
 
 /// The `--cache-dir` root. FileStorage lays its own `c1-xhtml/`,
@@ -110,7 +110,7 @@ fn golden_md_path() -> PathBuf {
 // The JVM-free replay.
 // =========================================================================
 
-/// Regenerate `attention`'s bgraph.md from the committed C2 cache, JVM-free.
+/// Regenerate `graphrag`'s bgraph.md from the committed C2 cache, JVM-free.
 ///
 /// `FreshFrom::C3` is the exact tier we want: it consults the C2 cache (a
 /// hit → skips Tika *and* the XHTML parse) but does **not** read a C3 graph
@@ -122,9 +122,9 @@ fn golden_md_path() -> PathBuf {
 ///
 /// `CacheDefaults` with every write disabled keeps the run read-only: the
 /// committed cache is never mutated and no stray tiers are written.
-fn regenerate_attention() -> (DocumentGraph, ParseProvenance) {
+fn regenerate_graphrag() -> (DocumentGraph, ParseProvenance) {
     let golden = golden_dir();
-    let pdf = golden.join("attention.pdf");
+    let pdf = golden.join("graphrag.pdf");
     let config_path = golden.join("config.yaml");
 
     let config = ParsingConfig::load_from_file(
@@ -176,7 +176,7 @@ fn regenerate_attention() -> (DocumentGraph, ParseProvenance) {
 
 /// The frozen md is `emit_markdown` over the same C2-replayed graph.
 fn regenerate_bgraph_md() -> String {
-    let (graph, provenance) = regenerate_attention();
+    let (graph, provenance) = regenerate_graphrag();
     emit_markdown(&graph, &provenance)
 }
 
@@ -234,7 +234,7 @@ fn freeze_materialized_config() {
 // =========================================================================
 
 #[test]
-fn golden_freeze_attention_reproduces_bgraph_md() {
+fn golden_freeze_graphrag_reproduces_bgraph_md() {
     let regenerated = regenerate_bgraph_md();
     let path = golden_md_path();
 
@@ -276,7 +276,7 @@ fn golden_freeze_attention_reproduces_bgraph_md() {
         let end_r = (first_diff + 120).min(regenerated.len());
         let end_f = (first_diff + 120).min(frozen.len());
         panic!(
-            "Golden freeze mismatch: HEAD no longer reproduces attention's 1.0.0 bgraph.md.\n\
+            "Golden freeze mismatch: HEAD no longer reproduces graphrag's 1.0.0 bgraph.md.\n\
              First divergence at byte {first_diff} (regenerated={} bytes, frozen={} bytes).\n\
              --- frozen window ---\n{}\n\
              --- regenerated window ---\n{}\n\
@@ -299,7 +299,7 @@ fn golden_freeze_attention_reproduces_bgraph_md() {
 // =========================================================================
 
 #[test]
-fn golden_freeze_attention_roundtrips_verified() {
+fn golden_freeze_graphrag_roundtrips_verified() {
     let path = golden_md_path();
 
     // Under bless, Test A is concurrently rewriting `document.bgraph.md`.
@@ -475,7 +475,7 @@ fn check_light_reproduces(ch: LightChannel) {
 /// Test B analog — the frozen md self-verifies (doc-level bgraph_sha256).
 fn check_light_roundtrips(ch: LightChannel) {
     let path = light_golden_md_path(ch);
-    // Same race-avoidance as attention's Test B: under bless, Test A is
+    // Same race-avoidance as graphrag's Test B: under bless, Test A is
     // concurrently rewriting the file, so roundtrip the freshly-regenerated
     // content in-memory rather than reading the file mid-write.
     let md = if bless_enabled() {
@@ -530,20 +530,20 @@ fn golden_freeze_demo_ocr_roundtrips_verified() {
 // OCR S2 — the grafted golden (demo-ocr + companion PDF).
 //
 // The two-arm graft path: `parse_ocr_with_pdf` over `demo-ocr/source.json` and the
-// attention PDF — the real attention twin (one source PDF behind both the
-// OCR payload and the native golden). Frozen as a SECOND pair in the
+// graphrag PDF — one source PDF behind both the OCR payload and the native
+// golden. Frozen as a SECOND pair in the
 // demo-ocr family (`document.graft.bgraph.md` / `.json`); the single-arm
 // pair above stays byte-identical (`supplier_sha256` serializes
 // absent-when-None, so the graft changes nothing it wasn't asked to).
 //
-// JVM-free by the attention pattern (committed-cache replay): the wrapper's
+// JVM-free by the graphrag pattern (committed-cache replay): the wrapper's
 // PDF → XHTML hop replays Tika's *committed* C1 XHTML for the companion's
 // sha (`snapshots/c1-xhtml/<sha256(pdf)>.xhtml` — the same cache tier the
-// attention freeze replays at C2), so the full graft composition —
+// graphrag freeze replays at C2), so the full graft composition —
 // parse_ocr → seam extraction → pure merge — runs for real with no JVM.
 // The real-Tika lane for this seam is `make jvm-smoke` (which asserts a
 // fresh JNI graft parse reproduces this frozen pair), mirroring how the
-// attention golden splits hermetic replay from the JVM gate.
+// graphrag golden splits hermetic replay from the JVM gate.
 // =========================================================================
 
 /// Replays the committed C1 XHTML for a PDF instead of invoking Tika.
@@ -559,7 +559,7 @@ impl Preprocessor for C1XhtmlReplayPreprocessor {
         Ok(std::fs::read_to_string(&path).unwrap_or_else(|e| {
             panic!(
                 "Committed C1 XHTML missing at {} ({e}) — the graft golden replays Tika's \
-                 committed output and must never invoke a live JVM. Rebuild the attention \
+                 committed output and must never invoke a live JVM. Rebuild the graphrag \
                  family (which owns the C1 tier) with `make golden-generate`.",
                 path.display()
             )
@@ -585,12 +585,11 @@ impl Preprocessor for C1XhtmlReplayPreprocessor {
     }
 }
 
-/// The companion PDF — same bytes as `golden/1.0.0/attention/attention.pdf`
-/// (the twin pairing is the point: Tika's committed C1 XHTML is keyed by
-/// this file's sha).
+/// The companion PDF — the golden's `graphrag.pdf`, the PDF the OCR
+/// transcript in `demo-ocr/source.json` was made from (the pairing is the
+/// point: Tika's committed C1 XHTML is keyed by this file's sha).
 fn graft_companion_pdf_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("test_fixtures/pdfs/attention-is-all-you-need.pdf")
+    golden_dir().join("graphrag.pdf")
 }
 
 fn graft_golden_md_path() -> PathBuf {
@@ -705,7 +704,7 @@ fn golden_freeze_demo_ocr_graft_json_wire() {
 /// not all-null, both namespaces present, the supplier identity set — and
 /// the single-arm invariants (provenance, `ocr:` run facts) untouched.
 ///
-/// Attention's PDF container carries no `dc:title`; the title below is the
+/// The graphrag PDF's container carries no `dc:title`; the title below is the
 /// channel's body-side inference (first Section element — the PDF
 /// pipeline's rule, replicated per the S2 review decision). A container
 /// that does carry `dc:title` would override it via the graft's
@@ -716,22 +715,22 @@ fn golden_freeze_demo_ocr_graft_metadata_reads_true() {
     let md = &graph.document_info.document_metadata;
 
     // Canonical: container facts + body-side inferred title.
-    assert_eq!(md.created.as_deref(), Some("2024-04-10T21:11:43Z"));
+    assert_eq!(md.created.as_deref(), Some("2025-02-20T01:38:02Z"));
     assert_eq!(
         md.title.as_deref(),
-        Some("Attention Is All You Need"),
+        Some("From Local to Global: A GraphRAG Approach to Query-Focused Summarization"),
         "body-side inferred title (container has no dc:title)"
     );
     assert!(md.author.is_none());
 
     // Both namespaces present.
     let pdf = md.pdf.as_ref().expect("pdf namespace grafted");
-    assert_eq!(pdf.page_count, Some(15));
+    assert_eq!(pdf.page_count, Some(26));
     assert_eq!(pdf.producer.as_deref(), Some("pdfTeX-1.40.25"));
     assert_eq!(pdf.creator_tool.as_deref(), Some("LaTeX with hyperref"));
     let ocr = md.ocr.as_ref().expect("ocr namespace kept");
     assert_eq!(ocr.model.as_deref(), Some("mistral-ocr-4-0"));
-    assert_eq!(ocr.pages_processed, Some(15));
+    assert_eq!(ocr.pages_processed, Some(26));
 
     // CR-13: the supplier identity = sha256 of the OCR payload bytes,
     // NOT the companion PDF's (which the graft no longer records).
@@ -756,13 +755,14 @@ fn golden_freeze_demo_ocr_graft_metadata_reads_true() {
     );
 }
 
-/// CR-98: the frozen attention outline reads TRUE — asserted, not
-/// eyeballed. Chapters 1–7 at depth 1, `x.y` at 2, `x.y.z` at 3,
-/// Abstract/References at 1; the leading document title keeps its S1
-/// level (2, from Mistral's `##`); the unnumbered appendix lands at 1.
-/// Pre-CR-98, OCR-4's per-page levels put same-rank chapters on
-/// different depths (1–3 at level 1, 4–7 at level 2) — this pins the
-/// normalized shape so a regression re-blesses loudly, not silently.
+/// CR-98: the frozen graphrag outline reads as parsed — asserted, not
+/// eyeballed. Chapters 1–7 at depth 1, `x.y` at 2, `x.y.z` at 3;
+/// Abstract, Acknowledgements and References at 1; the lettered
+/// appendices follow the same numbering (`A` at 1, `A.1` at 2); the
+/// leading document title is pinned to the top. The unnumbered
+/// "Algorithm 1" caption lands at 1, between 3.2 and 3.3, as the parse
+/// places it. This pins the normalized
+/// shape so a regression re-blesses loudly, not silently.
 #[test]
 fn golden_freeze_demo_ocr_outline_reads_true() {
     let md = if bless_enabled() {
@@ -788,32 +788,55 @@ fn golden_freeze_demo_ocr_outline_reads_true() {
         .map(|s| (s.title.as_str(), s.level))
         .collect();
     let want: Vec<(&str, u32)> = vec![
-        ("Attention Is All You Need", 1), // leading title — pinned to the top (CR-98 decision note)
+        ("From Local to Global: A GraphRAG Approach to Query-Focused Summarization", 1), // leading title — pinned to the top (CR-98 decision note)
         ("Abstract", 1),
         ("1 Introduction", 1),
         ("2 Background", 1),
-        ("3 Model Architecture", 1),
-        ("3.1 Encoder and Decoder Stacks", 2),
-        ("3.2 Attention", 2),
-        ("3.2.1 Scaled Dot-Product Attention", 3),
-        ("3.2.2 Multi-Head Attention", 3),
-        ("3.2.3 Applications of Attention in our Model", 3),
-        ("3.3 Position-wise Feed-Forward Networks", 2),
-        ("3.4 Embeddings and Softmax", 2),
-        ("3.5 Positional Encoding", 2),
-        ("4 Why Self-Attention", 1),
-        ("5 Training", 1),
-        ("5.1 Training Data and Batching", 2),
-        ("5.2 Hardware and Schedule", 2),
-        ("5.3 Optimizer", 2),
-        ("5.4 Regularization", 2),
-        ("6 Results", 1),
-        ("6.1 Machine Translation", 2),
-        ("6.2 Model Variations", 2),
-        ("6.3 English Constituency Parsing", 2),
+        ("2.1 RAG Approaches and Systems", 2),
+        ("2.2 Using Knowledge Graphs with LLMs and RAG", 2),
+        ("2.3 Adaptive benchmarking for RAG Evaluation", 2),
+        ("2.4 RAG evaluation criteria", 2),
+        ("3 Methods", 1),
+        ("3.1 GraphRAG Workflow", 2),
+        ("3.1.1 Source Documents → Text Chunks", 3),
+        ("3.1.2 Text Chunks → Entities & Relationships", 3),
+        ("3.1.3 Entities & Relationships → Knowledge Graph", 3),
+        ("3.1.4 Knowledge Graph → Graph Communities", 3),
+        ("3.1.5 Graph Communities → Community Summaries", 3),
+        ("3.1.6 Community Summaries → Community Answers → Global Answer", 3),
+        ("3.2 Global Sensemaking Question Generation", 2),
+        ("Algorithm 1: Prompting Procedure for Question Generation", 1),
+        ("3.3 Criteria for Evaluating Global Sensemaking", 2),
+        ("4 Analysis", 1),
+        ("4.1 Experiment 1", 2),
+        ("4.1.1 Datasets", 3),
+        ("4.1.2 Conditions", 3),
+        ("4.1.3 Configuration", 3),
+        ("4.2 Experiment 2", 2),
+        ("5 Results", 1),
+        ("5.1 Experiment 1", 2),
+        ("5.2 Experiment 2", 2),
+        ("6 Discussion", 1),
+        ("6.1 Limitations of evaluation approach", 2),
+        ("6.2 Future work", 2),
         ("7 Conclusion", 1),
+        ("Acknowledgements", 1),
         ("References", 1),
-        ("Attention Visualizations", 1),
+        ("A Entity and Relationship Extraction Approach", 1),
+        ("A.1 Entity Extraction", 2),
+        ("A.2 Self-Reflection", 2),
+        ("B Example Community Detection", 1),
+        ("C Context Window Selection", 1),
+        ("D Example Answer Comparison", 1),
+        ("E System Prompts", 1),
+        ("E.1 Element Instance Generation", 2),
+        ("E.2 Community Summary Generation", 2),
+        ("E.3 Community Answer Generation", 2),
+        ("E.4 Global Answer Generation", 2),
+        ("F Evaluation Prompts", 1),
+        ("F.1 Relative Assessment Prompt", 2),
+        ("F.2 Relative Assessment Metrics", 2),
+        ("G Statistical Analysis", 1),
     ];
     assert_eq!(got, want, "frozen demo-ocr outline must read the true ranks");
 }
@@ -991,9 +1014,9 @@ fn check_json_wire(graph: &DocumentGraph, provenance: &ParseProvenance, path: &P
 }
 
 #[test]
-fn golden_freeze_attention_json_wire() {
-    let (graph, provenance) = regenerate_attention();
-    check_json_wire(&graph, &provenance, &golden_json_path(), "attention");
+fn golden_freeze_graphrag_json_wire() {
+    let (graph, provenance) = regenerate_graphrag();
+    check_json_wire(&graph, &provenance, &golden_json_path(), "graphrag");
 }
 
 #[test]
@@ -1033,14 +1056,14 @@ fn golden_freeze_demo_ocr_json_wire() {
 // Boundary proof — the design-flow's literal acceptance test: a deliberate
 // BREAKING schema change fails a fixture assertion; a NON-BREAKING (additive)
 // one does not. Encodes the accept/reject matrix so the contract's boundary is
-// *proven*, not merely asserted. Operates on the attention golden json.
+// *proven*, not merely asserted. Operates on the graphrag golden json.
 // =========================================================================
 
-/// The attention golden json as a mutable `serde_json::Value` to tamper with.
-fn attention_json_value() -> serde_json::Value {
-    let (graph, provenance) = regenerate_attention();
+/// The graphrag golden json as a mutable `serde_json::Value` to tamper with.
+fn graphrag_json_value() -> serde_json::Value {
+    let (graph, provenance) = regenerate_graphrag();
     serde_json::from_str(&emit_golden_json(&graph, &provenance))
-        .expect("attention golden json parses to Value")
+        .expect("graphrag golden json parses to Value")
 }
 
 /// Deserialize a (possibly tampered) Value and run the contract, mirroring the
@@ -1054,14 +1077,14 @@ fn contract_of(v: &serde_json::Value) -> Result<(), String> {
 #[test]
 fn boundary_clean_golden_satisfies_contract() {
     assert!(
-        contract_of(&attention_json_value()).is_ok(),
+        contract_of(&graphrag_json_value()).is_ok(),
         "the clean golden json must satisfy the contract"
     );
 }
 
 #[test]
 fn boundary_breaking_version_drift_is_caught() {
-    let mut v = attention_json_value();
+    let mut v = graphrag_json_value();
     v["schema_version"] = serde_json::json!("2.0.0");
     let err = contract_of(&v).expect_err("a schema_version bump must fail the contract");
     assert!(
@@ -1073,7 +1096,7 @@ fn boundary_breaking_version_drift_is_caught() {
 #[test]
 fn boundary_breaking_dropped_content_is_caught() {
     // Required content removed — the nodes array emptied.
-    let mut v = attention_json_value();
+    let mut v = graphrag_json_value();
     v["nodes"] = serde_json::json!([]);
     let err = contract_of(&v).expect_err("an emptied node set must fail the contract");
     assert!(
@@ -1086,7 +1109,7 @@ fn boundary_breaking_dropped_content_is_caught() {
 fn boundary_breaking_enum_out_of_domain_is_rejected_by_the_type_layer() {
     // An out-of-domain enum value is rejected at deserialize (the type layer) —
     // a loud failure at the boundary, before the contract fn even runs.
-    let mut v = attention_json_value();
+    let mut v = graphrag_json_value();
     v["document_info"]["flow_type"] = serde_json::json!("Sideways");
     let err = contract_of(&v).expect_err("an out-of-domain flow_type must be rejected");
     assert!(
@@ -1101,7 +1124,7 @@ fn boundary_breaking_renamed_required_field_is_rejected_by_the_type_layer() {
     // no `#[serde(default)]`, so the break is loud at deserialize — the same
     // class of change T1.5b R2 made when the producer-version field took its
     // current name. Renaming the key must never read as "absent and fine".
-    let mut v = attention_json_value();
+    let mut v = graphrag_json_value();
     let prov = v["parse_provenance"]
         .as_object_mut()
         .expect("parse_provenance is a json object");
@@ -1125,7 +1148,7 @@ fn boundary_breaking_renamed_defaulted_field_is_caught_by_the_contract() {
     // check against" rather than as a failure. The type layer cannot catch this
     // one; only the contract's shape check stands between a renamed identity
     // field and a silent pass.
-    let mut v = attention_json_value();
+    let mut v = graphrag_json_value();
     let obj = v.as_object_mut().expect("envelope is a json object");
     let carried = obj
         .remove("bgraph_sha256")
@@ -1154,7 +1177,7 @@ fn boundary_additive_optional_field_is_non_breaking() {
     // A new, unknown envelope field is additive — serde drops it on read, so the
     // wire stays backward-compatible. Both deserialize and the contract pass, and
     // identity is untouched.
-    let mut v = attention_json_value();
+    let mut v = graphrag_json_value();
     v.as_object_mut()
         .expect("envelope is a json object")
         .insert("future_field_v2".to_string(), serde_json::json!({"anything": 123}));

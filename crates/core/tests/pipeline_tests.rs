@@ -78,38 +78,12 @@ mod tika_boundary {
     use super::*;
 
     #[test]
-    fn shannon_xhtml_size_stable() {
-        let xhtml = load_xhtml("claude_shannon_paper");
-        let summary = load_summary("claude_shannon_paper");
-        let expected_bytes = summary["stage_counts"]["xhtml_bytes"].as_u64().unwrap() as usize;
-
-        // XHTML should not change unless Tika version changes
-        assert_eq!(
-            xhtml.len(),
-            expected_bytes,
-            "XHTML byte count changed — did Tika version change?"
-        );
-    }
-
-    #[test]
-    fn shannon_text_element_count_stable() {
-        let elements = load_text_elements("claude_shannon_paper");
-        let arr = elements.as_array().expect("text_elements should be array");
-
-        // Text elements come directly from Tika — stable unless Tika changes
-        assert_eq!(
-            arr.len(),
-            3021,
-            "Text element count changed — Tika output drift?"
-        );
-    }
-
-    #[test]
     fn euclid_xhtml_size_stable() {
         let xhtml = load_xhtml("elements_of_euclid");
         let summary = load_summary("elements_of_euclid");
         let expected_bytes = summary["stage_counts"]["xhtml_bytes"].as_u64().unwrap() as usize;
 
+        // XHTML should not change unless Tika version changes
         assert_eq!(
             xhtml.len(),
             expected_bytes,
@@ -122,6 +96,7 @@ mod tika_boundary {
         let elements = load_text_elements("elements_of_euclid");
         let arr = elements.as_array().expect("text_elements should be array");
 
+        // Text elements come directly from Tika — stable unless Tika changes
         assert_eq!(
             arr.len(),
             9538,
@@ -229,25 +204,27 @@ fn test_integration_rfc_quic_post_strip_defaults() {
 }
 
 #[test]
-fn test_integration_attention_rotation() {
-    // Fixture: test_fixtures/xhtml/attention-is-all-you-need.xhtml — checked
-    // in alongside the source PDF in test_fixtures/pdfs/. Regenerate with
-    // `make test-generate-xhtml-fixtures` from parent repo root.
+fn test_integration_graphrag_rotation() {
+    // Fixture: the golden graphrag PDF's committed C1 XHTML
+    // (`test_fixtures/snapshots/c1-xhtml/<sha256 of graphrag.pdf>.xhtml`),
+    // written by `make golden-generate`. The arXiv stamp down the first
+    // page's left edge is the rotated sidebar.
     let path = format!(
-        "{}/test_fixtures/xhtml/attention-is-all-you-need.xhtml",
-        env!("CARGO_MANIFEST_DIR")
+        "{}/test_fixtures/snapshots/c1-xhtml/{}.xhtml",
+        env!("CARGO_MANIFEST_DIR"),
+        "730f1a9f38d16689900969a3eeeb1b31e45eda1dcc1f37a043afa90aff76c867"
     );
     let xhtml = std::fs::read_to_string(&path)
-        .expect("XHTML fixture missing — regenerate with `make test-generate-xhtml-fixtures`");
+        .expect("C1 XHTML missing — rebuild the golden family with `make golden-generate`");
     let output = xhtml_parser::parse_xhtml(&xhtml).expect("parse failed");
     let e = &output.text_elements;
     assert!(
         e.iter().any(|el| el.placement.rotation != 0),
-        "attention has rotated sidebar (aside data-rotation=90)"
+        "graphrag has rotated sidebar (aside data-rotation=90)"
     );
     assert!(
         e.iter().any(|el| el.placement.rotation == 0),
-        "attention has non-rotated body text"
+        "graphrag has non-rotated body text"
     );
 }
 

@@ -15,10 +15,10 @@ pip install bragi-io
 ```python
 import bragi
 
-bgraph = bragi.parse_pdf("attention.pdf")
+bgraph = bragi.parse_pdf("graphrag.pdf")
 
-print(bgraph)                # <BragiGraph: 179 nodes, schema v1.2.0>
-print(len(bgraph.sections))  # 30
+print(bgraph)                # <BragiGraph: 368 nodes, schema v1.2.0>
+print(len(bgraph.sections))  # 54
 
 for section in bgraph.sections:
     print(section.content.text)
@@ -109,13 +109,13 @@ node.content.text              # str — the node's text
 node.token_count               # int — pre-computed token count
 
 # Semantic location (tree position) — always present
-node.location.semantic.path          # "2"
+node.location.semantic.path          # "1"
 node.location.semantic.depth         # 1
-node.location.semantic.breadcrumbs   # ["Attention Is All You Need", "Attention Is All You Need"]
+node.location.semantic.breadcrumbs   # ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"]
 
 # Physical location (page position) — present for PDFs
 node.location.physical.page          # 1
-node.location.physical.bounding_box  # BoundingBox(x=211.5, y=149.1, width=188.4, height=16.5)
+node.location.physical.bounding_box  # BoundingBox(x=121.7, y=100.1, width=368.7, height=36.500008)
 
 # Tree relationships
 node.parent                    # str | None — parent id
@@ -149,7 +149,7 @@ print(section.render(bgraph, breadcrumbs=True))
 ```
 
 ```
-[Attention Is All You Need > Attention Is All You Need]
+[From Local to Global: A GraphRAG Approach to Query-Focused Summarization > From Local to Global: A GraphRAG Approach to Query-Focused Summarization]
 
 ...the section's text, and its descendants...
 ```
@@ -161,9 +161,11 @@ print(section.render(bgraph, node_types=True))
 ```
 
 ```
-[Section] Attention Is All You Need
+[Section] From Local to Global: A GraphRAG Approach to Query-Focused Summarization
 
-[Paragraph] Provided proper attribution is provided...
+[Section] Darren Edge 1† Ha Trinh 1† Newman Cheng 2 Joshua Bradley 2 Alex Chao 3
+
+...
 ```
 
 ### Full document
@@ -231,7 +233,7 @@ The tree root is a `Document`; its descendants are `Section` and `Paragraph`, wi
 | `Paragraph` | Merged text block | 1+ |
 | `Margin` | Marginal / running content (PDF) | varies |
 
-`node_type` is a string, so you can filter on any value the parser emits. Parsing *Attention Is All You Need* produces 1 `Document`, 30 `Section`, 147 `Paragraph`, and 1 `Margin` node.
+`node_type` is a string, so you can filter on any value the parser emits. Parsing *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge et al., Microsoft, arXiv:2404.16130, CC BY 4.0) produces 1 `Document`, 54 `Section`, 312 `Paragraph`, and 1 `Margin` node.
 
 ---
 

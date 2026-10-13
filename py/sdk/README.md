@@ -19,27 +19,27 @@ Python 3.9+. The only runtime dependency is `httpx`. On first use, the SDK fetch
 ```python
 import bragi
 
-bgraph = bragi.parse_pdf("attention.pdf")
+bgraph = bragi.parse_pdf("graphrag.pdf")
 
-print(bgraph)                # <BragiGraph: 179 nodes, schema v1.2.0>
-print(len(bgraph.sections))  # 30
+print(bgraph)                # <BragiGraph: 368 nodes, schema v1.2.0>
+print(len(bgraph.sections))  # 54
 
 for section in bgraph.sections:
     print(section.content.text)
     print(section.location.physical.page)
 ```
 
-Parsing *Attention Is All You Need* yields **179 nodes**. Every node is typed, with IDE autocomplete:
+Parsing *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge et al., Microsoft, arXiv:2404.16130, CC BY 4.0) yields **368 nodes**. Every node is typed, with IDE autocomplete:
 
 ```python
 node = bgraph.sections[0]
 
-node.content.text                    # "Attention Is All You Need"
-node.token_count                     # 6
-node.location.semantic.path          # "2"
-node.location.semantic.breadcrumbs   # ["Attention Is All You Need", "Attention Is All You Need"]
+node.content.text                    # "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"
+node.token_count                     # 17
+node.location.semantic.path          # "1"
+node.location.semantic.breadcrumbs   # ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"]
 node.location.physical.page          # 1
-node.location.physical.bounding_box  # BoundingBox(x=211.5, y=149.1, width=188.4, height=16.5)
+node.location.physical.bounding_box  # BoundingBox(x=121.7, y=100.1, width=368.7, height=36.500008)
 ```
 
 A **semantic** location (where the node sits in the tree) and a **physical** one (where it sits on the page) travel on every node — so you can ground an answer back on the original page.
@@ -86,7 +86,7 @@ parent = node.get_parent(bgraph)
 children = node.get_children(bgraph)
 
 print(section.render(bgraph, breadcrumbs=True))
-# [Attention Is All You Need > Attention Is All You Need]
+# [From Local to Global: A GraphRAG Approach to Query-Focused Summarization > From Local to Global: A GraphRAG Approach to Query-Focused Summarization]
 # ...the section's text, and its descendants...
 ```
 

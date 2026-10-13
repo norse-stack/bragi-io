@@ -18,28 +18,28 @@ On first use for a PDF, `bragi` fetches a Java runtime (used for PDF text extrac
 
 ## A real parse
 
-One parse of the canonical example — *Attention Is All You Need* — with the default config:
+One parse of the canonical example — *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge et al., Microsoft, arXiv:2404.16130, CC BY 4.0) — with the default config:
 
 ```bash
-bragi parse -i attention.pdf -o attention.bgraph.json
+bragi parse -i graphrag.pdf -o graphrag.bgraph.json
 ```
 
 ```
-✅ Graph: 179 nodes
+Graph: 368 nodes
 ```
 
-That's **179 nodes** (1 document, 30 sections, 147 paragraphs, 1 margin). Each node carries a semantic location (its `path` in the tree) and, for PDFs, a physical one (page + bounding box):
+That's **368 nodes** (1 document, 54 sections, 312 paragraphs, 1 margin). Each node carries a semantic location (its `path` in the tree) and, for PDFs, a physical one (page + bounding box):
 
 ```json
 {
-  "id": "7962788f-d2e7-50bc-8359-c47c4b37c03d",
+  "id": "97488a75-0154-50d2-a24a-66b52e793154",
   "node_type": "Section",
   "location": {
-    "semantic": { "path": "2", "depth": 1, "breadcrumbs": ["Attention Is All You Need", "Attention Is All You Need"] },
-    "physical": { "page": 1, "bounding_box": { "x": 211.5, "y": 149.1, "width": 188.4, "height": 16.5 } }
+    "semantic": { "path": "1", "depth": 1, "breadcrumbs": ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"] },
+    "physical": { "page": 1, "bounding_box": { "x": 121.7, "y": 100.1, "width": 368.7, "height": 36.5 } }
   },
-  "content": { "text": "Attention Is All You Need" },
-  "token_count": 6
+  "content": { "text": "From Local to Global: A GraphRAG Approach to Query-Focused Summarization" },
+  "token_count": 17
 }
 ```
 
@@ -48,8 +48,8 @@ That's **179 nodes** (1 document, 30 sections, 147 paragraphs, 1 margin). Each n
 One graph, emitted two ways:
 
 ```bash
-bragi parse -i attention.pdf -o attention.bgraph.json            # bgraph.json  (default output)
-bragi parse -i attention.pdf -f bgraph-md -o attention.bgraph.md     # bgraph.md
+bragi parse -i graphrag.pdf -o graphrag.bgraph.json            # bgraph.json  (default output)
+bragi parse -i graphrag.pdf -f bgraph-md -o graphrag.bgraph.md     # bgraph.md
 ```
 
 - **`bgraph.md`** is canonical Markdown — readable and diffable, with each node's metadata in a fenced block beside its text.

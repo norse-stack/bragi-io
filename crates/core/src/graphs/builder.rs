@@ -460,7 +460,7 @@ fn derive_walk_ids<'a>(rows: impl Iterator<Item = IdWalkRow<'a>>) -> Vec<NodeId>
 /// **Also finalizes `location.semantic.path`** (CR-84, found during
 /// implementation): `path` is the *other* build-time structural
 /// derivation (1-based child index joined by `.`) that `graph_sanity`
-/// mutates out from under — on attention.pdf, 103 stored paths diverged
+/// mutates out from under — on one arXiv paper, 103 stored paths diverged
 /// from what the reverse parse re-derives, independently of the 89 IDs
 /// (pre-existing at v4, masked by the ID divergence in the Block A
 /// diagnosis). It is hashed content, so the round-trip contract requires

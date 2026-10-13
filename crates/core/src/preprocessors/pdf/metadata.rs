@@ -51,7 +51,7 @@ impl<'a> MetadataExtractor for PdfMetadataExtractor<'a> {
     type Input = (); // pre-parsed state lives on `self`
 
     /// PDF title source: `dc:title` only. Null when absent.
-    /// Title cleanup (e.g., dvi-filename leakage in `shannon1948.dvi`) is a
+    /// Title cleanup (e.g., a `.dvi` filename leaking into `dc:title`) is a
     /// composition-layer concern handled by URD or downstream — not
     /// extraction. See `09-metadata-first-class.md` § F-02 — deferred to
     /// composition layer.

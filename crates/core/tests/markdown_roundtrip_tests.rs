@@ -1,7 +1,7 @@
 //! B4 round-trip invariant harness for the bgraph.md wire format.
 //!
 //! Verifies that `canonical(parse(emit(g))) == canonical(g)` on
-//! synthetic graphs and the in-tree Shannon + Euclid stage3 fixtures.
+//! synthetic graphs and the in-tree Euclid stage3 fixture.
 //! Also exercises drift-detection (strict vs `accept_drift`) and a
 //! handful of edge cases the spec calls out explicitly.
 //!
@@ -522,19 +522,11 @@ fn reserved_prefix_in_body_is_handled_on_parse() {
 // =========================================================================
 
 #[test]
-fn roundtrip_identity_shannon_fixture() {
+fn roundtrip_identity_euclid_fixture() {
     // `load_fixture_graph` reconstructs the fixture through
     // `build_graph_deterministic` so its IDs match what the reverse
     // parser will derive. The round-trip then verifies canonical-byte
-    // identity end-to-end on a real-shape graph (94 body nodes).
-    let original = load_fixture_graph("claude_shannon_paper");
-    assert_roundtrip_identity(&original, &fixture_provenance("claude_shannon_paper"));
-}
-
-#[test]
-fn roundtrip_identity_euclid_fixture() {
-    // 389 body nodes — larger stress test for the line-scan + builder
-    // pipeline.
+    // identity end-to-end on a real-shape graph (389 body nodes).
     let original = load_fixture_graph("elements_of_euclid");
     assert_roundtrip_identity(&original, &fixture_provenance("elements_of_euclid"));
 }

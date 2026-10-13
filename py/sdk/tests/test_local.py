@@ -42,7 +42,7 @@ class TestLocalParsePdf:
 
         # Load the real fixture as the CLI output
         fixture = json.loads(
-            (_FIXTURES_DIR / "attention_graph.json").read_text(encoding="utf-8")
+            (_FIXTURES_DIR / "graphrag_graph.json").read_text(encoding="utf-8")
         )
 
         def fake_run(cmd, **kwargs):
@@ -65,7 +65,7 @@ class TestLocalParsePdf:
 
         assert isinstance(graph, BragiGraph)
         assert graph.schema_version == "1.2.0"
-        assert len(graph.nodes) == 179
+        assert len(graph.nodes) == 368
         mock_run.assert_called_once()
         # B5: the CLI grew an explicit `parse` subcommand — it must be the first
         # arg after the binary (regression guard for the missing-subcommand bug).
@@ -138,7 +138,7 @@ class TestLocalParsePdf:
         pdf.write_bytes(b"%PDF-1.4 dummy")
 
         fixture = json.loads(
-            (_FIXTURES_DIR / "attention_graph.json").read_text(encoding="utf-8")
+            (_FIXTURES_DIR / "graphrag_graph.json").read_text(encoding="utf-8")
         )
 
         def fake_run(cmd, **kwargs):
@@ -188,7 +188,7 @@ class TestLocalParsePdf:
         pdf.write_bytes(b"%PDF-1.4 dummy")
 
         fixture = json.loads(
-            (_FIXTURES_DIR / "attention_graph.json").read_text(encoding="utf-8")
+            (_FIXTURES_DIR / "graphrag_graph.json").read_text(encoding="utf-8")
         )
 
         def fake_run(cmd, **kwargs):

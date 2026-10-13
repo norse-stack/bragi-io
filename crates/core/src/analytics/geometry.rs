@@ -174,7 +174,7 @@ pub struct GeometryStatsConfig {
     /// Per-page minimum-token-size filter. Tokens with font_size below
     /// this value are excluded from per-page analysis. Default: 1.0.
     /// Filters PDF rendering artifacts (e.g., size=0.1 parens around
-    /// inline math glyphs in the Shannon paper) that contaminate per-row
+    /// inline math glyphs in a retypeset 1940s paper) that contaminate per-row
     /// size averages without contributing visible content.
     pub min_token_size: f32,
 
@@ -1023,7 +1023,7 @@ fn find_per_page_footer_line(
     //
     // Strict `>` (vs the Python prototype's `>=`): when Tika's per-segment
     // span granularity drives the body-size reference downward by one pt
-    // (e.g. attention's most_common_font_size=9 because Tika overcounts 9pt
+    // (e.g. a two-column arXiv paper's most_common_font_size=9 because Tika overcounts 9pt
     // body fragments vs PyMuPDF's per-glyph clusters), a tied threshold
     // would admit footer rows that share that one-pt margin. Strict `>`
     // requires body rows to be measurably above the body-size − tolerance
@@ -1663,7 +1663,7 @@ mod tests {
         );
     }
 
-    // --- 19. Two-column with full-width interruption (attention-style) --------
+    // --- 19. Two-column with full-width interruption (arXiv-style) -----------
     #[test]
     fn column_layout_full_width_spanner_collapses_to_one() {
         let mut elements = synth_body_pages(

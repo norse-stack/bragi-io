@@ -458,12 +458,12 @@ fn extract_text_elements(
 /// global reading_order.
 ///
 /// CR-51 (initial): replaced the previous Y-then-X spatial sort that
-/// mis-clustered same-line spans with different font baselines (Shannon's
-/// small-caps section header, attention's superscript citations).
+/// mis-clustered same-line spans with different font baselines (a small-caps
+/// section header, superscript citations).
 ///
 /// CR-51 (revision after rfc-quic regression): the within-line key is
 /// `bounding_box.x` — NOT `segment_number`. Tika walks PDF content streams in
-/// source order, which is monotonic-in-X for Shannon/attention but not for
+/// source order, which is monotonic-in-X for the two papers it was found on but not for
 /// rfc-quic (where inline-emphasized words like `MAY`/`SHOULD` and URL
 /// hyperlinks are emitted as a later `data-segment` than their visual
 /// neighbors). Sorting by `bounding_box.x` within a `(paragraph, line)` group
@@ -1028,14 +1028,14 @@ mod tests {
 
     // ── CR-51: data-segment as reading-order anchor ──────────────────────────
 
-    /// CR-51: Shannon-shape — alternating f1/f4 spans on the same `data-line`
+    /// CR-51: small-caps header — alternating f1/f4 spans on the same `data-line`
     /// have different Y baselines (small-caps font drops a pixel). Pre-fix,
     /// the Y-first spatial sort flattened them into `T D N C HE ISCRETE …`.
     /// Post-fix, within-line X drives reading_order (which here happens to
-    /// equal segment order 0..7, since Tika emitted Shannon's section header
+    /// equal segment order 0..7, since Tika emitted the section header
     /// in left-to-right source order).
     #[test]
-    fn cr51_within_line_x_overrides_y_baseline_for_shannon_header() {
+    fn cr51_within_line_x_overrides_y_baseline_for_small_caps_header() {
         let xhtml = xhtml_with(
             r#"<div class="page"><div class="page-meta" data-page="0" data-width="612.0" data-height="792.0" />
 <p>

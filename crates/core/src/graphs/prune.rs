@@ -50,7 +50,7 @@ pub struct SectionPruneSummary {
 /// Reach note (Sb6 prototype finding): with the current three geometric
 /// detectors this fires only where geometry corroborates a bad font — alphafold's
 /// figure callouts, corpus-wide. Broadening to non-geometric figure FPs
-/// (attention/word2vec font-outliers) needs an added direct signal — deferred to
+/// (font-outliers in arXiv papers) needs an added direct signal — deferred to
 /// a follow-up CR (the "more detectors is a lever" finding). Gated by
 /// `cfg.prune_on_detection`.
 pub fn prune_sections(

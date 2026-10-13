@@ -1,7 +1,7 @@
 """Test render output readability and formatting.
 
 Uses both a small hand-built fixture (for precise output verification)
-and the real attention graph (for full-document render checks).
+and the real graphrag graph (for full-document render checks).
 """
 
 from __future__ import annotations
@@ -255,36 +255,36 @@ class TestRenderBoth:
 
 
 class TestFullDocumentRender:
-    """Test graph.render() on the full attention fixture."""
+    """Test graph.render() on the full graphrag fixture."""
 
-    def test_full_render_produces_text(self, attention_graph: BragiGraph) -> None:
-        output = attention_graph.render()
+    def test_full_render_produces_text(self, graphrag_graph: BragiGraph) -> None:
+        output = graphrag_graph.render()
         assert len(output) > 1000  # Should be substantial
-        assert "Attention" in output
+        assert "GraphRAG" in output
 
         # Print first 500 chars to visually verify readability
         print("\n--- Full document render (first 500 chars) ---")
         print(output[:500])
         print("--- end ---\n")
 
-    def test_full_render_no_triple_newlines(self, attention_graph: BragiGraph) -> None:
-        output = attention_graph.render()
+    def test_full_render_no_triple_newlines(self, graphrag_graph: BragiGraph) -> None:
+        output = graphrag_graph.render()
         assert "\n\n\n" not in output
 
-    def test_full_render_with_breadcrumbs(self, attention_graph: BragiGraph) -> None:
-        plain = attention_graph.render()
-        output = attention_graph.render(breadcrumbs=True)
+    def test_full_render_with_breadcrumbs(self, graphrag_graph: BragiGraph) -> None:
+        plain = graphrag_graph.render()
+        output = graphrag_graph.render(breadcrumbs=True)
         # Breadcrumbs wrap structural headers in [trail] brackets.
         assert "[" in output
         assert output != plain
 
-    def test_full_render_with_node_types(self, attention_graph: BragiGraph) -> None:
-        output = attention_graph.render(node_types=True)
+    def test_full_render_with_node_types(self, graphrag_graph: BragiGraph) -> None:
+        output = graphrag_graph.render(node_types=True)
         assert "[Section]" in output
         assert "[Paragraph]" in output
 
-    def test_document_node_render(self, attention_graph: BragiGraph) -> None:
+    def test_document_node_render(self, graphrag_graph: BragiGraph) -> None:
         """Document root render should produce the same as graph.render()."""
-        root_output = attention_graph.root.render(attention_graph)
-        graph_output = attention_graph.render()
+        root_output = graphrag_graph.root.render(graphrag_graph)
+        graph_output = graphrag_graph.render()
         assert root_output == graph_output

@@ -2,7 +2,7 @@
 //!
 //! Mistral OCR-4 infers heading levels **per page with no cross-page
 //! memory**, so the same-rank chapters of a document can land on
-//! different markdown levels page to page (attention fixture: chapters
+//! different markdown levels page to page (the first OCR fixture: chapters
 //! 1–3 as `#` on page 1, chapters 4–6 as `##` on pages 5–7). The level
 //! sets overlap across true ranks, so the hierarchy is not recoverable
 //! from the levels at all — but where section titles carry a coherent
@@ -58,8 +58,8 @@ static NUMBERING_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 /// Parse a Section title's leading numbering into its rank (component
-/// count): `"4 Why Self-Attention"` → 1, `"3.2 Attention"` → 2,
-/// `"3.2.1 Scaled Dot-Product Attention"` → 3, `"A. Appendix"` → 1,
+/// count): `"4 Analysis"` → 1, `"3.2 Question Generation"` → 2,
+/// `"3.2.1 Sampling"` → 3, `"A. Appendix"` → 1,
 /// `"A.1 Detail"` → 2. `None` for unnumbered titles (including
 /// acronym-led ones like `"RFC 9000"`). Uncapped — the cap is applied at
 /// level-assignment time in [`normalized_levels`].
@@ -125,22 +125,22 @@ mod tests {
 
     #[test]
     fn decimal_numbering_depth_is_component_count() {
-        assert_eq!(numbering_depth("4 Why Self-Attention"), Some(1));
-        assert_eq!(numbering_depth("3.2 Attention"), Some(2));
-        assert_eq!(numbering_depth("3.2.1 Scaled Dot-Product Attention"), Some(3));
+        assert_eq!(numbering_depth("4 Analysis"), Some(1));
+        assert_eq!(numbering_depth("3.2 Question Generation"), Some(2));
+        assert_eq!(numbering_depth("3.2.1 Sampling"), Some(3));
         assert_eq!(numbering_depth("1.2.3.4.5 Very Deep"), Some(5));
     }
 
     #[test]
     fn trailing_dot_does_not_add_a_component() {
         assert_eq!(numbering_depth("1. Introduction"), Some(1));
-        assert_eq!(numbering_depth("3.2. Attention"), Some(2));
+        assert_eq!(numbering_depth("3.2. Question Generation"), Some(2));
     }
 
     #[test]
     fn letter_led_appendix_numbering() {
         assert_eq!(numbering_depth("A. Transformer Details"), Some(1));
-        assert_eq!(numbering_depth("A.1 Attention Heads"), Some(2));
+        assert_eq!(numbering_depth("A.1 Entity Extraction"), Some(2));
         assert_eq!(numbering_depth("B.2.3 Ablation Grid"), Some(3));
         // Bare single letter + space is numbering too (picker `_tokens`
         // semantics — `[A-Z]` with the dot optional).
@@ -168,7 +168,7 @@ mod tests {
 
     #[test]
     fn star_wrap_is_stripped_before_the_match() {
-        assert_eq!(numbering_depth("**3.2 Attention**"), Some(2));
+        assert_eq!(numbering_depth("**3.2 Question Generation**"), Some(2));
         assert_eq!(numbering_depth("**A. Appendix**"), Some(1));
     }
 
@@ -222,7 +222,7 @@ mod tests {
 
     #[test]
     fn unnumbered_sections_attach_at_depth_one() {
-        // Attention-shaped: title + Abstract + numbered chapters +
+        // Paper-shaped: title + Abstract + numbered chapters +
         // References. 6 numbered of 9 = exactly 2/3 — gate passes;
         // title, Abstract and References all land at 1.
         let titles = [

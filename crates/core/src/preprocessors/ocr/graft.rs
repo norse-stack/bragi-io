@@ -193,8 +193,8 @@ pub fn parse_ocr_with_pdf<P: Preprocessor + ?Sized>(
 }
 
 // =============================================================================
-// Tests — all JVM-free. Native-arm metadata for the attention twin comes
-// from the frozen golden graph (`golden/1.0.0/attention/document.bgraph.json`)
+// Tests — all JVM-free. Native-arm metadata for the graphrag twin comes
+// from the frozen golden graph (`golden/1.0.0/graphrag/document.bgraph.json`)
 // and from the committed C1 XHTML cache — Tika's own recorded output over
 // the same source PDF that sits behind `demo-ocr/source.json`.
 // =============================================================================
@@ -218,24 +218,22 @@ mod tests {
     }
 
     /// The frozen native-arm metadata for the same source PDF — pulled
-    /// from the attention golden graph (this pairing is the real
-    /// attention twin: one PDF behind both artifacts).
+    /// from the graphrag golden graph (one PDF behind both artifacts).
     fn frozen_native_metadata() -> DocumentMetadata {
         let json = std::fs::read_to_string(
-            fixtures().join("golden/1.0.0/attention/document.bgraph.json"),
+            fixtures().join("golden/1.0.0/graphrag/document.bgraph.json"),
         )
-        .expect("frozen attention golden json is committed");
+        .expect("frozen graphrag golden json is committed");
         let v: serde_json::Value = serde_json::from_str(&json).expect("golden json parses");
         serde_json::from_value(v["document_info"]["document_metadata"].clone())
             .expect("frozen document_metadata deserializes")
     }
 
-    /// Sha256 of the committed attention PDF (identical bytes at
-    /// `pdfs/attention-is-all-you-need.pdf` and
-    /// `golden/1.0.0/attention/attention.pdf`).
-    fn attention_pdf_sha() -> String {
-        let bytes = std::fs::read(fixtures().join("pdfs/attention-is-all-you-need.pdf"))
-            .expect("attention pdf is committed");
+    /// Sha256 of the committed graphrag PDF
+    /// (`golden/1.0.0/graphrag/graphrag.pdf`).
+    fn graphrag_pdf_sha() -> String {
+        let bytes = std::fs::read(fixtures().join("golden/1.0.0/graphrag/graphrag.pdf"))
+            .expect("graphrag pdf is committed");
         companion_sha256(&bytes)
     }
 
@@ -247,7 +245,7 @@ mod tests {
         companion_sha256(&bytes)
     }
 
-    // --- the attention-twin policy test (handoff §6) -------------------
+    // --- the graphrag-twin policy test (handoff §6) --------------------
 
     #[test]
     fn graft_fills_canonical_fields_from_frozen_native_arm() {
@@ -259,9 +257,12 @@ mod tests {
 
         let md = &result.graph.document_info.document_metadata;
         // Canonical: what the native arm knows, filled; what it doesn't,
-        // still None (attention's PDF carries title + created only).
-        assert_eq!(md.title.as_deref(), Some("Attention Is All You Need"));
-        assert_eq!(md.created.as_deref(), Some("2024-04-10T21:11:43Z"));
+        // still None (the graphrag PDF carries title + created only).
+        assert_eq!(
+            md.title.as_deref(),
+            Some("From Local to Global: A GraphRAG Approach to Query-Focused Summarization")
+        );
+        assert_eq!(md.created.as_deref(), Some("2025-02-20T01:38:02Z"));
         assert!(md.author.is_none());
         assert!(md.description.is_none());
         assert!(md.language.is_none());
@@ -273,14 +274,14 @@ mod tests {
             serde_json::to_value(&pdf_ns).unwrap(),
             "pdf namespace must be the native arm's, verbatim"
         );
-        assert_eq!(pdf.page_count, Some(15));
+        assert_eq!(pdf.page_count, Some(26));
         assert_eq!(pdf.producer.as_deref(), Some("pdfTeX-1.40.25"));
 
         // `ocr` namespace: untouched except the supplier identity.
         let ocr = md.ocr.as_ref().expect("ocr namespace present");
         assert_eq!(ocr.model.as_deref(), Some("mistral-ocr-4-0"));
-        assert_eq!(ocr.pages_processed, Some(15));
-        assert_eq!(ocr.doc_size_bytes, Some(2_215_244));
+        assert_eq!(ocr.pages_processed, Some(26));
+        assert_eq!(ocr.doc_size_bytes, Some(6_893_854));
         assert_eq!(ocr.dpi, Some(93));
         assert!(ocr.extras.is_empty());
         // CR-13: the supplier artifact's sha, NOT the companion PDF's.
@@ -288,7 +289,7 @@ mod tests {
             ocr.supplier_sha256.as_deref(),
             Some(demo_ocr_supplier_sha().as_str())
         );
-        assert_ne!(demo_ocr_supplier_sha(), attention_pdf_sha());
+        assert_ne!(demo_ocr_supplier_sha(), graphrag_pdf_sha());
 
         // Provenance unchanged — the PDF is a companion, not a source.
         assert_eq!(result.provenance.source_format, "ocr");
@@ -298,7 +299,7 @@ mod tests {
     /// The seam-consistency / Tika-stability check, JVM-free: the seam
     /// function over Tika's committed C1 XHTML must yield the metadata
     /// the frozen native-arm graph carries — with one *documented*
-    /// exception. Attention's PDF container has **no `dc:title`**: the
+    /// exception. The graphrag PDF's container has **no `dc:title`**: the
     /// frozen graph's title is the PDF pipeline's body-side inference
     /// (`processor.rs` — honored only when extraction returns `None`,
     /// the F-02 deferral), which lives beyond the graft's
@@ -308,25 +309,28 @@ mod tests {
     /// seam) drifts, this and the graft golden fail together.
     #[test]
     fn seam_over_committed_c1_xhtml_matches_frozen_native_arm() {
-        let sha = attention_pdf_sha();
+        let sha = graphrag_pdf_sha();
         let xhtml = std::fs::read_to_string(
             fixtures().join(format!("snapshots/c1-xhtml/{sha}.xhtml")),
         )
-        .expect("committed C1 XHTML for the attention pdf");
+        .expect("committed C1 XHTML for the graphrag pdf");
         let from_seam = native_metadata_from_xhtml(&xhtml);
         let frozen = frozen_native_metadata();
 
         // The provenance split, pinned: extraction has no title for this
         // PDF; the frozen graph's title is body-side inference.
         assert!(from_seam.title.is_none(), "no dc:title in the container");
-        assert_eq!(frozen.title.as_deref(), Some("Attention Is All You Need"));
+        assert_eq!(
+            frozen.title.as_deref(),
+            Some("From Local to Global: A GraphRAG Approach to Query-Focused Summarization")
+        );
 
         // Every extraction-native field agrees.
         assert_eq!(from_seam.author, frozen.author);
         assert_eq!(from_seam.description, frozen.description);
         assert_eq!(from_seam.language, frozen.language);
         assert_eq!(from_seam.created, frozen.created);
-        assert_eq!(from_seam.created.as_deref(), Some("2024-04-10T21:11:43Z"));
+        assert_eq!(from_seam.created.as_deref(), Some("2025-02-20T01:38:02Z"));
         assert_eq!(
             serde_json::to_value(&from_seam.pdf).unwrap(),
             serde_json::to_value(&frozen.pdf).unwrap(),
@@ -449,7 +453,10 @@ mod tests {
         let md = &result.graph.document_info.document_metadata;
         // Body-side inferred title (PDF-pipeline rule, post-S2-review)
         // survives a metadata-less graft: native None never erases it.
-        assert_eq!(md.title.as_deref(), Some("Attention Is All You Need"));
+        assert_eq!(
+            md.title.as_deref(),
+            Some("From Local to Global: A GraphRAG Approach to Query-Focused Summarization")
+        );
         assert!(md.created.is_none());
         // `pdf` slot present with whatever was extracted (here: nothing).
         let pdf = md.pdf.as_ref().expect("pdf slot present even when empty");

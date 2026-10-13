@@ -1,6 +1,6 @@
 """Deserialization of the 1.0.0 graph.json fixtures into typed BragiGraph.
 
-Ground truth: `attention_graph.json` (PDF, Fixed flow) + `demo_md_graph.json`
+Ground truth: `graphrag_graph.json` (PDF, Fixed flow) + `demo_md_graph.json`
 (markdown, Free flow) + `demo_ocr_graph.json` (OCR, Fixed flow), all
 regenerated from the core golden family via `make sync-python-fixture`.
 """
@@ -48,49 +48,49 @@ def demo_ocr_graph() -> BragiGraph:
 
 
 class TestBragiDeserialization:
-    """Deserialize the real attention fixture and verify all typed fields."""
+    """Deserialize the real graphrag fixture and verify all typed fields."""
 
-    def test_top_level_fields(self, attention_graph: BragiGraph) -> None:
-        assert attention_graph.schema_version == "1.2.0"
-        assert len(attention_graph.nodes) > 0
-        assert isinstance(attention_graph.document_info, DocumentInfo)
-        assert isinstance(attention_graph.structural_profile, StructuralProfile)
+    def test_top_level_fields(self, graphrag_graph: BragiGraph) -> None:
+        assert graphrag_graph.schema_version == "1.2.0"
+        assert len(graphrag_graph.nodes) > 0
+        assert isinstance(graphrag_graph.document_info, DocumentInfo)
+        assert isinstance(graphrag_graph.structural_profile, StructuralProfile)
 
-    def test_wrapper_identity_fields(self, attention_graph: BragiGraph) -> None:
+    def test_wrapper_identity_fields(self, graphrag_graph: BragiGraph) -> None:
         # 1.0.0 wrapper carries bgraph_sha256 (64 hex) + created_at.
-        assert len(attention_graph.bgraph_sha256) == 64
-        assert attention_graph.created_at  # non-empty ISO timestamp
+        assert len(graphrag_graph.bgraph_sha256) == 64
+        assert graphrag_graph.created_at  # non-empty ISO timestamp
 
-    def test_parse_provenance(self, attention_graph: BragiGraph) -> None:
-        prov = attention_graph.parse_provenance
+    def test_parse_provenance(self, graphrag_graph: BragiGraph) -> None:
+        prov = graphrag_graph.parse_provenance
         assert isinstance(prov, ParseProvenance)
         assert prov.source_format == "pdf"
         assert len(prov.source_sha256) == 64
         # CR-92: provenance is content-only — no source_filename attribute.
         assert not hasattr(prov, "source_filename")
 
-    def test_repr(self, attention_graph: BragiGraph) -> None:
-        r = repr(attention_graph)
+    def test_repr(self, graphrag_graph: BragiGraph) -> None:
+        r = repr(graphrag_graph)
         assert "BragiGraph" in r
         assert "nodes" in r
         assert "v1.2.0" in r
 
-    def test_node_count(self, attention_graph: BragiGraph) -> None:
-        # attention.pdf golden fixture has 179 nodes.
-        assert len(attention_graph.nodes) == 179
+    def test_node_count(self, graphrag_graph: BragiGraph) -> None:
+        # graphrag.pdf golden fixture has 368 nodes.
+        assert len(graphrag_graph.nodes) == 368
 
-    def test_root_node(self, attention_graph: BragiGraph) -> None:
-        root = attention_graph.root
+    def test_root_node(self, graphrag_graph: BragiGraph) -> None:
+        root = graphrag_graph.root
         assert root.node_type == "Document"
         assert root.parent is None
         assert len(root.children) > 0
 
-    def test_root_id_matches_document_info(self, attention_graph: BragiGraph) -> None:
-        root = attention_graph.root
-        assert root.id == attention_graph.document_info.root_id
+    def test_root_id_matches_document_info(self, graphrag_graph: BragiGraph) -> None:
+        root = graphrag_graph.root
+        assert root.id == graphrag_graph.document_info.root_id
 
-    def test_document_node_fields(self, attention_graph: BragiGraph) -> None:
-        node = attention_graph.nodes[0]
+    def test_document_node_fields(self, graphrag_graph: BragiGraph) -> None:
+        node = graphrag_graph.nodes[0]
         assert isinstance(node, DocumentNode)
         assert isinstance(node.id, str)
         assert isinstance(node.node_type, str)
@@ -99,8 +99,8 @@ class TestBragiDeserialization:
         assert isinstance(node.token_count, int)
         assert isinstance(node.children, list)
 
-    def test_semantic_location(self, attention_graph: BragiGraph) -> None:
-        node = attention_graph.nodes[0]
+    def test_semantic_location(self, graphrag_graph: BragiGraph) -> None:
+        node = graphrag_graph.nodes[0]
         sem = node.location.semantic
         assert isinstance(sem, SemanticLocation)
         assert isinstance(sem.path, str)
@@ -108,10 +108,10 @@ class TestBragiDeserialization:
         assert isinstance(sem.breadcrumbs, list)
         assert all(isinstance(b, str) for b in sem.breadcrumbs)
 
-    def test_physical_location_present(self, attention_graph: BragiGraph) -> None:
+    def test_physical_location_present(self, graphrag_graph: BragiGraph) -> None:
         """At least some nodes should have physical locations (it's a PDF)."""
         nodes_with_phys = [
-            n for n in attention_graph.nodes if n.location.physical is not None
+            n for n in graphrag_graph.nodes if n.location.physical is not None
         ]
         assert len(nodes_with_phys) > 0
 
@@ -125,103 +125,105 @@ class TestBragiDeserialization:
         assert isinstance(phys.bounding_box.width, float)
         assert isinstance(phys.bounding_box.height, float)
 
-    def test_physical_location_null_for_root(self, attention_graph: BragiGraph) -> None:
-        root = attention_graph.root
+    def test_physical_location_null_for_root(self, graphrag_graph: BragiGraph) -> None:
+        root = graphrag_graph.root
         assert root.location.physical is None
 
-    def test_style_info(self, attention_graph: BragiGraph) -> None:
+    def test_style_info(self, graphrag_graph: BragiGraph) -> None:
         """PDF nodes carry style_info (CR-86); the root does not."""
-        assert attention_graph.root.style_info is None
-        styled = [n for n in attention_graph.nodes if n.style_info is not None]
+        assert graphrag_graph.root.style_info is None
+        styled = [n for n in graphrag_graph.nodes if n.style_info is not None]
         assert len(styled) > 0
         style = styled[0].style_info
         assert isinstance(style, StyleMetadata)
         assert isinstance(style.font_class, str)
         assert style.font_family is not None
 
-    def test_internal_refs(self, attention_graph: BragiGraph) -> None:
-        """attention.pdf has intra-document citation links (CR-62)."""
-        ref_nodes = [n for n in attention_graph.nodes if n.internal_refs]
+    def test_internal_refs(self, graphrag_graph: BragiGraph) -> None:
+        """graphrag.pdf has intra-document citation links (CR-62)."""
+        ref_nodes = [n for n in graphrag_graph.nodes if n.internal_refs]
         assert len(ref_nodes) > 0
         ref = ref_nodes[0].internal_refs[0]
         assert isinstance(ref, InternalRef)
         assert ref.target.kind in ("named", "page")
 
-    def test_external_refs(self, attention_graph: BragiGraph) -> None:
-        ref_nodes = [n for n in attention_graph.nodes if n.external_refs]
+    def test_external_refs(self, graphrag_graph: BragiGraph) -> None:
+        ref_nodes = [n for n in graphrag_graph.nodes if n.external_refs]
         assert len(ref_nodes) > 0
         ref = ref_nodes[0].external_refs[0]
         assert isinstance(ref, ExternalRef)
         assert ref.target.kind == "uri"
 
-    def test_refs_default_empty(self, attention_graph: BragiGraph) -> None:
+    def test_refs_default_empty(self, graphrag_graph: BragiGraph) -> None:
         # Nodes without refs get empty lists, never None.
-        for n in attention_graph.nodes:
+        for n in graphrag_graph.nodes:
             assert isinstance(n.internal_refs, list)
             assert isinstance(n.external_refs, list)
 
-    def test_sections_filter(self, attention_graph: BragiGraph) -> None:
-        sections = attention_graph.sections
+    def test_sections_filter(self, graphrag_graph: BragiGraph) -> None:
+        sections = graphrag_graph.sections
         assert len(sections) > 0
         assert all(s.node_type == "Section" for s in sections)
 
-    def test_paragraphs_filter(self, attention_graph: BragiGraph) -> None:
-        paragraphs = attention_graph.paragraphs
+    def test_paragraphs_filter(self, graphrag_graph: BragiGraph) -> None:
+        paragraphs = graphrag_graph.paragraphs
         assert len(paragraphs) > 0
         assert all(p.node_type == "Paragraph" for p in paragraphs)
 
-    def test_get_node(self, attention_graph: BragiGraph) -> None:
-        first = attention_graph.nodes[0]
-        fetched = attention_graph.get_node(first.id)
+    def test_get_node(self, graphrag_graph: BragiGraph) -> None:
+        first = graphrag_graph.nodes[0]
+        fetched = graphrag_graph.get_node(first.id)
         assert fetched is first
 
-    def test_get_node_missing(self, attention_graph: BragiGraph) -> None:
+    def test_get_node_missing(self, graphrag_graph: BragiGraph) -> None:
         with pytest.raises(KeyError):
-            attention_graph.get_node("nonexistent-id")
+            graphrag_graph.get_node("nonexistent-id")
 
-    def test_nodes_by_page(self, attention_graph: BragiGraph) -> None:
-        page1 = attention_graph.nodes_by_page(1)
+    def test_nodes_by_page(self, graphrag_graph: BragiGraph) -> None:
+        page1 = graphrag_graph.nodes_by_page(1)
         assert len(page1) > 0
         for n in page1:
             assert n.location.physical is not None
             assert n.location.physical.page == 1
 
-    def test_tree_navigation_parent(self, attention_graph: BragiGraph) -> None:
-        non_root = [n for n in attention_graph.nodes if n.parent is not None]
+    def test_tree_navigation_parent(self, graphrag_graph: BragiGraph) -> None:
+        non_root = [n for n in graphrag_graph.nodes if n.parent is not None]
         assert len(non_root) > 0
         node = non_root[0]
-        parent = node.get_parent(attention_graph)
+        parent = node.get_parent(graphrag_graph)
         assert parent is not None
         assert parent.id == node.parent
 
-    def test_tree_navigation_children(self, attention_graph: BragiGraph) -> None:
-        root = attention_graph.root
-        children = root.get_children(attention_graph)
+    def test_tree_navigation_children(self, graphrag_graph: BragiGraph) -> None:
+        root = graphrag_graph.root
+        children = root.get_children(graphrag_graph)
         assert len(children) == len(root.children)
         for child, child_id in zip(children, root.children):
             assert child.id == child_id
 
-    def test_root_parent_is_none(self, attention_graph: BragiGraph) -> None:
-        root = attention_graph.root
-        assert root.get_parent(attention_graph) is None
+    def test_root_parent_is_none(self, graphrag_graph: BragiGraph) -> None:
+        root = graphrag_graph.root
+        assert root.get_parent(graphrag_graph) is None
 
     # -- DocumentInfo / metadata (CR-57 namespaces) --
 
-    def test_document_kind(self, attention_graph: BragiGraph) -> None:
-        assert attention_graph.document_info.kind == "document"
+    def test_document_kind(self, graphrag_graph: BragiGraph) -> None:
+        assert graphrag_graph.document_info.kind == "document"
 
-    def test_document_metadata_pdf_namespace(self, attention_graph: BragiGraph) -> None:
+    def test_document_metadata_pdf_namespace(self, graphrag_graph: BragiGraph) -> None:
         """page_count moved into the pdf namespace (CR-57)."""
-        meta = attention_graph.document_info.document_metadata
-        assert meta.title == "Attention Is All You Need"
+        meta = graphrag_graph.document_info.document_metadata
+        assert meta.title == (
+            "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"
+        )
         assert meta.pdf is not None
         assert isinstance(meta.pdf.page_count, int)
         assert meta.pdf.page_count > 0
         assert meta.md is None and meta.docx is None
         assert isinstance(meta.pdf.extras, dict)
 
-    def test_outline_data(self, attention_graph: BragiGraph) -> None:
-        outline = attention_graph.document_info.outline_data
+    def test_outline_data(self, graphrag_graph: BragiGraph) -> None:
+        outline = graphrag_graph.document_info.outline_data
         assert isinstance(outline, BookmarkData)
         assert len(outline.sections) > 0
         first = outline.sections[0]
@@ -231,11 +233,11 @@ class TestBragiDeserialization:
 
     # -- flow_type: THE fix (moved to document_info; was silently "Fixed") --
 
-    def test_flow_type_on_document_info(self, attention_graph: BragiGraph) -> None:
-        assert attention_graph.document_info.flow_type == "Fixed"
-        assert attention_graph.flow_type == "Fixed"  # convenience accessor
+    def test_flow_type_on_document_info(self, graphrag_graph: BragiGraph) -> None:
+        assert graphrag_graph.document_info.flow_type == "Fixed"
+        assert graphrag_graph.flow_type == "Fixed"  # convenience accessor
         # It must NOT live on structural_profile anymore.
-        assert not hasattr(attention_graph.structural_profile, "flow_type")
+        assert not hasattr(graphrag_graph.structural_profile, "flow_type")
 
     def test_flow_type_free_for_markdown(self, demo_md_graph: BragiGraph) -> None:
         """Regression guard: a Free doc must report Free, not the old silent Fixed."""
@@ -250,14 +252,14 @@ class TestBragiDeserialization:
 
     # -- StructuralProfile --
 
-    def test_structural_profile(self, attention_graph: BragiGraph) -> None:
-        sp = attention_graph.structural_profile
+    def test_structural_profile(self, graphrag_graph: BragiGraph) -> None:
+        sp = graphrag_graph.structural_profile
         assert sp.total_nodes > 0
         assert sp.total_tokens > 0
         assert isinstance(sp.document_type, str)
 
-    def test_structural_profile_distributions(self, attention_graph: BragiGraph) -> None:
-        sp = attention_graph.structural_profile
+    def test_structural_profile_distributions(self, graphrag_graph: BragiGraph) -> None:
+        sp = graphrag_graph.structural_profile
         assert sp.node_type_distribution is not None
         assert "Paragraph" in sp.node_type_distribution.counts
         assert sp.depth_distribution is not None
@@ -266,27 +268,27 @@ class TestBragiDeserialization:
     # -- Serialization --
 
     def test_to_dict_roundtrip(
-        self, attention_graph: BragiGraph, attention_raw: dict
+        self, graphrag_graph: BragiGraph, graphrag_raw: dict
     ) -> None:
-        assert attention_graph.to_dict() is attention_raw
+        assert graphrag_graph.to_dict() is graphrag_raw
 
-    def test_to_json(self, attention_graph: BragiGraph) -> None:
-        j = attention_graph.to_json()
+    def test_to_json(self, graphrag_graph: BragiGraph) -> None:
+        j = graphrag_graph.to_json()
         parsed = json.loads(j)
         assert parsed["schema_version"] == "1.2.0"
-        assert len(parsed["nodes"]) == 179
+        assert len(parsed["nodes"]) == 368
 
 
 class TestNodeContent:
     """Verify node content text is accessible."""
 
-    def test_content_text_accessible(self, attention_graph: BragiGraph) -> None:
-        for node in attention_graph.nodes[:5]:
+    def test_content_text_accessible(self, graphrag_graph: BragiGraph) -> None:
+        for node in graphrag_graph.nodes[:5]:
             assert isinstance(node.content.text, str)
 
-    def test_section_has_meaningful_text(self, attention_graph: BragiGraph) -> None:
-        sections = attention_graph.sections
-        assert any("Attention" in s.content.text for s in sections)
+    def test_section_has_meaningful_text(self, graphrag_graph: BragiGraph) -> None:
+        sections = graphrag_graph.sections
+        assert any("GraphRAG" in s.content.text for s in sections)
 
 
 class TestOcrChannel:
@@ -303,21 +305,23 @@ class TestOcrChannel:
         ocr = meta.ocr
         assert isinstance(ocr, OcrMetadata)
         assert ocr.model == "mistral-ocr-4-0"
-        assert ocr.pages_processed == 15
-        assert ocr.doc_size_bytes == 2215244
+        assert ocr.pages_processed == 26
+        assert ocr.doc_size_bytes == 6893854
         assert ocr.dpi == 93
         # Single-arm parse: nothing was grafted, so no supplier identity.
         assert ocr.supplier_sha256 is None
 
     def test_ocr_title_inferred(self, demo_ocr_graph: BragiGraph) -> None:
         meta = demo_ocr_graph.document_info.document_metadata
-        assert meta.title == "Attention Is All You Need"
+        assert meta.title == (
+            "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"
+        )
 
-    def test_equation_nodes(self, demo_ocr_graph: BragiGraph) -> None:
-        equations = [n for n in demo_ocr_graph.nodes if n.node_type == "Equation"]
-        assert len(equations) == 6
-        # Equations carry physical locations like any Fixed-flow node.
-        assert all(e.location.physical is not None for e in equations)
+    def test_table_nodes(self, demo_ocr_graph: BragiGraph) -> None:
+        tables = [n for n in demo_ocr_graph.nodes if n.node_type == "Table"]
+        assert len(tables) == 8
+        # Tables carry physical locations like any Fixed-flow node.
+        assert all(t.location.physical is not None for t in tables)
 
     def test_supplier_sha256_from_dict(self) -> None:
         """The grafted-parse field (S2, renamed by CR-13) deserializes."""

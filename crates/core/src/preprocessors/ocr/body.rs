@@ -57,7 +57,7 @@
 //!
 //! `title` blocks carry no explicit level field, but every observed
 //! title's `content` arrives **with its markdown heading prefix inline**
-//! (`"## Attention Is All You Need"`, 234/234 titles across both
+//! (`"## Abstract"`, 234/234 titles across both
 //! fixtures) — so the primary inference is a direct `#`-count parse of
 //! the content itself. Fallbacks, in order: match the bare title text
 //! against a `#`-prefixed heading line in the same page's `markdown`
@@ -1312,11 +1312,11 @@ mod tests {
 
     #[test]
     fn numbering_rank_overrides_noisy_per_page_levels() {
-        // The attention defect in miniature: same-rank chapters land on
+        // The per-page level defect in miniature: same-rank chapters land on
         // different markdown levels page to page (no cross-page memory).
         // The numbering rank must win.
         let page1 = [
-            block("title", "## Attention Is All You Need", 10.0),
+            block("title", "## From Local to Global", 10.0),
             block("title", "### Abstract", 30.0),
             block("title", "# 1 Introduction", 50.0),
             block("text", "intro body", 70.0),
@@ -1325,11 +1325,11 @@ mod tests {
         .join(",");
         let page2 = [
             // Per-page amnesia: chapter 3 arrives one level deep.
-            block("title", "## 3 Model Architecture", 10.0),
-            block("title", "### 3.1 Encoder and Decoder Stacks", 30.0),
+            block("title", "## 3 Methods", 10.0),
+            block("title", "### 3.1 Workflow", 30.0),
             block("text", "encoder body", 50.0),
-            block("title", "### 3.2 Attention", 70.0),
-            block("title", "#### 3.2.1 Scaled Dot-Product Attention", 90.0),
+            block("title", "### 3.2 Question Generation", 70.0),
+            block("title", "#### 3.2.1 Sampling", 90.0),
         ]
         .join(",");
         let page3 = [
@@ -1348,14 +1348,14 @@ mod tests {
             .map(|n| (n.content.text.clone(), n.location.semantic.depth))
             .collect();
         let want: Vec<(&str, u32)> = vec![
-            ("Attention Is All You Need", 1), // leading title: pinned to the top
-            ("Abstract", 1),                  // unnumbered → depth 1
+            ("From Local to Global", 1), // leading title: pinned to the top
+            ("Abstract", 1),             // unnumbered → depth 1
             ("1 Introduction", 1),
             ("2 Background", 1),
-            ("3 Model Architecture", 1), // rank beats the noisy `##`
-            ("3.1 Encoder and Decoder Stacks", 2),
-            ("3.2 Attention", 2),
-            ("3.2.1 Scaled Dot-Product Attention", 3),
+            ("3 Methods", 1), // rank beats the noisy `##`
+            ("3.1 Workflow", 2),
+            ("3.2 Question Generation", 2),
+            ("3.2.1 Sampling", 3),
             ("A. Training Details", 1), // appendix letter = rank 1
             ("A.1 Optimizer", 2),
             ("References", 1), // unnumbered → depth 1

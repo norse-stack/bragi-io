@@ -8,18 +8,18 @@ PDF, DOCX, and Markdown all converge to the same graph, serialized two ways: `bg
 
 ## What a bgraph looks like
 
-One parse of the canonical example — *Attention Is All You Need* — is **179 nodes** (1 document, 30 sections, 147 paragraphs, 1 margin). Each node carries a semantic location (its `path` in the tree) and, for PDFs, a physical one (page + bounding box):
+One parse of the canonical example — *From Local to Global: A GraphRAG Approach to Query-Focused Summarization* (Edge et al., Microsoft, arXiv:2404.16130, CC BY 4.0) — is **368 nodes** (1 document, 54 sections, 312 paragraphs, 1 margin). Each node carries a semantic location (its `path` in the tree) and, for PDFs, a physical one (page + bounding box):
 
 ```json
 {
-  "id": "7962788f-d2e7-50bc-8359-c47c4b37c03d",
+  "id": "97488a75-0154-50d2-a24a-66b52e793154",
   "node_type": "Section",
   "location": {
-    "semantic": { "path": "2", "depth": 1, "breadcrumbs": ["Attention Is All You Need", "Attention Is All You Need"] },
-    "physical": { "page": 1, "bounding_box": { "x": 211.5, "y": 149.1, "width": 188.4, "height": 16.5 } }
+    "semantic": { "path": "1", "depth": 1, "breadcrumbs": ["From Local to Global: A GraphRAG Approach to Query-Focused Summarization", "From Local to Global: A GraphRAG Approach to Query-Focused Summarization"] },
+    "physical": { "page": 1, "bounding_box": { "x": 121.7, "y": 100.1, "width": 368.7, "height": 36.5 } }
   },
-  "content": { "text": "Attention Is All You Need" },
-  "token_count": 6
+  "content": { "text": "From Local to Global: A GraphRAG Approach to Query-Focused Summarization" },
+  "token_count": 17
 }
 ```
 
@@ -37,7 +37,7 @@ let mut processor = DocumentProcessor::new_cli_jni(
     Path::new("/path/to/extractor.jar"),
 )?;
 
-let (graph, provenance) = processor.process_document("attention.pdf")?;
+let (graph, provenance) = processor.process_document("graphrag.pdf")?;
 
 println!("{} nodes, parsed by bragi {}", graph.nodes.len(), provenance.bragi_version);
 

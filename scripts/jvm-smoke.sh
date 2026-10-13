@@ -15,13 +15,13 @@ set -euo pipefail
 cd "$(dirname "$0")/.."   # -> public/bragi (repo root when projected)
 
 CLI=target/release/bragi
-GOLDEN=crates/core/test_fixtures/golden/1.0.0/attention
-PDF="$GOLDEN/attention.pdf"
+GOLDEN=crates/core/test_fixtures/golden/1.0.0/graphrag
+PDF="$GOLDEN/graphrag.pdf"
 CONFIG="$GOLDEN/config.yaml"
 GOLDEN_MD="$GOLDEN/document.bgraph.md"
 JRE="${JRE_PATH:-${JAVA_HOME:-$HOME/.sdkman/candidates/java/current}}"
 JAR="${JAR_PATH:-crates/core/deps/tika/jni-jars/blazing-tika-jni.jar}"
-EXPECT_NODES=179
+EXPECT_NODES=368
 
 test -x "$CLI"          || { echo "❌ CLI not built — run: make build-cli"; exit 1; }
 test -f "$JAR"          || { echo "❌ Tika JAR missing: $JAR"; exit 1; }
@@ -56,7 +56,7 @@ GOT_NODES=$(grep -oE 'Graph: [0-9]+ nodes' "$TMP/parse.log" | grep -oE '[0-9]+' 
 # Tika's COMMITTED C1 XHTML for the companion; this is the lane that proves
 # a LIVE Tika run over the same PDF still yields identical native metadata
 # (the Tika-stability equality the freeze assumes). Same committed source
-# pair: demo-ocr/source.json + the attention PDF twin.
+# pair: demo-ocr/source.json + the golden PDF it was transcribed from.
 OCR_SRC=crates/core/test_fixtures/golden/1.0.0/demo-ocr/source.json
 GRAFT_GOLDEN_MD=crates/core/test_fixtures/golden/1.0.0/demo-ocr/document.graft.bgraph.md
 
