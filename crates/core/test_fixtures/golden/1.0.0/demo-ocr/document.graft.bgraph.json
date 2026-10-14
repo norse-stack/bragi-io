@@ -3,7 +3,7 @@
   "bgraph_sha256": "635703c94539d45c380bdc95bce6e341a8b6a9a7ff7f49f7e6591853d65fd1a6",
   "created_at": "1970-01-01T00:00:00Z",
   "parse_provenance": {
-    "bragi_version": "0.7.2",
+    "bragi_version": "0.8.0",
     "source_format": "ocr",
     "source_sha256": "17ff80a804d1024e2b3926919d7d9907405ebd117e2bc4dca5175659c321fd77",
     "config_hash": "none"

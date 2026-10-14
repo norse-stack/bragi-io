@@ -43,7 +43,7 @@ How the graph was produced — the inputs that determine it.
 
 ```json
 {
-  "bragi_version": "0.7.2",
+  "bragi_version": "0.8.0",
   "source_format": "pdf",
   "source_sha256": "730f1a9f…",
   "config_hash": "3a9f217e…"

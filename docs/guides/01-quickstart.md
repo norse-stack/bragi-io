@@ -81,7 +81,7 @@ Everything below is one parse of the canonical example — *From Local to Global
 {
   "schema_version": "1.2.0",
   "bgraph_sha256": "8ec7010f61d6e3aab72b4d6722c028f7a09f0dbc66c1b77941b8789c150e4b9e",
-  "parse_provenance": { "bragi_version": "0.7.2", "source_format": "pdf", "...": "..." },
+  "parse_provenance": { "bragi_version": "0.8.0", "source_format": "pdf", "...": "..." },
   "nodes": [ ... ],
   "document_info": { ... },
   "structural_profile": { ... }
