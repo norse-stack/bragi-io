@@ -4,11 +4,11 @@
 
 The bgraph is the thing you keep. The parser, the CLI, and the SDKs are just how you get one.
 
-![PDF, DOCX and Markdown converge through Bragi into one bgraph, serialized as bgraph.md and bgraph.json](https://cdn.jsdelivr.net/gh/norse-stack/bragi-io@main/docs/assets/convergence.svg)
+![Three containers, one tree: the same chapter as a PDF, a DOCX and a Markdown file, parsed into one heading tree whose nodes carry content-derived ids](https://cdn.jsdelivr.net/gh/norse-stack/bragi-io@main/docs/assets/convergence.svg)
 
-Two convergences meet on that one picture, and both are real:
+Two convergences, and both are real:
 
-- **Many inputs, one graph.** PDF, DOCX, and Markdown all land in the same bgraph.
+- **Many inputs, one graph.** PDF, DOCX, and Markdown all land in the same bgraph. The picture is a real parse: the first six nodes of the Rust Book's ownership chapter, with their ids.
 - **Many doors, one graph.** The CLI, the Rust and Python SDKs, and a self-hosted server are front doors onto the same pure function: bytes in, bgraph out. Where the parse runs is a swap, not a rewrite.
 
 **Want to see what a bgraph can do?** [Try the live demo](https://bragi-io.com/app/) — drop in a PDF and explore the graph it produces.
@@ -77,9 +77,9 @@ Neither is more true than the other; they invert to the same graph.
 
 A bgraph is worth saving because its pieces keep their names. A node's id is derived from its content and its place in the tree — not from which version parsed it, or when. So you can reparse after an edit and tell a real change from a re-emit:
 
-![Reparsing after a one-paragraph edit: only the edited node's id changes; every other node keeps its id](https://cdn.jsdelivr.net/gh/norse-stack/bragi-io@main/docs/assets/bgraph-edit-diff.svg)
+![Edit one paragraph, re-parse: the ids hold. The same six nodes before and after one line of the second paragraph was changed; only that paragraph's id moved](https://cdn.jsdelivr.net/gh/norse-stack/bragi-io@main/docs/assets/bgraph-edit-diff.svg)
 
-Edit one paragraph, run `bragi parse` again: only the edited paragraph gets a new id. Every other section and paragraph keeps its id byte-for-byte. That edit-locality is what lets another tool hold a reference to a node and trust it still points at the same thing.
+Edit one paragraph, run `bragi parse` again: only the edited paragraph gets a new id. Every other section and paragraph keeps its id byte-for-byte (the chapter above has over a hundred nodes; one moved). That edit-locality is what lets another tool hold a reference to a node and trust it still points at the same thing.
 
 The same graph aims to be **portable** (a `bgraph.md` written by one version reads back in another, ids intact) and **self-verifiable** (it carries a `bgraph_sha256` that proves the serialization round-trips). These are hard promises and we're still early — so rather than ask for your trust, we make the guarantee *checkable*: every graph carries a `schema_version`, and any structural change in the parser moves it, so drift is something you can *see* coming, not something that surprises you. If a new parser version changes the output in a way you don't want, pin the previous one and nothing moves under you. That's what makes a bgraph something you can build on, not a receipt you read once and throw away.
 
