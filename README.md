@@ -128,10 +128,15 @@ for section in bgraph.sections:
 **Rust** — embed the parser directly:
 
 ```rust
-use bragi_io_core::{DocumentProcessor, ParsingConfig};
+use bragi_io_core::DocumentProcessor;
+use std::path::Path;
 
-let processor = DocumentProcessor::new(ParsingConfig::default());
-let bgraph = processor.process_pdf("document.pdf")?;
+// The PDF channel runs Tika over JNI, so the processor needs a JRE and the
+// Tika jar. `bragi parse` downloads and locates both; when embedding, pass
+// the paths yourself (the jar ships in the repository under `crates/core/deps/tika/jni-jars/`).
+let mut processor = DocumentProcessor::new_cli_jni(Path::new(jre_dir), Path::new(tika_jar))?;
+let (graph, provenance) = processor.process_document("document.pdf")?;
+println!("{} nodes, parsed by bragi {}", graph.nodes.len(), provenance.bragi_version);
 ```
 
 ---
