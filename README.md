@@ -2,7 +2,7 @@
 
 **Bragi turns a document into a bgraph** — one structured, addressable graph of its sections, paragraphs, and content, with the coordinates to point back at the page each piece came from.
 
-The bgraph is the thing you keep. The parser, the CLI, and the SDKs are just how you get one.
+The bgraph is the thing you keep. Every node carries an id derived from its content and its place in the tree, not from which version parsed it or when, so re-parsing after an edit moves only the ids of what you touched. The chunks are the document's own sections and paragraphs, not fixed-size windows, so you chunk once and keep them; cite a passage by node id and bounding box; re-embed only what changed. The parser, the CLI and the SDKs are just how you get one.
 
 ![Three containers, one tree: the same chapter as a PDF, a DOCX and a Markdown file, parsed into one heading tree whose nodes carry content-derived ids](https://cdn.jsdelivr.net/gh/norse-stack/bragi-io@main/docs/assets/convergence.svg)
 
@@ -73,7 +73,7 @@ Neither is more true than the other; they invert to the same graph.
 
 ---
 
-## The names are stable
+## The ids are stable
 
 A bgraph is worth saving because its pieces keep their names. A node's id is derived from its content and its place in the tree — not from which version parsed it, or when. So you can reparse after an edit and tell a real change from a re-emit:
 

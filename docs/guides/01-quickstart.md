@@ -134,7 +134,7 @@ This is the human-AI bridge: a person says "the title, page 1"; a machine says `
 
 ---
 
-## The names are stable
+## The ids are stable
 
 A node's id is derived from its content and its place in the tree — not from when you parsed it. Reparse after editing one paragraph and only that paragraph's id changes; every other node keeps its id. That edit-locality is what lets you cache, diff, and build on a bgraph over time.
 
